@@ -72,7 +72,7 @@
 # define CONFIG_SYS_ENV_SECT_SIZE	(NOR_SECT_SIZE)
 # define CONFIG_ENV_OFFSET			(5 * NOR_SECT_SIZE)
 # define CONFIG_ENV_ADDR			(CONFIG_ENV_OFFSET)
-# undef CONFIG_CMD_NAND 
+# undef CONFIG_CMD_NAND
 # undef CONFIG_NAND_TI816X
 #endif
 
@@ -98,7 +98,7 @@
 				                    	        /* CS0 */
 # define CONFIG_SYS_MAX_NAND_DEVICE  1		/* Max number of NAND */
 											/* devices */
-# define CONFIG_ENV_IS_IN_NAND		1 
+# define CONFIG_ENV_IS_IN_NAND		1
 
 # ifdef CONFIG_ENV_IS_IN_NAND
 #  define CONFIG_SYS_MAX_FLASH_SECT	520	/* max number of sectors in a chip */
@@ -111,7 +111,7 @@
 #  define CONFIG_SYS_ENV_SECT_SIZE	boot_flash_sec
 #  define CONFIG_ENV_OFFSET			boot_flash_off
 #  define CONFIG_ENV_ADDR			MNAND_ENV_OFFSET
-#  define CONFIG_CMD_SAVEENV		
+#  define CONFIG_CMD_SAVEENV
 #  define CONFIG_NOFLASH
 #  undef CONFIG_ENV_IS_NOWHERE
 # else
@@ -260,4 +260,21 @@ rw initrd=0x81000000,16MB init=/bin/ash lpj=50000 mem=256M earlyprintk"
 # define CONFIG_NET_RETRY_COUNT 10
 # define CONFIG_NET_MULTI
 #endif
+
+
+/* EEPROM definitions for EEPROM */
+#define CONFIG_SYS_I2C_EEPROM_ADDR_LEN		3
+#define CONFIG_SYS_I2C_EEPROM_ADDR		0x50
+#define CONFIG_SYS_EEPROM_PAGE_WRITE_BITS	6
+#define CONFIG_SYS_EEPROM_PAGE_WRITE_DELAY_MS	20
+
+#define	CONFIG_CMD_I2C
+
+#define CONFIG_HARD_I2C			1
+#define CONFIG_SYS_I2C_SPEED		100000
+#define CONFIG_SYS_I2C_SLAVE		1
+#define CONFIG_SYS_I2C_BUS		0
+#define CONFIG_SYS_I2C_BUS_SELECT	1
+#define	CONFIG_DRIVER_TI816X_I2C	1
+
 #endif	  /* ! __CONFIG_TI816X_EVM_H */

@@ -100,35 +100,10 @@ void i2c_init (int speed, int slaveadd)
 		sclh = (unsigned int)fssclh;
 	}
 
-	writew(0x2, &i2c_base->sysc); /* for ES2 after soft reset */
-	udelay(1000);
-	writew(0x0, &i2c_base->sysc); /* will probably self clear but */
 
-	if (readw (&i2c_base->con) & I2C_CON_EN) {
-		writew (0, &i2c_base->con);
-		udelay (50000);
-	}
 
-	writew(psc, &i2c_base->psc);
-	writew(scll, &i2c_base->scll);
-	writew(sclh, &i2c_base->sclh);
-
-	/* own address */
-	writew (slaveadd, &i2c_base->oa);
-	writew (I2C_CON_EN, &i2c_base->con);
-
-	/* have to enable intrrupts or OMAP i2c module doesn't work */
-	writew (I2C_IE_XRDY_IE | I2C_IE_RRDY_IE | I2C_IE_ARDY_IE |
-		I2C_IE_NACK_IE | I2C_IE_AL_IE, &i2c_base->ie);
-	udelay (1000);
-	flush_fifo();
-	writew (0xFFFF, &i2c_base->stat);
-	writew (0, &i2c_base->cnt);
 
 	bus_initialized[current_bus] = 1;
-	writew(0x2, I2C_SYSC); /* for ES2 after soft reset */
-	udelay(1000);
-	writew(0x0, I2C_SYSC); /* will probably self clear but */
 
 	if (readw (I2C_CON) & I2C_CON_EN) {
 		writew (0, I2C_CON);
@@ -137,10 +112,9 @@ void i2c_init (int speed, int slaveadd)
 
 	/* 12MHz I2C module clock */
 	writew (0, I2C_PSC);
-	speed = speed/1000;		    /* 100 or 400 */
-	scl = ((12000/(speed*2)) - 7);	/* use 7 when PSC = 0 */
-	writew (scl, I2C_SCLL);
-	writew (scl, I2C_SCLH);
+	writew(scll, I2C_SCLL);
+	writew(sclh, I2C_SCLH);
+
 	/* own address */
 	writew (slaveadd, I2C_OA);
 	writew (I2C_CON_EN, I2C_CON);
@@ -202,7 +176,11 @@ static int i2c_read_byte (u8 devaddr, u8 regoffset, u8 * value)
 
 		status = wait_for_pin ();
 		if (status & I2C_STAT_RRDY) {
+#if defined(CONFIG_OMAP243X) || defined(CONFIG_OMAP34XX)
+			*value = readb (I2C_DATA);
+#else
 			*value = readw (I2C_DATA);
+#endif
 			udelay (20000);
 		} else {
 			i2c_error = 1;
@@ -245,20 +223,21 @@ static int i2c_write_byte (u8 devaddr, u8 regoffset, u8 value)
 	if (status & I2C_STAT_XRDY) {
 #if defined(CONFIG_OMAP243X) || defined(CONFIG_OMAP34XX)
 		/* send out 1 byte */
-		writeb (regoffset, &i2c_base->data);
-		writew (I2C_STAT_XRDY, &i2c_base->stat);
+		writeb (regoffset, I2C_DATA);
+		writew (I2C_STAT_XRDY, I2C_STAT);
 
 		status = wait_for_pin ();
 		if ((status & I2C_STAT_XRDY)) {
 			/* send out next 1 byte */
-			writeb (value, &i2c_base->data);
-			writew (I2C_STAT_XRDY, &i2c_base->stat);
+			writeb (value, I2C_DATA);
+			writew (I2C_STAT_XRDY, I2C_STAT);
 		} else {
 			i2c_error = 1;
 		}
 #else
 		/* send out two bytes */
 		writew ((value << 8) + regoffset, I2C_DATA);
+#endif
 		/* must have enough delay to allow BB bit to go low */
 		udelay (50000);
 		if (readw (I2C_STAT) & I2C_STAT_NACK) {
@@ -295,7 +274,11 @@ static void flush_fifo(void)
 	while(1){
 		stat = readw(I2C_STAT);
 		if(stat == I2C_STAT_RRDY){
+#if defined(CONFIG_OMAP243X) || defined(CONFIG_OMAP34XX)
+			readb(I2C_DATA);
+#else
 			readw(I2C_DATA);
+#endif
 			writew(I2C_STAT_RRDY,I2C_STAT);
 			udelay(1000);
 		}else
