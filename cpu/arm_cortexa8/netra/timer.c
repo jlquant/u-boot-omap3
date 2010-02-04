@@ -69,8 +69,8 @@ void set_timer(ulong t)
 	timestamp = t;
 }
 
-/* delay x useconds AND perserve advance timstamp value */
-void udelay(unsigned long usec)
+/* delay x useconds AND perserve advance timstamp value  */
+void __udelay(unsigned long usec)
 {
 }
 
