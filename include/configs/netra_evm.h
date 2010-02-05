@@ -114,7 +114,7 @@
  */
 #define CONFIG_SYS_NS16550
 #define CONFIG_SYS_NS16550_SERIAL
-#define CONFIG_SYS_NS16550_REG_SIZE	(4)
+#define CONFIG_SYS_NS16550_REG_SIZE	(-4)
 #define CONFIG_SYS_NS16550_CLK		(48000000)	/* TODO */
 #define CONFIG_SYS_NS16550_COM1		0x48020000 	/* TODO */
 					/*uart0 with h/w flow ctrl */
