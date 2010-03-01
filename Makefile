@@ -3160,6 +3160,14 @@ SMN42_config	:	unconfig
 devkit8000_config :	unconfig
 	@$(MKCONFIG) $(@:_config=) arm arm_cortexa8 devkit8000 timll omap3
 
+netra_sim_config:	unconfig
+	@[ -z "$(findstring _sim_,$@)" ] || \
+	{ \
+		echo "#define CONFIG_NETRA_SIM"    >>$(obj)include/config.h ; \
+		echo "Setting up Netra simulator build for Cortex A8..." ; \
+	}
+	@$(MKCONFIG) -a netra_evm arm arm_cortexa8 netra_evm NULL netra
+
 omap3_beagle_config :	unconfig
 	@$(MKCONFIG) $(@:_config=) arm arm_cortexa8 beagle ti omap3
 
