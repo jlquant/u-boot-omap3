@@ -54,6 +54,9 @@
 #define CONFIG_SETUP_MEMORY_TAGS  1
 #define CONFIG_INITRD_TAG	  1	/* Required for ramdisk support */
 
+#define CONFIG_OMAP3_SPI
+#define CONFIG_SPI_FLASH_STMICRO
+
 
 /* U-Boot default commands */
 #include <config_cmd_default.h>

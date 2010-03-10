@@ -9,7 +9,7 @@
 # project.
 #
 # This program is free software; you can redistribute it and/or
-# modify it under the terms of the GNU General Public License as
+# modify it under the terms of the GNU General Public License as 
 # published by the Free Software Foundation version 2.
 #
 # This program is distributed "as is" WITHOUT ANY WARRANTY of any
@@ -20,3 +20,8 @@
 
 TEXT_BASE = 0x80e80000
 CROSS_COMPILE = arm-none-linux-gnueabi-
+# Set libgcc patch to U-Boot implemenattion present in ./lib_arm directory. This
+# is required to ensure that U-Boot implementation of libgcc functions is used,
+# so that linking against toolchain provided library is avoided to prevent
+# EABI mismatch errors (especially in NAND code).
+USE_PRIVATE_LIBGCC = lib_arm
