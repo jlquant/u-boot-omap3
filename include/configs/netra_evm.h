@@ -76,10 +76,11 @@
 
 #define CONFIG_BOOTDELAY        	3	/* set -1 for no autoboot */
 #define CONFIG_VERSION_VARIABLE
-
 #define CONFIG_BOOTARGS         "console=ttyS0,115200n8 \
-				root=/dev/SimBlkDev0 lpj=5000 mem=248M"
-#define CONFIG_BOOTCOMMAND	"autoscr 0x80000100; bootm 0x80700000"
+				root=/dev/SimBlkDev0 lpj=50000 mem=248M \
+				earlyprintk"
+
+#define CONFIG_BOOTCOMMAND	"source 0x80000100; bootm 0x80700000"
 
 #define	CONFIG_EXTRA_ENV_SETTINGS				        \
    "verify=no\0"
