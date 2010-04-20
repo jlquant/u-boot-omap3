@@ -47,6 +47,8 @@ _TEXT_BASE:
 #define GPMC_CONFIG7			0x18
 
 /* GPMC CFG values for Spansion S29GL512P11TFI010 & S29GL512N11TFI010
+ * This should work for most of the NOR, else we might have to move
+ * these defines to evm.h
  * Values used here are for nominal speed, tweak it to improve performance
  */
 #define SPNOR_GPMC_CONFIG1	0x00001010	
@@ -94,7 +96,6 @@ _TEXT_BASE:
 #define SC0_DATA_VAL	(GPMC_PAD_DEF | 0x1)  /* a25 */
 #define SC0_CLK_VAL		(GPMC_PAD_DEF | 0x1)  /* a26 */
 
-#if !defined(CONFIG_SYS_NAND_BOOT)
 /**************************************************************************
  * cpy_nor_gpmc_code: relocates nor gpmc init code into ocmc0 where its 
  * safer to execute
@@ -105,7 +106,7 @@ _TEXT_BASE:
  cpy_nor_gpmc_code:
 	/* Copy NOR GPMC init code into SRAM */
 	adr r0, nor_gpmc_init     /* get addr of nor gpmc init code */
-	mov r2, #640        	/* r2 size to copy (div by 32 bytes) */
+	mov r2, #640        	/* r2 <- size to copy (div by 32 bytes) */
 	ldr r1, sram0_start     /* r1 <- dest address (passed in) */
 	add r2, r2, r0      /* r2 <- source end address */
 next2:
@@ -341,12 +342,18 @@ sc0_clk_val:
 	stmfd sp!, {ip,lr}
 	
 	/* check if we are already running from RAM */
-	ldr r2, __start	
-	sub r3, pc, r2
-	sub r0, pc, r3		/* r0 <- current position of code */ 
+	ldr r2, _lowlevel_init
+	ldr r3, _TEXT_BASE
+	sub r4, r2, r3
+	sub r0, pc, r4
+mark1:
+	ldr r5, _mark1
+	sub r5, r5, r2 /* bytes between mark1 and lowlevel_init */
+	sub r0, r0, r5 /* r0 <- _start w.r.t current place of execution */  
     ldr r1, _TEXT_BASE   /* test if we run from flash or RAM */
     cmp r0, r1          /* don't reloc during debug */
-    beq gpmc_init_ret
+    bne gpmc_init_ret
+
 	bl  cpy_nor_gpmc_code /* copy nor gpmc init code to sram */
 	ldr r0, _gpmc_init_ret
 	mov lr, r0	 /* gpmc init code in sram should return to gpmc_init_ret */
@@ -362,21 +369,12 @@ gpmc_init_ret:
 	/* the literal pools origin */
 	.ltorg
 
+_mark1:
+	.word mark1
+_lowlevel_init:
+	.word lowlevel_init
 _gpmc_init_ret:
 	.word gpmc_init_ret
-__start:
-	.word _start
 
 SRAM_STACK:
 	.word (SRAM0_START + SRAM0_SIZE - SRAM_GPMC_STACK_SIZE)
-
-#else /* no NOR hence lowlevel_init() should simply return */
-
-.globl lowlevel_init
- lowlevel_init:
-	/* back to arch calling code */
-	mov pc, lr
-
-#endif
-
-
