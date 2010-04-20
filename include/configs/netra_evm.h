@@ -43,7 +43,7 @@
 
 #ifdef CONFIG_NETRA_SIM
 #define CONFIG_SKIP_LOWLEVEL_INIT
-#define CONFIG_SKIP_RELOCATE_UBOOT
+/* #define CONFIG_SKIP_RELOCATE_UBOOT */
 #define CONFIG_NOETH
 #define CONFIG_NOFLASH
 #define CONFIG_L2_OFF			/* Avoid (OMAP3) secure mode stuff */
