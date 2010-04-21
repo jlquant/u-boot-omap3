@@ -81,7 +81,7 @@ struct spi_slave *spi_setup_slave(unsigned int bus, unsigned int cs,
 	case 0:
 		ds->regs = (struct mcspi *)OMAP3_MCSPI1_BASE;
 		break;
-#ifndef CONFIG_NETRA_SIM
+#ifndef CONFIG_TI816X
 	case 1:
 		ds->regs = (struct mcspi *)OMAP3_MCSPI2_BASE;
 		break;
@@ -98,7 +98,7 @@ struct spi_slave *spi_setup_slave(unsigned int bus, unsigned int cs,
 	}
 	ds->slave.bus = bus;
 
-#ifdef CONFIG_NETRA_SIM
+#ifdef CONFIG_TI816X
 	if ((bus == 0) && (cs > 3)) {
 #else
 	if (((bus == 0) && (cs > 3)) ||

@@ -38,5 +38,10 @@
 #define TCLR_PRE			(1 << 5)
 #define TCLR_PTV_SHIFT			(2)
 
+/* McSPI register */
+#define OMAP3_MCSPI1_BASE		0x48030100
+/* TODO Cross check */
+#define OMAP3_MCSPI_MAX_FREQ	48000000
+
 #endif /* __NETRA_HARDWARE_H */
 

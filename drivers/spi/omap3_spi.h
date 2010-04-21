@@ -25,22 +25,25 @@
  * MA 02111-1307 USA
  */
 
-#ifdef CONFIG_NETRA_SIM
-	/* TODO should we add 0x100 to base ? see McSPI spec register map */
-	#define OMAP3_MCSPI1_BASE		0x48030000
-#if 0
-	#define OMAP3_MCSPI2_BASE		0x48030000	
-	#define OMAP3_MCSPI3_BASE		0x48030000
-	#define OMAP3_MCSPI4_BASE		0x48030000
-#endif
-#else
-	#define OMAP3_MCSPI1_BASE		0x48098000
-	#define OMAP3_MCSPI2_BASE		0x4809A000
-	#define OMAP3_MCSPI3_BASE		0x480B8000
-	#define OMAP3_MCSPI4_BASE		0x480BA000
+#ifndef OMAP3_MCSPI_MAX_FREQ
+	#define OMAP3_MCSPI_MAX_FREQ		48000000
 #endif
 
-#define OMAP3_MCSPI_MAX_FREQ		48000000
+#ifndef OMAP3_MCSPI1_BASE
+	#define OMAP3_MCSPI1_BASE		0x48098000
+#endif
+
+#ifndef OMAP3_MCSPI2_BASE
+	#define OMAP3_MCSPI2_BASE		0x4809A000
+#endif
+
+#ifndef OMAP3_MCSPI3_BASE
+	#define OMAP3_MCSPI3_BASE		0x480B8000
+#endif
+
+#ifndef OMAP3_MCSPI4_BASE
+	#define OMAP3_MCSPI4_BASE		0x480BA000
+#endif
 
 /* OMAP3 McSPI registers */
 struct mcspi_channel {
