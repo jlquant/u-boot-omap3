@@ -18,8 +18,9 @@
 # GNU General Public License for more details.
 #
 
-#TEXT_BASE:= 0x40300000
-TEXT_BASE:= 0x80e80000
+sinclude $(OBJTREE)/board/$(BOARDDIR)/config.tmp
+
+#TEXT_BASE:= 0x80e80000
 CROSS_COMPILE:= arm-none-linux-gnueabi-
 # Set libgcc patch to U-Boot implemenattion present in ./lib_arm directory. This
 # is required to ensure that U-Boot implementation of libgcc functions is used,

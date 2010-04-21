@@ -3163,10 +3163,23 @@ devkit8000_config :	unconfig
 netra_sim_config:	unconfig
 	@[ -z "$(findstring _sim_,$@)" ] || \
 	{ \
+		echo "TEXT_BASE:=0x80e80000" > 
 		echo "#define CONFIG_NETRA_SIM"    >>$(obj)include/config.h ; \
 		echo "Setting up Netra simulator build for Cortex A8..." ; \
 	}
 	@$(MKCONFIG) -a netra_evm arm arm_cortexa8 netra_evm NULL netra 
+
+netra_evm_nor_config \
+netra_evm_config:	unconfig
+	@[ -z "$(findstring _nor_,$@)" ] || \
+	{ \
+		echo "TEXT_BASE:=0x00000000" > $(obj)board/netra_evm/config.tmp;  \
+		echo "#define CONFIG_NOR_BOOT"    >>$(obj)include/config.h ; \
+		echo "Setting up Netra EVM - NOR Boot build for Cortex A8..." ; \
+	}
+	@$(MKCONFIG) -a netra_evm arm arm_cortexa8 netra_evm NULL netra 
+
+
 
 omap3_beagle_config :	unconfig
 	@$(MKCONFIG) $(@:_config=) arm arm_cortexa8 beagle ti omap3

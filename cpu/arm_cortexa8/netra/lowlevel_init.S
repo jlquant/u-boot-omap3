@@ -47,7 +47,7 @@ _TEXT_BASE:
 #define GPMC_CONFIG7			0x18
 
 /* GPMC CFG values for Spansion S29GL512P11TFI010 & S29GL512N11TFI010
- * This should work for most of the NOR, else we might have to move
+ * This should work for most NOR, else we might have to move
  * these defines to evm.h
  * Values used here are for nominal speed, tweak it to improve performance
  */
@@ -57,7 +57,7 @@ _TEXT_BASE:
 #define SPNOR_GPMC_CONFIG4	0x0f031003
 #define SPNOR_GPMC_CONFIG5	0x000f1111
 #define SPNOR_GPMC_CONFIG6	0x0f030080
-#define SPNOR_GPMC_CONFIG7	0x00000800
+#define SPNOR_GPMC_CONFIG7	0x00000C00
 
 /* PAD configuration register offsets and values for gpmc address
  * lines a12 - a26
@@ -77,12 +77,12 @@ _TEXT_BASE:
 #define SC0_VCCEN	(CFG_MOD_BASE + 0xb04)  /* a23 */
 #define SC0_VPPEN	(CFG_MOD_BASE + 0xb08)  /* a24 */
 #define SC0_DATA	(CFG_MOD_BASE + 0xafc)  /* a25 */
-#define SC0_CLK		(CFG_MOD_BASE + 0xaf8)  /* a26 */
+#define SC0_CLK		(CFG_MOD_BASE + 0xaf8)	/* a26 */
 /* pad values */
 #define GPMC_PAD_DEF	(0x00000008)
-#define SC1_VPPEN_VAL	(GPMC_PAD_DEF | 0x1)	/* a12 */
-#define SC1_DATA_VAL	(GPMC_PAD_DEF | 0x1)	/* a13 */
-#define SC1_CLK_VAL		(GPMC_PAD_DEF | 0x1)	/* a14 */
+#define SC1_VPPEN_VAL	(GPMC_PAD_DEF | 0x1)  /* a12 */
+#define SC1_DATA_VAL	(GPMC_PAD_DEF | 0x1)  /* a13 */
+#define SC1_CLK_VAL		(GPMC_PAD_DEF | 0x1)  /* a14 */
 #define SC1_RST_VAL		(GPMC_PAD_DEF | 0x1)  /* a15 */
 #define SC1_DET_VAL		(GPMC_PAD_DEF | 0x1)  /* a16 */
 #define UART0_RIN_VAL	(GPMC_PAD_DEF | 0x1)  /* a17 */
@@ -106,7 +106,7 @@ _TEXT_BASE:
  cpy_nor_gpmc_code:
 	/* Copy NOR GPMC init code into SRAM */
 	adr r0, nor_gpmc_init     /* get addr of nor gpmc init code */
-	mov r2, #640        	/* r2 <- size to copy (div by 32 bytes) */
+	mov r2, #640	/* r2 <- copy size(% by 32 bytes:r3-r10 (8) regs used) */
 	ldr r1, sram0_start     /* r1 <- dest address (passed in) */
 	add r2, r2, r0      /* r2 <- source end address */
 next2:
@@ -120,7 +120,6 @@ next2:
  *  nor_gpmc_init: - Init GPMC for NOR on CS0, executed from SRAM.
  *
  *  R0 - used for saving SP, hence do not use it anywhere
- * TODO
  ****************************************************************************/
 .global nor_gpmc_init 
  nor_gpmc_init:
@@ -165,7 +164,7 @@ _gpmc_next_wait1:
 	ldr r2, gpmc_cfg7_val
 	str r2, [r5]
 
-	/* do pin muxing: TODO */	
+	/* do pin muxing */	
 	ldr r5, sc1_vppen_addr
 	ldr r2, sc1_vppen_val
 	str r2, [r5]

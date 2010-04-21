@@ -42,13 +42,32 @@
 						   initial data */
 
 #ifdef CONFIG_NETRA_SIM
-#define CONFIG_SKIP_LOWLEVEL_INIT
-/* #define CONFIG_SKIP_RELOCATE_UBOOT */
-#define CONFIG_NOETH
-#define CONFIG_NOFLASH
-#define CONFIG_L2_OFF			/* Avoid (OMAP3) secure mode stuff */
+	#define CONFIG_SKIP_LOWLEVEL_INIT
+	#define CONFIG_SKIP_RELOCATE_UBOOT 
+	#define CONFIG_NOETH
+	#define CONFIG_NOFLASH 
+	#define CONFIG_L2_OFF			/* Avoid (OMAP3) secure mode stuff */
+#else
+	#define CONFIG_NOETH
+	#define CONFIG_L2_OFF			/* Avoid (OMAP3) secure mode stuff */
 #endif
 
+#ifdef CONFIG_NOR_BOOT
+	#define CONFIG_SYS_FLASH_CFI
+	#define CONFIG_MTD_DEVICE
+	#define CONFIG_FLASH_CFI_DRIVER
+	#define CONFIG_FLASH_CFI_MTD
+	#define CONFIG_SYS_MAX_FLASH_SECT	512
+	#define CONFIG_SYS_MAX_FLASH_BANKS	1
+	#define CONFIG_ENV_IS_IN_FLASH		1
+	#define CONFIG_SYS_FLASH_BASE		(0x00000000)	
+	#define CONFIG_SYS_MONITOR_BASE		CONFIG_SYS_FLASH_BASE  
+	#define CONFIG_SYS_ENV_SECT_SIZE    (128 * 1024)
+	#define CONFIG_ENV_OFFSET       	(0x3FE0000)
+	#define CONFIG_ENV_ADDR         	(0x3FE0000)
+#else
+	#define CONFIG_SYS_MONITOR_BASE	    	TEXT_BASE
+#endif
 
 #define CONFIG_CMDLINE_TAG        1	/* enable passing of ATAGs  */
 #define CONFIG_SETUP_MEMORY_TAGS  1
@@ -105,7 +124,6 @@
 #define PHYS_DRAM_2		0xC0000000	/* DRAM Bank #2 */
 #define PHYS_DRAM_2_SIZE	0x40000000	/* 1 GB */
 
-#define CONFIG_SYS_MONITOR_BASE	    	TEXT_BASE
 
 /**
  * Platform/Board specific defs
