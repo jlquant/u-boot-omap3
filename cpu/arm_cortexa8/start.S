@@ -137,7 +137,7 @@ next:
 #endif
 
 #ifndef CONFIG_SKIP_RELOCATE_UBOOT
-relocate:				@ relocate U-Boot to RAM
+relocate:				@ relocate U-Boot to OCMC RAM
 	adr	r0, _start		@ r0 <- current position of code
 	ldr	r1, _TEXT_BASE		@ test if we run from flash or RAM
 	cmp	r0, r1			@ don't reloc during debug

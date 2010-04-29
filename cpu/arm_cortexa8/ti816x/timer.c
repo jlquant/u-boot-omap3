@@ -1,7 +1,7 @@
 /*
  * timer.c
  *
- * Netra SoC timer control.
+ * TI816X SoC timer control.
  *
  * Copyright (C) 2009, Texas Instruments, Incorporated
  *

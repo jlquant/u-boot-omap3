@@ -23,19 +23,21 @@
 
 #include <config.h>
 #include <asm/arch/hardware.h>
+#include <asm/arch/cpu.h>
+#include <asm/arch/clocks_ti816x.h>
 
 _TEXT_BASE:
-.word	TEXT_BASE	/* Load address (RAM) */
+	.word	TEXT_BASE	/* Load address (RAM) */
 
 /* TODO: These set of defines should be moved to some other file */
 #define SRAM0_START 			0x40300000
-#define SRAM0_SIZE				0x40000
-#define SRAM_GPMC_STACK_SIZE	0x40
+#define SRAM0_SIZE			0x40000
+#define SRAM_GPMC_STACK_SIZE		0x40
 
 /* GPMC MMR 
  * TODO: Should we move this to someother file?
  */
-#define GPMC_BASE				0x50000000
+#define GPMC_BASE			0x50000000
 #define GPMC_CONFIG_CS0			0x60
 #define GPMC_CONFIG_CS0_BASE	(GPMC_BASE + GPMC_CONFIG_CS0)
 #define GPMC_CONFIG1			0x00
@@ -348,9 +350,9 @@ mark1:
 	ldr r5, _mark1
 	sub r5, r5, r2 /* bytes between mark1 and lowlevel_init */
 	sub r0, r0, r5 /* r0 <- _start w.r.t current place of execution */  
-    ldr r1, _TEXT_BASE   /* test if we run from flash or RAM */
-    cmp r0, r1          /* don't reloc during debug */
-    bne gpmc_init_ret
+	ldr r1, _TEXT_BASE   /* test if we run from flash or RAM */
+	cmp r0, r1          /* don't reloc during debug */
+	bne gpmc_init_ret
 
 	bl  cpy_nor_gpmc_code /* copy nor gpmc init code to sram */
 	ldr r0, _gpmc_init_ret
@@ -358,7 +360,11 @@ mark1:
 	ldr r0, sram0_start
 	mov pc, r0	/* transfer ctrl to nor_gpmc_init() in sram */ 
 
-gpmc_init_ret:	
+gpmc_init_ret:
+	ldr r5, sysclk10_clksel_addr	/* Fix ROM code bug */
+	ldr r2, sysclk10_clksel_val
+	str r2, [r5]
+	bl s_init
 	ldmfd sp!, {ip,lr}
 	ldmfd sp!, {r0 - r6}
 	mov sp, r0
@@ -376,3 +382,208 @@ _gpmc_init_ret:
 
 SRAM_STACK:
 	.word (SRAM0_START + SRAM0_SIZE - SRAM_GPMC_STACK_SIZE)
+
+/* ROM code bug */
+sysclk10_clksel_addr:
+	.word (TI816X_PRCM_BASE + 0x0324)
+sysclk10_clksel_val:
+	.word DDR_SYSCLK10_DIV
+
+	
+.global invalidate_dcache
+.global l2_cache_enable
+.global l2_cache_disable
+
+/*
+ *	invalidate_dcache()
+ *
+ *	Invalidate the whole D-cache.
+ *
+ *	Corrupted registers: r0-r5, r7, r9-r11
+ *
+ *	- mm	- mm_struct describing address space
+ */
+invalidate_dcache:
+	stmfd	r13!, {r0 - r5, r7, r9 - r12, r14}
+
+	mov	r7, r0				@ take a backup of device type
+	cmp	r0, #0x3			@ check if the device type is
+						@ GP
+	moveq r12, #0x1				@ set up to invalide L2
+smi:	.word 0x01600070			@ Call SMI monitor (smieq)
+	cmp	r7, #0x3			@ compare again in case its
+						@ lost
+	beq	finished_inval			@ if GP device, inval done
+						@ above
+
+	mrc	p15, 1, r0, c0, c0, 1		@ read clidr
+	ands	r3, r0, #0x7000000		@ extract loc from clidr
+	mov	r3, r3, lsr #23			@ left align loc bit field
+	beq	finished_inval			@ if loc is 0, then no need to
+						@ clean
+	mov	r10, #0				@ start clean at cache level 0
+inval_loop1:
+	add	r2, r10, r10, lsr #1		@ work out 3x current cache
+						@ level
+	mov	r1, r0, lsr r2			@ extract cache type bits from
+						@ clidr
+	and	r1, r1, #7			@ mask of the bits for current
+						@ cache only
+	cmp	r1, #2				@ see what cache we have at
+						@ this level
+	blt	skip_inval			@ skip if no cache, or just
+						@ i-cache
+	mcr	p15, 2, r10, c0, c0, 0		@ select current cache level
+						@ in cssr
+	mov	r2, #0				@ operand for mcr SBZ
+	mcr	p15, 0, r2, c7, c5, 4		@ flush prefetch buffer to
+						@ sych the new cssr&csidr,
+						@ with armv7 this is 'isb',
+						@ but we compile with armv5
+	mrc	p15, 1, r1, c0, c0, 0		@ read the new csidr
+	and	r2, r1, #7			@ extract the length of the
+						@ cache lines
+	add	r2, r2, #4			@ add 4 (line length offset)
+	ldr	r4, =0x3ff
+	ands	r4, r4, r1, lsr #3		@ find maximum number on the
+						@ way size
+	clz	r5, r4				@ find bit position of way
+						@ size increment
+	ldr	r7, =0x7fff
+	ands	r7, r7, r1, lsr #13		@ extract max number of the
+						@ index size
+inval_loop2:
+	mov	r9, r4				@ create working copy of max
+						@ way size
+inval_loop3:
+	orr	r11, r10, r9, lsl r5		@ factor way and cache number
+						@ into r11
+	orr	r11, r11, r7, lsl r2		@ factor index number into r11
+	mcr	p15, 0, r11, c7, c6, 2		@ invalidate by set/way
+	subs	r9, r9, #1			@ decrement the way
+	bge	inval_loop3
+	subs	r7, r7, #1			@ decrement the index
+	bge	inval_loop2
+skip_inval:
+	add	r10, r10, #2			@ increment cache number
+	cmp	r3, r10
+	bgt	inval_loop1
+finished_inval:
+	mov	r10, #0				@ swith back to cache level 0
+	mcr	p15, 2, r10, c0, c0, 0		@ select current cache level
+						@ in cssr
+	mcr	p15, 0, r10, c7, c5, 4		@ flush prefetch buffer,
+						@ with armv7 this is 'isb',
+						@ but we compile with armv5
+
+	ldmfd	r13!, {r0 - r5, r7, r9 - r12, pc}
+
+
+l2_cache_enable:
+	push	{r0, r1, r2, lr}
+	mrc	15, 0, r3, cr1, cr0, 1
+	orr	r3, r3, #2
+	mcr	15, 0, r3, cr1, cr0, 1
+	pop	{r1, r2, r3, pc}
+
+
+l2_cache_disable:
+	push	{r0, r1, r2, lr}
+	mrc	15, 0, r3, cr1, cr0, 1
+	bic	r3, r3, #2
+	mcr	15, 0, r3, cr1, cr0, 1
+	pop	{r1, r2, r3, pc}
+
+		
+/* DPLL(1-4) PARAM TABLES */
+
+/*
+ * The first row in the table is the N,P values for the VCO
+ *  
+ * The other rows have INT_FREQ, FRAC_FREQ, M_POST_DIV values.
+ * 
+ * The fields are defined according to dpll_param struct (clock.c).
+ * 
+ * The values are defined for all possible pll block outputs. One line for each DPLL o/p
+ *
+ * The PRCM dividers are present in a separate table
+ */
+
+main_dpll_param:
+/* 26MHz */
+.word MAIN_N_MUL, MAIN_P_DIV, DUMMY_VAL, DUMMY_VAL
+/* main_pll_clock_1 */
+.word MAIN_INTFREQ1, MAIN_FRACFREQ1, MAIN_M_POST_DIV1, DUMMY_VAL
+/* main_pll_clock_2 */
+.word MAIN_INTFREQ2, MAIN_FRACFREQ2, MAIN_M_POST_DIV2, DUMMY_VAL
+/* main_pll_clock_3 */
+.word MAIN_INTFREQ3, MAIN_FRACFREQ3, MAIN_M_POST_DIV3, DUMMY_VAL
+/* main_pll_clock_4 */
+.word MAIN_INTFREQ4, MAIN_FRACFREQ4, MAIN_M_POST_DIV4, DUMMY_VAL
+/* main_pll_clock_5 */
+.word MAIN_INTFREQ5, MAIN_FRACFREQ5, MAIN_M_POST_DIV5, DUMMY_VAL
+
+.globl get_main_dpll_param
+get_main_dpll_param:
+	adr	r0, main_dpll_param
+	mov	pc, lr
+
+ddr_dpll_param:
+/* 26MHz */
+.word DDR_N_MUL, DDR_P_DIV, DUMMY_VAL, DUMMY_VAL
+/* ddr_pll_clock_2 */
+.word DDR_INTFREQ2, DDR_FRACFREQ2, DDR_M_POST_DIV2, DUMMY_VAL
+/* ddr_pll_clock_3 */
+.word DDR_INTFREQ3, DDR_FRACFREQ3, DDR_M_POST_DIV3, DUMMY_VAL
+
+.globl get_ddr_dpll_param
+get_ddr_dpll_param:
+	adr	r0, ddr_dpll_param
+	mov	pc, lr
+
+video_dpll_param:
+/* 26MHz */
+.word VIDEO_N_MUL, VIDEO_P_DIV, DUMMY_VAL, DUMMY_VAL
+/* video_pll_clock_1 */
+.word VIDEO_INTFREQ1, VIDEO_FRACFREQ1, VIDEO_M_POST_DIV1, DUMMY_VAL
+/* video_pll_clock_2 */
+.word VIDEO_INTFREQ2, VIDEO_FRACFREQ2, VIDEO_M_POST_DIV2, DUMMY_VAL
+/* video_pll_clock_3 */
+.word VIDEO_INTFREQ3, VIDEO_FRACFREQ3, VIDEO_M_POST_DIV3, DUMMY_VAL
+
+.globl get_video_dpll_param
+get_video_dpll_param:
+	adr	r0, video_dpll_param
+	mov	pc, lr
+
+audio_dpll_param:
+/* 26MHz */
+.word AUDIO_N_MUL, AUDIO_P_DIV, DUMMY_VAL, DUMMY_VAL
+/* audio_pll_clock_1 */
+/* .word AUDIO_INTFREQ1, AUDIO_FRACFREQ1, AUDIO_M_POST_DIV1, DUMMY_VAL*/
+/* audio_pll_clock_2 */
+.word AUDIO_INTFREQ2, AUDIO_FRACFREQ2, AUDIO_M_POST_DIV2, DUMMY_VAL
+/* audio_pll_clock_3 */
+.word AUDIO_INTFREQ3, AUDIO_FRACFREQ3, AUDIO_M_POST_DIV3, DUMMY_VAL
+/* audio_pll_clock_4 */
+.word AUDIO_INTFREQ4, AUDIO_FRACFREQ4, AUDIO_M_POST_DIV4, DUMMY_VAL
+/* audio_pll_clock_5 */
+.word AUDIO_INTFREQ5, AUDIO_FRACFREQ5, AUDIO_M_POST_DIV5, DUMMY_VAL
+
+
+.globl get_audio_dpll_param
+get_audio_dpll_param:
+	adr	r0, audio_dpll_param
+	mov	pc, lr
+
+iva_param:
+.word IVAHD0_CONFIG_REG_BASE, PRCM_IVAHD0_ICONT_RST_CNTL_ADDR, IVAHD0_ICONT1_ITCM_BASE, IVAHD0_ICONT2_ITCM_BASE
+.word IVAHD1_CONFIG_REG_BASE, PRCM_IVAHD1_ICONT_RST_CNTL_ADDR, IVAHD1_ICONT1_ITCM_BASE, IVAHD1_ICONT2_ITCM_BASE
+.word IVAHD2_CONFIG_REG_BASE, PRCM_IVAHD2_ICONT_RST_CNTL_ADDR, IVAHD2_ICONT1_ITCM_BASE, IVAHD2_ICONT2_ITCM_BASE
+
+.globl get_iva_param
+get_iva_param:
+	adr	r0,iva_param
+	mov	pc,lr
+
+

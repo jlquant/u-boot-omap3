@@ -1,7 +1,7 @@
 #
 # Makefile
 #
-# Netra board  specific make rules.
+# TI816X SoC specific make rules.
 #
 # Copyright (C) 2009, Texas Instruments, Incorporated
 #
@@ -20,21 +20,23 @@
 
 include $(TOPDIR)/config.mk
 
-LIB	= $(obj)lib$(BOARD).a
+LIB	= $(obj)lib$(SOC).a
 
-COBJS	:= netra_evm.o
+COBJS	= timer.o
+SOBJS	= lowlevel_init.o
 
 SRCS	:= $(SOBJS:.o=.S) $(COBJS:.o=.c)
 OBJS	:= $(addprefix $(obj),$(COBJS))
+SOBJS	:= $(addprefix $(obj),$(SOBJS))
 
-$(LIB):	$(obj).depend $(OBJS) 
-	$(AR) $(ARFLAGS) $@ $(OBJS) 
+$(LIB):	$(obj).depend $(OBJS) $(SOBJS)
+	$(AR) $(ARFLAGS) $@ $(OBJS) $(SOBJS)
 
 clean:
-	rm -f $(OBJS)
+	rm -f $(SOBJS) $(OBJS)
 
 distclean:	clean
-	rm -f $(LIB) core *.bak $(obj).depend
+	rm -f $(LIB) core *.bak .depend
 
 #########################################################################
 

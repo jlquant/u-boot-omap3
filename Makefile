@@ -3160,29 +3160,34 @@ SMN42_config	:	unconfig
 devkit8000_config :	unconfig
 	@$(MKCONFIG) $(@:_config=) arm arm_cortexa8 devkit8000 timll omap3
 
-netra_sim_config:	unconfig
+ti816x_sim_config:	unconfig
 	@[ -z "$(findstring _sim_,$@)" ] || \
 	{ \
-		echo "TEXT_BASE:=0x80e80000" > 
 		echo "#define CONFIG_TI816X"    >>$(obj)include/config.h ; \
-		echo "#define CONFIG_NETRA_SIM"    >>$(obj)include/config.h ; \
-		echo "Setting up Netra simulator build for Cortex A8..." ; \
+		echo "#define CONFIG_TI816X_SIM"    >>$(obj)include/config.h ; \
+		echo "Setting up TI816X simulator build for Cortex A8..." ; \
 	}
-	@$(MKCONFIG) -a netra_evm arm arm_cortexa8 netra_evm NULL netra 
+	@$(MKCONFIG) -a ti816x_evm arm arm_cortexa8 ti816x_evm NULL ti816x
 
-ti816x_evm_nor_config \
-ti816x_evm_config:	unconfig
+ti816x_evm_nor_config:	unconfig
 	@[ -z "$(findstring _nor_,$@)" ] || \
 	{ \
-		echo "TEXT_BASE:=0x00000000" > $(obj)board/netra_evm/config.tmp;  \
+		echo "TEXT_BASE:=0x00000000" > $(obj)board/ti816x_evm/config.tmp;  \
 		echo "#define CONFIG_TI816X"    >>$(obj)include/config.h ; \
 		echo "#define CONFIG_NOR_BOOT"    >>$(obj)include/config.h ; \
 		echo "#define CONFIG_TI816X_EVM"    >>$(obj)include/config.h ; \
 		echo "Setting up TI816X EVM - NOR Boot build for Cortex A8..." ; \
 	}
-	@$(MKCONFIG) -a netra_evm arm arm_cortexa8 netra_evm NULL netra 
+	@$(MKCONFIG) -a ti816x_evm arm arm_cortexa8 ti816x_evm NULL ti816x
 
-
+ti816x_evm_config:	unconfig
+	@[ -z "$(findstring _evm_,$@)" ] || \
+	{ \
+		echo "#define CONFIG_TI816X"    >>$(obj)include/config.h ; \
+		echo "#define CONFIG_TI816X_EVM"    >>$(obj)include/config.h ; \
+		echo "Setting up TI816X EVM Boot build for Cortex A8..." ; \
+	}
+	@$(MKCONFIG) -a ti816x_evm arm arm_cortexa8 ti816x_evm NULL ti816x
 
 omap3_beagle_config :	unconfig
 	@$(MKCONFIG) $(@:_config=) arm arm_cortexa8 beagle ti omap3

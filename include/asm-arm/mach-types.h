@@ -1994,7 +1994,7 @@ extern unsigned int __machine_arch_type;
 #define MACH_TYPE_SONY_PRS505          2007
 #define MACH_TYPE_HANLIN_V3            2008
 /*#define MACH_TYPE_SAPPHIRA             2009*/
-#define MACH_TYPE_NETRA                2009
+#define MACH_TYPE_TI816X                2009
 #define MACH_TYPE_DACK_SDA_01          2010
 #define MACH_TYPE_ARMBOX               2011
 #define MACH_TYPE_HARRIS_RVP           2012

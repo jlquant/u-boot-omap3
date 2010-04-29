@@ -1,7 +1,7 @@
 #
 # config.mk
 #
-# Make configuration file for Netra Simulator.
+# Make configuration file for TI816X Simulator.
 #
 # Copyright (C) 2009 Texas Instruments Incorporated - http://www.ti.com/
 #
@@ -9,7 +9,7 @@
 # project.
 #
 # This program is free software; you can redistribute it and/or
-# modify it under the terms of the GNU General Public License as 
+# modify it under the terms of the GNU General Public License as
 # published by the Free Software Foundation version 2.
 #
 # This program is distributed "as is" WITHOUT ANY WARRANTY of any
@@ -20,11 +20,12 @@
 
 sinclude $(OBJTREE)/board/$(BOARDDIR)/config.tmp
 
-#TEXT_BASE:= 0x80e80000
+TEXT_BASE = 0x40420000
+# Upper 128KB (20000) for stack setup in start.S
 CROSS_COMPILE:= arm-none-linux-gnueabi-
 # Set libgcc patch to U-Boot implemenattion present in ./lib_arm directory. This
 # is required to ensure that U-Boot implementation of libgcc functions is used,
 # so that linking against toolchain provided library is avoided to prevent
 # EABI mismatch errors (especially in NAND code).
-USE_PRIVATE_LIBGCC = lib_arm
-LDSCRIPT:=board/netra_evm/u-boot.lds
+#USE_PRIVATE_LIBGCC = lib_arm
+LDSCRIPT:=board/ti816x_evm/u-boot.lds

@@ -1,0 +1,85 @@
+/*
+ * hardware.h
+ * 
+ * TODO: VB_Rename this file to ti816x.h as the addresses specfic to ti816x are present here
+ * 
+ * TI816X SoC defs.
+ *
+ * Copyright (C) 2009, Texas Instruments, Incorporated
+ *
+ * See file CREDITS for list of people who contributed to this
+ * project.
+ *
+ * This program is free software; you can redistribute it and/or
+ * modify it under the terms of the GNU General Public License as
+ * published by the Free Software Foundation version 2.
+ *
+ * This program is distributed "as is" WITHOUT ANY WARRANTY of any
+ * kind, whether express or implied; without even the implied warranty
+ * of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU General Public License for more details.
+ */
+
+#ifndef __TI816X_HARDWARE_H
+#define __TI816X_HARDWARE_H
+
+/* Make a new file sys_info.h for this #define */
+#define CPU_TI816X            816
+
+#define BIT(x)				(1 << x)
+/* Register Base Addresses */
+#define REG_TIMER_BASE			0x4802C000
+#define REG_UART0_BASE			0x48020000
+#define REG_UART1_BASE			0x48022000
+#define REG_UART2_BASE			0x48024000
+
+/* Timer registers */
+#define REG_TIMER_TCLR			0x38
+#define REG_TIMER_TCRR			0x3C
+#define REG_TIMER_TLDR			0x40
+
+/* Timer register bits */
+#define TCLR_ST				BIT(0)
+#define TCLR_AR				BIT(1)
+#define TCLR_PRE			BIT(5)
+#define TCLR_PTV_SHIFT			(2)
+
+/* McSPI register */
+#define OMAP3_MCSPI1_BASE		0x48030100
+/* TODO Cross check */
+#define OMAP3_MCSPI_MAX_FREQ		48000000
+/* Watchdog Timer */
+#define WD1_BASE			0x480C2000
+
+/* Control Module Base Address */
+#define TI816X_CTRL_BASE		0x48140000
+
+/* PRCM Base Address */
+#define TI816X_PRCM_BASE		0x48180000
+
+/* IVAHD related */
+#define IVAHD0_CONFIG_REG_BASE		0x58000000
+#define IVAHD1_CONFIG_REG_BASE		0x5A000000
+#define IVAHD2_CONFIG_REG_BASE		0x53000000
+
+#define PRCM_IVAHD0_ICONT_RST_CNTL_ADDR (TI816X_PRCM_BASE + 0x0C10)
+#define PRCM_IVAHD1_ICONT_RST_CNTL_ADDR (TI816X_PRCM_BASE + 0x0D10)
+#define PRCM_IVAHD2_ICONT_RST_CNTL_ADDR (TI816X_PRCM_BASE + 0x0E10)
+
+#define IVAHD0_ICONT1_ITCM_BASE  (IVAHD0_CONFIG_REG_BASE + 0x08000)
+#define IVAHD0_ICONT2_ITCM_BASE  (IVAHD0_CONFIG_REG_BASE + 0x18000)
+#define IVAHD1_ICONT1_ITCM_BASE  (IVAHD1_CONFIG_REG_BASE + 0x08000)
+#define IVAHD1_ICONT2_ITCM_BASE  (IVAHD1_CONFIG_REG_BASE + 0x18000)
+#define IVAHD2_ICONT1_ITCM_BASE  (IVAHD2_CONFIG_REG_BASE + 0x08000)
+#define IVAHD2_ICONT2_ITCM_BASE  (IVAHD2_CONFIG_REG_BASE + 0x18000)
+
+#define IVAHD_LENGTH_BOOT_CODE  	14
+
+/* EMIF Base address */
+#define EMIF4_0_CFG_BASE_ADDR		0x4C000000
+#define EMIF4_1_CFG_BASE_ADDR		0x4D000000
+
+#define DMM_BASE_ADDR			0x4E000000
+
+#endif /* __TI816X_HARDWARE_H */
+

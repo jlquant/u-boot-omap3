@@ -31,7 +31,7 @@ SECTIONS
 	.text	:
 	{
 	  cpu/arm_cortexa8/start.o	(.text)
-	  cpu/arm_cortexa8/netra/lowlevel_init.o	(.text)
+	  cpu/arm_cortexa8/ti816x/lowlevel_init.o	(.text)
 	  *(.text)
 	}
 	. = ALIGN(4);
