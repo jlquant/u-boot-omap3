@@ -19,7 +19,6 @@
  */
 
 #include <common.h>
-#include <asm/arch/bits.h>
 #include <asm/cache.h>
 #include <asm/arch/clocks.h>
 #include <asm/arch/cpu.h>
