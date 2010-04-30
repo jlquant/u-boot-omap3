@@ -42,23 +42,8 @@ _TEXT_BASE:
 #define SPNOR_GPMC_CONFIG6	0x0f030080
 #define SPNOR_GPMC_CONFIG7	0x00000C00
 
-/* pad values */
-#define GPMC_PAD_DEF	(0x00000008)
-#define SC1_VPPEN_VAL	(GPMC_PAD_DEF | 0x1)  /* a12 */
-#define SC1_DATA_VAL	(GPMC_PAD_DEF | 0x1)  /* a13 */
-#define SC1_CLK_VAL		(GPMC_PAD_DEF | 0x1)  /* a14 */
-#define SC1_RST_VAL		(GPMC_PAD_DEF | 0x1)  /* a15 */
-#define SC1_DET_VAL		(GPMC_PAD_DEF | 0x1)  /* a16 */
-#define UART0_RIN_VAL	(GPMC_PAD_DEF | 0x1)  /* a17 */
-#define UART0_DCDN_VAL	(GPMC_PAD_DEF | 0x1)  /* a18 */
-#define UART0_DSRN_VAL	(GPMC_PAD_DEF | 0x1)  /* a19 */
-#define UART0_DTRN_VAL	(GPMC_PAD_DEF | 0x1)  /* a20 */
-#define SC1_VCCEN_VAL	(GPMC_PAD_DEF | 0x1)  /* a21 */
-#define SC0_RST_VAL		(GPMC_PAD_DEF | 0x1)  /* a22 */
-#define SC0_VCCEN_VAL	(GPMC_PAD_DEF | 0x1)  /* a23 */
-#define SC0_VPPEN_VAL	(GPMC_PAD_DEF | 0x1)  /* a24 */
-#define SC0_DATA_VAL	(GPMC_PAD_DEF | 0x1)  /* a25 */
-#define SC0_CLK_VAL		(GPMC_PAD_DEF | 0x1)  /* a26 */
+/* default gpmc pad config valaue */
+#define GPMC_PAD_DEF_VAL	(0x00000009)
 
 /**************************************************************************
  * cpy_nor_gpmc_code: relocates nor gpmc init code into ocmc0 where its 
@@ -70,7 +55,7 @@ _TEXT_BASE:
  cpy_nor_gpmc_code:
 	/* Copy NOR GPMC init code into SRAM */
 	adr r0, nor_gpmc_init     /* get addr of nor gpmc init code */
-	mov r2, #768	/* r2 <- copy size(% by 32 bytes:r3-r10 (8) regs used) */
+	mov r2, #512	/* r2 <- copy size(% by 32 bytes:r3-r10 (8) regs used) */
 	ldr r1, sram0_start     /* r1 <- dest address (passed in) */
 	add r2, r2, r0      /* r2 <- source end address */
 next2:
@@ -139,50 +124,33 @@ next2:
 	str r2, [r5]
 
 	/* do pin muxing */	
-	ldr r5, sc1_vppen_addr
-	ldr r2, sc1_vppen_val
+	ldr r2, gpmc_pad_def_val 
+	ldr r5, tim7_out_addr
 	str r2, [r5]
 	ldr r5, sc1_data_addr
-	ldr r2, sc1_data_val
 	str r2, [r5]
 	ldr r5, sc1_clk_addr
-	ldr r2, sc1_clk_val
 	str r2, [r5]
 	ldr r5, sc1_rst_addr
-	ldr r2, sc1_rst_val
 	str r2, [r5]
 	ldr r5, sc1_det_addr
-	ldr r2, sc1_det_val
 	str r2, [r5]
 	ldr r5, uart0_rin_addr
-	ldr r2, uart0_rin_val
 	str r2, [r5]
 	ldr r5, uart0_dcdn_addr
-	ldr r2, uart0_dcdn_val
 	str r2, [r5]
 	ldr r5, uart0_dsrn_addr
-	ldr r2, uart0_dsrn_val
 	str r2, [r5]
 	ldr r5, uart0_dtrn_addr
-	ldr r2, uart0_dtrn_val
 	str r2, [r5]
 	ldr r5, sc1_vccen_addr
-	ldr r2, sc1_vccen_val
 	str r2, [r5]
 	ldr r5, sc0_rst_addr
-	ldr r2, sc0_rst_val
 	str r2, [r5]
 	ldr r5, sc0_vccen_addr
-	ldr r2, sc0_vccen_val
 	str r2, [r5]
-	ldr r5, sc0_vppen_addr
-	ldr r2, sc0_vppen_val
+	ldr r5, tim6_out_addr
 	str r2, [r5]
-	ldr r5, sc0_data_addr
-	ldr r2, sc0_data_val
-	str r2, [r5]
-	ldr r5, sc0_clk_addr
-	ldr r2, sc0_clk_val
 	
 	/* enable CS0 */
 	ldr r5, gpmc_cfg7_addr
@@ -240,8 +208,8 @@ gpmc_cfg7_val:
     .word SPNOR_GPMC_CONFIG7
 
 /* pad config reg addresses and values */
-sc1_vppen_addr:
-	.word SC1_VPPEN
+tim7_out_addr:
+	.word TIM7_OUT
 sc1_data_addr:
 	.word SC1_DATA
 sc1_clk_addr:
@@ -264,44 +232,12 @@ sc0_rst_addr:
 	.word SC0_RST
 sc0_vccen_addr:
 	.word SC0_VCCEN
-sc0_vppen_addr:
-	.word SC0_VPPEN
-sc0_data_addr:
-	.word SC0_DATA
-sc0_clk_addr:
-	.word SC0_CLK
+tim6_out_addr:
+	.word TIM6_OUT
 
-/* pad values */
-sc1_vppen_val:
-	.word SC1_VPPEN_VAL 
-sc1_data_val:
-	.word SC1_DATA_VAL
-sc1_clk_val:
-	.word SC1_CLK_VAL
-sc1_rst_val:
-	.word SC1_RST_VAL
-sc1_det_val:
-	.word SC1_DET_VAL
-uart0_rin_val:
-	.word UART0_RIN_VAL
-uart0_dcdn_val:
-	.word UART0_DCDN_VAL
-uart0_dsrn_val:
-	.word UART0_DSRN_VAL
-uart0_dtrn_val:
-	.word uart0_dtrn_val
-sc1_vccen_val:
-	.word SC1_VCCEN_VAL 
-sc0_rst_val:
-	.word SC0_RST_VAL 
-sc0_vccen_val:
-	.word SC0_VCCEN_VAL
-sc0_vppen_val:
-	.word SC0_VPPEN_VAL
-sc0_data_val:
-	.word SC0_DATA_VAL
-sc0_clk_val:
-	.word SC0_CLK_VAL
+/* default gpmc pad value */
+gpmc_pad_def_val:
+	.word GPMC_PAD_DEF_VAL
 
 /*****************************************************************************
  * lowlevel_init: - Platform low level init.

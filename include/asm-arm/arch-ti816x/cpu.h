@@ -239,7 +239,7 @@ Fixed at 32kHz
  * lines a12 - a26
  */
 #define CFG_MOD_BASE 0x48140000
-#define SC1_VPPEN	(CFG_MOD_BASE + 0xb24)	/* a12 */
+#define TIM7_OUT	(CFG_MOD_BASE + 0xb34)	/* a12 */
 #define SC1_DATA	(CFG_MOD_BASE + 0xb18)	/* a13 */
 #define SC1_CLK		(CFG_MOD_BASE + 0xb14)	/* a14 */
 #define SC1_RST		(CFG_MOD_BASE + 0xb10)  /* a15 */
@@ -251,8 +251,6 @@ Fixed at 32kHz
 #define SC1_VCCEN	(CFG_MOD_BASE + 0xb20)  /* a21 */
 #define SC0_RST		(CFG_MOD_BASE + 0xaf4)  /* a22 */
 #define SC0_VCCEN	(CFG_MOD_BASE + 0xb04)  /* a23 */
-#define SC0_VPPEN	(CFG_MOD_BASE + 0xb08)  /* a24 */
-#define SC0_DATA	(CFG_MOD_BASE + 0xafc)  /* a25 */
-#define SC0_CLK		(CFG_MOD_BASE + 0xaf8)	/* a26 */
+#define TIM6_OUT	(CFG_MOD_BASE + 0xb30)  /* a24 */
 
 #endif
