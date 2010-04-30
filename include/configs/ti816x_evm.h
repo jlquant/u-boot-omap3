@@ -50,6 +50,7 @@
 #define CONFIG_NOETH
 #define CONFIG_L2_OFF			/* Avoid (OMAP3) secure mode stuff */
 
+
 #ifdef CONFIG_NOR_BOOT
 	#define CONFIG_SYS_FLASH_CFI
 	#define CONFIG_MTD_DEVICE
@@ -60,9 +61,10 @@
 	#define CONFIG_ENV_IS_IN_FLASH		1
 	#define CONFIG_SYS_FLASH_BASE		(0x00000000)	
 	#define CONFIG_SYS_MONITOR_BASE		CONFIG_SYS_FLASH_BASE  
-	#define CONFIG_SYS_ENV_SECT_SIZE	(128 * 1024)
-	#define CONFIG_ENV_OFFSET       	(0x3FE0000)
-	#define CONFIG_ENV_ADDR         	(0x3FE0000)
+	#define NOR_SECT_SIZE				(128 * 1024)
+	#define CONFIG_SYS_ENV_SECT_SIZE	(NOR_SECT_SIZE)
+	#define CONFIG_ENV_OFFSET			(5 * SPN_SECT_SIZE)
+	#define CONFIG_ENV_ADDR				(CONFIG_ENV_OFFSET)
 #else
 	#define CONFIG_SYS_MONITOR_BASE	    	TEXT_BASE
 #endif
