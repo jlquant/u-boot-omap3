@@ -209,4 +209,50 @@ Fixed at 32kHz
 #define CM_DEFAULT_DMM_CLKCTRL 		(TI816X_PRCM_BASE + 0x0528)
 #define CM_DEFAULT_FW_CLKCTRL 		(TI816X_PRCM_BASE + 0x052C)
 
+/* ALWON PRCM */
+#define CM_PRCM_BASE				(0x48180000)
+#define CM_ALWON_OCMC_0_CLKSTCTRL	(CM_PRCM_BASE + 0x1414)
+#define CM_ALWON_OCMC_1_CLKSTCTRL	(CM_PRCM_BASE + 0x1418)
+#define CM_ALWON_OCMC_0_CLKCTRL		(CM_PRCM_BASE + 0x15B4)
+#define CM_ALWON_OCMC_1_CLKCTRL		(CM_PRCM_BASE + 0x15B8)
+#define CM_ALWON_GPMC_CLKCTRL		(CM_PRCM_BASE + 0x15D0)
+
+/* OCMC */
+#define SRAM0_START				(0x40300000)
+#define SRAM0_SIZE				(0x40000)
+#define SRAM_GPMC_STACK_SIZE	(0x40)
+
+/* GPMC MMR 
+ */
+#define GPMC_BASE				(0x50000000)
+#define GPMC_CONFIG_CS0			(0x60)
+#define GPMC_CONFIG_CS0_BASE	(GPMC_BASE + GPMC_CONFIG_CS0)
+#define GPMC_CONFIG1			(0x00)
+#define GPMC_CONFIG2			(0x04)
+#define GPMC_CONFIG3			(0x08)
+#define GPMC_CONFIG4			(0x0C)
+#define GPMC_CONFIG5			(0x10)
+#define GPMC_CONFIG6			(0x14)
+#define GPMC_CONFIG7			(0x18)
+
+/* PAD configuration register offsets and values for gpmc address
+ * lines a12 - a26
+ */
+#define CFG_MOD_BASE 0x48140000
+#define SC1_VPPEN	(CFG_MOD_BASE + 0xb24)	/* a12 */
+#define SC1_DATA	(CFG_MOD_BASE + 0xb18)	/* a13 */
+#define SC1_CLK		(CFG_MOD_BASE + 0xb14)	/* a14 */
+#define SC1_RST		(CFG_MOD_BASE + 0xb10)  /* a15 */
+#define SC1_DET		(CFG_MOD_BASE + 0xb0c)  /* a16 */
+#define UART0_RIN	(CFG_MOD_BASE + 0xacc)  /* a17 */
+#define UART0_DCDN	(CFG_MOD_BASE + 0xac8)  /* a18 */
+#define UART0_DSRN	(CFG_MOD_BASE + 0xac4)  /* a19 */
+#define UART0_DTRN	(CFG_MOD_BASE + 0xac0)  /* a20 */
+#define SC1_VCCEN	(CFG_MOD_BASE + 0xb20)  /* a21 */
+#define SC0_RST		(CFG_MOD_BASE + 0xaf4)  /* a22 */
+#define SC0_VCCEN	(CFG_MOD_BASE + 0xb04)  /* a23 */
+#define SC0_VPPEN	(CFG_MOD_BASE + 0xb08)  /* a24 */
+#define SC0_DATA	(CFG_MOD_BASE + 0xafc)  /* a25 */
+#define SC0_CLK		(CFG_MOD_BASE + 0xaf8)	/* a26 */
+
 #endif

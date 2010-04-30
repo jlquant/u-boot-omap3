@@ -29,25 +29,6 @@
 _TEXT_BASE:
 	.word	TEXT_BASE	/* Load address (RAM) */
 
-/* TODO: These set of defines should be moved to some other file */
-#define SRAM0_START 			0x40300000
-#define SRAM0_SIZE			0x40000
-#define SRAM_GPMC_STACK_SIZE		0x40
-
-/* GPMC MMR 
- * TODO: Should we move this to someother file?
- */
-#define GPMC_BASE			0x50000000
-#define GPMC_CONFIG_CS0			0x60
-#define GPMC_CONFIG_CS0_BASE	(GPMC_BASE + GPMC_CONFIG_CS0)
-#define GPMC_CONFIG1			0x00
-#define GPMC_CONFIG2			0x04
-#define GPMC_CONFIG3			0x08
-#define GPMC_CONFIG4			0x0C
-#define GPMC_CONFIG5			0x10
-#define GPMC_CONFIG6			0x14
-#define GPMC_CONFIG7			0x18
-
 /* GPMC CFG values for Spansion S29GL512P11TFI010 & S29GL512N11TFI010
  * This should work for most NOR, else we might have to move
  * these defines to evm.h
@@ -61,25 +42,6 @@ _TEXT_BASE:
 #define SPNOR_GPMC_CONFIG6	0x0f030080
 #define SPNOR_GPMC_CONFIG7	0x00000C00
 
-/* PAD configuration register offsets and values for gpmc address
- * lines a12 - a26
- */
-#define CFG_MOD_BASE 0x48140000
-#define SC1_VPPEN	(CFG_MOD_BASE + 0xb24)	/* a12 */
-#define SC1_DATA	(CFG_MOD_BASE + 0xb18)	/* a13 */
-#define SC1_CLK		(CFG_MOD_BASE + 0xb14)	/* a14 */
-#define SC1_RST		(CFG_MOD_BASE + 0xb10)  /* a15 */
-#define SC1_DET		(CFG_MOD_BASE + 0xb0c)  /* a16 */
-#define UART0_RIN	(CFG_MOD_BASE + 0xacc)  /* a17 */
-#define UART0_DCDN	(CFG_MOD_BASE + 0xac8)  /* a18 */
-#define UART0_DSRN	(CFG_MOD_BASE + 0xac4)  /* a19 */
-#define UART0_DTRN	(CFG_MOD_BASE + 0xac0)  /* a20 */
-#define SC1_VCCEN	(CFG_MOD_BASE + 0xb20)  /* a21 */
-#define SC0_RST		(CFG_MOD_BASE + 0xaf4)  /* a22 */
-#define SC0_VCCEN	(CFG_MOD_BASE + 0xb04)  /* a23 */
-#define SC0_VPPEN	(CFG_MOD_BASE + 0xb08)  /* a24 */
-#define SC0_DATA	(CFG_MOD_BASE + 0xafc)  /* a25 */
-#define SC0_CLK		(CFG_MOD_BASE + 0xaf8)	/* a26 */
 /* pad values */
 #define GPMC_PAD_DEF	(0x00000008)
 #define SC1_VPPEN_VAL	(GPMC_PAD_DEF | 0x1)  /* a12 */
@@ -108,7 +70,7 @@ _TEXT_BASE:
  cpy_nor_gpmc_code:
 	/* Copy NOR GPMC init code into SRAM */
 	adr r0, nor_gpmc_init     /* get addr of nor gpmc init code */
-	mov r2, #640	/* r2 <- copy size(% by 32 bytes:r3-r10 (8) regs used) */
+	mov r2, #768	/* r2 <- copy size(% by 32 bytes:r3-r10 (8) regs used) */
 	ldr r1, sram0_start     /* r1 <- dest address (passed in) */
 	add r2, r2, r0      /* r2 <- source end address */
 next2:
@@ -130,18 +92,28 @@ next2:
 	stmfd sp!, {r0 - r7}
 	stmfd sp!, {ip}
 
-	/***** GPMC CS0 init ******/
+	/****** GPMC out of reset ******/
+	ldr r5, cm_alwon_gpm_clkctrl_addr
+	mov r2, #0x2
+	str r2, [r5]
+	/* wait for gpmc enable to settle */
+ gpmc_next_wait0:
+	ldr r2, [r5]
+	ands r2, r2, #0x00030000	
+	cmp r2, #0
+	bne gpmc_next_wait0
 
+	/***** GPMC CS0 init ******/
 	/* disable CS0 */
 	ldr r5, gpmc_cfg7_addr
 	mov r2, #0
 	str r2, [r5]
 	/* wait for disable to settle */	
 	mov r3, #0x900
-_gpmc_next_wait1:
+ gpmc_next_wait1:
 	sub r3, r3, #1
 	cmp r3, #1
-	bne _gpmc_next_wait1
+	bne gpmc_next_wait1
 
 	/* set gpmc config registers */
 	ldr r5, gpmc_cfg1_addr
@@ -219,10 +191,10 @@ _gpmc_next_wait1:
 	str r2, [r5]
 	/* wait for enable to settle */	
 	mov r3, #0x900
-_gpmc_next_wait2:
+ gpmc_next_wait2:
 	sub r3, r3, #1
 	cmp r3, #1
-	bne _gpmc_next_wait2
+	bne gpmc_next_wait2
 
 	ldmfd sp!, {ip}
 	ldmfd sp!, {r0 - r7}
@@ -231,6 +203,8 @@ _gpmc_next_wait2:
 
 /* these constants need to be close for PIC code */
 /* The Nor has to be in the Flash Base CS0 for this condition to happen */
+cm_alwon_gpm_clkctrl_addr:
+	.word CM_ALWON_GPMC_CLKCTRL
 sram0_start:
 	.word SRAM0_START
 SRAM_STACK_GPMC:
@@ -331,16 +305,11 @@ sc0_clk_val:
 
 /*****************************************************************************
  * lowlevel_init: - Platform low level init.
- *
+ * Corrupted Register : r0, r1, r2, r3, r4, r5
  ****************************************************************************/
 .globl lowlevel_init
  lowlevel_init:
 
-	mov r0, sp
-	ldr sp, SRAM_STACK
-	stmfd sp!, {r0 - r6}
-	stmfd sp!, {ip,lr}
-	
 	/* check if we are already running from RAM */
 	ldr r2, _lowlevel_init
 	ldr r3, _TEXT_BASE
@@ -354,6 +323,55 @@ mark1:
 	cmp r0, r1          /* don't reloc during debug */
 	bne gpmc_init_ret
 
+	/**** enable ocmc 0 ****/
+	/* CLKSTCTRL */
+	ldr r5, cm_alwon_ocmc_0_clkstctrl_addr
+	mov r2, #0x2
+	str r2, [r5]
+	/* wait for gpmc enable to settle */
+ ocmc0_wait0:
+	ldr r2, [r5]
+	ands r2, r2, #0x00000010	
+	cmp r2, #1
+	bne ocmc0_wait0
+	/* CLKCTRL */
+	ldr r5, cm_alwon_ocmc_0_clkctrl_addr
+	mov r2, #0x2
+	str r2, [r5]
+	/* wait for gpmc enable to settle */
+ ocmc0_wait1:
+	ldr r2, [r5]
+	ands r2, r2, #0x00030000	
+	cmp r2, #0
+	bne ocmc0_wait1
+
+	/**** enable ocmc 1 ****/
+	/* CLKSTCTRL */
+	ldr r5, cm_alwon_ocmc_1_clkstctrl_addr
+	mov r2, #0x2
+	str r2, [r5]
+	/* wait for gpmc enable to settle */
+ ocmc1_wait0:
+	ldr r2, [r5]
+	ands r2, r2, #0x00000010	
+	cmp r2, #1
+	bne ocmc1_wait0
+	/* CLKCTRL */
+	ldr r5, cm_alwon_ocmc_1_clkctrl_addr
+	mov r2, #0x2
+	str r2, [r5]
+	/* wait for gpmc enable to settle */
+ ocmc1_wait1:
+	ldr r2, [r5]
+	ands r2, r2, #0x00030000	
+	cmp r2, #0
+	bne ocmc1_wait1
+
+	/* init stack */
+	ldr sp, SRAM_STACK
+	stmfd sp!, {r0 - r6}
+	stmfd sp!, {ip,lr}
+	/* gpmc init */
 	bl  cpy_nor_gpmc_code /* copy nor gpmc init code to sram */
 	ldr r0, _gpmc_init_ret
 	mov lr, r0	 /* gpmc init code in sram should return to gpmc_init_ret */
@@ -367,12 +385,19 @@ gpmc_init_ret:
 	bl s_init
 	ldmfd sp!, {ip,lr}
 	ldmfd sp!, {r0 - r6}
-	mov sp, r0
 	/* back to arch calling code */
 	mov pc, lr
 	/* the literal pools origin */
 	.ltorg
 
+cm_alwon_ocmc_0_clkstctrl_addr:
+	.word CM_ALWON_OCMC_0_CLKSTCTRL
+cm_alwon_ocmc_0_clkctrl_addr:
+	.word CM_ALWON_OCMC_0_CLKCTRL
+cm_alwon_ocmc_1_clkstctrl_addr:
+	.word CM_ALWON_OCMC_1_CLKSTCTRL
+cm_alwon_ocmc_1_clkctrl_addr:
+	.word CM_ALWON_OCMC_1_CLKCTRL
 _mark1:
 	.word mark1
 _lowlevel_init:
