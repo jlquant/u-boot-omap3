@@ -552,6 +552,39 @@ void s_init(void)
  ********************************************************/
 int misc_init_r (void)
 {
+	#ifdef CONFIG_TI816X_ASCIIART
+	int i = 0, j = 0;
+	char ti816x[23][79] = {
+":,;;:;:;;;;;;;;r;;:,;;:;:;;;;;;;;:,;;:;:;;;;;;;;:,;;:;:;;;;;;;;:;;;;;;;;:,;;:;:",
+";,;:::;;;;r;;;rssiSiS552X5252525259GX2X9hX9X9XX2325S55252i5:,;;:;:;;;;;;;;:,;;:",
+";:;;;;;;;rrssSsS52S22h52299GGAAMHMM#BBH#B#HMM#HMBA&&XX2255S2S5Si:,;;:;:;;;;;;;;",
+";:;;r;;rsrrriiXS5S329&A&MH#BMB#A&9XXA252GXiSXX39AAMMMBB&G22S5i2SSiiiisi:,;;:;:;",
+";;;;;r;rr2iisiih393HB#B#AA99i22irrrX3X52AGsisss2Xii2299HBMA&X2S5S5iSiisSsi:,;;:",
+"r:r;rrsrsihXSi2&##MHB&Ahh3AGHGA9G9h&#H##@@@##MAMMXXX9SSS29&&HGGX2i5iisiiisisi:,",
+";;rrrrsSiiiA&ABH&A9GAGhAhBAMHA9HM@@@@@@@@@@@@@@@@@@@HHhAh2S2SX9&Gh22SSiisiiisii",
+"r:rrssisiS2XM##&h3AGAX&3GG3Ssr5H@M#HM2; ;2X&&&MHMB###GBB#B&XXSSs529XX55iSsisisi",
+"r;rsrisSi2XHAhX99A3XXG&&XS;:,rH#HGhAS   :r :3rs2XBM@@A552&&AHA2XiisSS252SSsisSs",
+"r;issi5S22&&3iSSX292&hXsr;;:;h@&G339&S9@@3;2@MA&9&HB##Xris29ABMAAX2ir;rsSi5iss5",
+"rrsSi2XhG&9GXh399&X99i;;;;;;r#H&293H9X#@@@@@@@B&9GhAH@XrrsrsiXABHB&HG2rr;rrSiSi",
+";:rsisS599&AA9XG&3A35r;:::;,;BMh&&2iX5A@@@@@@@&392X5GB2;;;r;iSX393A##A&Xi:::rsi",
+";:rss552222X553&XHMhir;;::,:,h#HhGSXhG3#@@@@#AXXS2XAHA;::;;;;ss55XShBA3239r:,;;",
+"r;ii2S5SSi2i53hirsh2srr::,,,,;MMXX359&Ah3h&Si59SX99A#i:,::::;;sri2,.2r;:SGAr;,:",
+";:;rrrrssiriXGSi::shs;;;,,,:,,rBBA9h5s5h5iS5isi2SAHB5:,,,:::;rrs5&SrisSX5Srrr:,",
+";,r;;;;rsriSSrrrr;;5Xrr;;,:,,.,;9AA2SsisS5323XXXG9&i:.,,::;;r;;;srrrrrr;;:;::::",
+":,;r;r;rrissrrr;:;::;s;;;;,:,,..,r293h222hXXAAGGGX;:,,,:,:,::;:;::,:,,,,...,,,,",
+";,;;;;rrrrrrrrirr;,.,,:::::::,,,,.,;SX&ABAB2hhXir:, .,,.,,:,,,,..,,,..,..,,,..:",
+":.:;:;;;:;;;;r;rrs;:.. ,,:::::,:,:,,.::rrsrr;;,,   ....,..,....,,,,,,,...,.,,:,",
+":.:::,::::::;;r;rrr;:.......,.,.,,:::,,............... ,::.,,,,:,::,,:,:,,,:,;:",
+",.::,:,,,,,;;;;;;;;r;;::,..............................;;;:;::::,:::::::,:,:,,,",
+": ,,:,,,,,:::::,,,:;rrr;;:;,,,,,,,::,.,.:.,.,;s,:;;;;:;:;;;;;::::,:::,:::,:,:,:",
+",.,,,,,,,:::,,.,,;;;;::;rsrr;;;ssSrrisrr;;r:::;r::::,;;;:;:::;:;::,:,,,:,:,,,,,"};
+	for (i = 0; i<23; i++)
+	{
+		for(j = 0; j<79; j++)
+			printf("%c",ti816x[i][j]);
+			printf("\n");
+	}
+	#endif
 	return 0;
 }
 
