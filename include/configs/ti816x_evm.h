@@ -47,7 +47,6 @@
 	#define CONFIG_SKIP_RELOCATE_UBOOT
 #endif
 
-#define CONFIG_NOETH
 #define CONFIG_L2_OFF			/* Avoid (OMAP3) secure mode stuff */
 
 #ifndef CONFIG_NOR_BOOT
@@ -86,6 +85,9 @@
 
 /* U-Boot default commands */
 #include <config_cmd_default.h>
+
+#define CONFIG_CMD_DHCP
+#define CONFIG_CMD_PING
 
 #ifdef CONFIG_NOETH
 #undef CONFIG_CMD_NET
@@ -189,4 +191,14 @@ lpj=50000 mem=248M earlyprintk"
 
 #define CONFIG_SYS_HZ		1000        /* 1ms clock */
 
+#if defined(CONFIG_CMD_NET)
+#define CONFIG_DRIVER_TI_EMAC
+#define CONFIG_MII
+#define CONFIG_BOOTP_DEFAULT
+#define CONFIG_BOOTP_DNS
+#define CONFIG_BOOTP_DNS2
+#define CONFIG_BOOTP_SEND_HOSTNAME
+#define CONFIG_NET_RETRY_COUNT 10
+#define CONFIG_NET_MULTI
+#endif
 #endif	  /* ! __CONFIG_TI816X_EVM_H */
