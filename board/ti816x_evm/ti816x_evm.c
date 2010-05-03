@@ -61,6 +61,7 @@ void udelay (unsigned long usecs)
 /*
  * Basic board specific setup
  */
+#ifndef CONFIG_TI816X_SIM
 int board_init(void)
 {
 	u32 regVal;
@@ -125,7 +126,7 @@ int board_init(void)
 
 	regVal = __raw_readl(UART_LCR);
 	__raw_writel((regVal & 0xF7), UART_LCR);
-	
+
 	regVal = __raw_readl(UART_LCR);
 	__raw_writel((regVal & 0xFB), UART_LCR);
 
@@ -143,11 +144,22 @@ int board_init(void)
 
 	gd->bd->bi_arch_number = MACH_TYPE_TI816X;
 
-	/* adress of boot parameters */
+	/* address of boot parameters */
 	gd->bd->bi_boot_params = PHYS_DRAM_1 + 0x100;
 
 	return 0;
 }
+#else
+int board_init(void)
+{
+	gd->bd->bi_arch_number = MACH_TYPE_TI816X;
+
+	/* address of boot parameters */
+	gd->bd->bi_boot_params = PHYS_DRAM_1 + 0x100;
+
+	return 0;
+}
+#endif
 
 /*
  * Configure DRAM banks
@@ -382,7 +394,7 @@ static void ddr_pll_init_ti816x(u32 sil_index, u32 clk_index)
 
 	/* Getting the base address to DDR DPLL param table*/
 	ptr = (struct dpll_per_36x_param *)get_ddr_dpll_param();
- 	
+
 	/* Nothing to done right now as the registers have been pre-loaded @ reset and
 	 * by the ROM code also (if applicable). Retaining this function for future
 	 */
@@ -417,7 +429,7 @@ static void audio_pll_init_ti816x(u32 sil_index, u32 clk_index)
 static void ivahd_standby()
 {
 	ivahd_standby_param *ptr;
-	
+
 	ptr = (ivahd_standby_param *)get_iva_param();
 	/*
 	ptr->base_addr = IVAHD0_CONFIG_REG_BASE;
@@ -426,7 +438,7 @@ static void ivahd_standby()
 	ptr->icont2_itcm_base_addr = IVAHD0_ICONT2_ITCM_BASE;
 	*/
 	ivahd_standby_steps(ptr);
-	
+
 	ptr++;
 	/*
 	ptr->base_addr = IVAHD1_CONFIG_REG_BASE;
@@ -435,7 +447,7 @@ static void ivahd_standby()
 	ptr->icont2_itcm_base_addr = IVAHD1_ICONT2_ITCM_BASE;
 	*/
 	ivahd_standby_steps(ptr);
-	
+
 	ptr++;
 	/*
 	ptr->base_addr = IVAHD2_CONFIG_REG_BASE;
@@ -467,7 +479,7 @@ void ivahd_standby_steps(ivahd_standby_param *ivahd_param)
 		};
 
 	unsigned int length = 0;
-	
+
 	volatile unsigned int *ivahd_config_base_addr = ivahd_param->base_addr;
 	volatile unsigned int *prcm_ivahd_icont_rst_cntl_addr = ivahd_param->rst_cntl_addr;
 	volatile unsigned int *icont1_itcm_base_addr = ivahd_param->icont1_itcm_base_addr;
@@ -480,14 +492,14 @@ void ivahd_standby_steps(ivahd_standby_param *ivahd_param)
 	/* Set bit1 to 1 to put ICONT2 in reset state                               */
 	/*--------------------------------------------------------------------------*/
 	*prcm_ivahd_icont_rst_cntl_addr |=  0x00000003;
-	
+
 	/*--------------------------------------------------------------------------*/
 	/* Copy boot code to ICONT1 & INCOT2 memory                                 */
 	/*--------------------------------------------------------------------------*/
 	for (length = 0; length < IVAHD_LENGTH_BOOT_CODE; length++) {
 	*icont1_itcm_base_addr++ = IVAHD_memory_wfi[length];
 	*icont2_itcm_base_addr++ = IVAHD_memory_wfi[length];
-	} 
+	}
 	/*--------------------------------------------------------------------------*/
 	/* Take IVAHD out of reset mode.                                            */
 	/* Set bit0 to 0 to take ICONT1 out of reset state                          */
@@ -510,7 +522,7 @@ void prcm_init(void)
 		ddr_pll_init_ti816x(clk_index, sil_index);
 		video_pll_init_ti816x(clk_index, sil_index);
 		audio_pll_init_ti816x(clk_index, sil_index);
-	} 
+	}
 
 	delay(5000);
 
@@ -567,13 +579,13 @@ void watchdog_init(void)
 	 * either taken care of by ROM (HS/EMU) or not accessible (GP).
 	 * We need to take care of WD1-MPU or take a PRCM reset.
 	 */
-	
-	/* TODO: VB__Skipping this section for now 
+
+	/* TODO: VB__Skipping this section for now
 	sr32(CM_FCLKEN_WKUP, 5, 1, 1);
 	sr32(CM_ICLKEN_WKUP, 5, 1, 1);
 	wait_on_value(BIT5, 0x20, CM_IDLEST_WKUP, 5);
 	*/ /* some issue here */
-	
+
 	/*
 	__raw_writel(WD_UNLOCK1, WD1_BASE + WSPR);
 	wait_for_command_complete(WD1_BASE);
@@ -592,7 +604,7 @@ void per_clocks_enable(void)
 	sr32(TI816X_PRCM_BASE + CM_ALWON_UART_0_CLKCTRL, 1, 2, 0x2);
 	*/
 	__raw_writel(0x2, CM_ALWON_L3_SLOW_CLKSTCTRL);
-	
+
 	__raw_writel(0x2, CM_ALWON_TIMER_1_CLKCTRL);
 	while(__raw_readl(CM_ALWON_TIMER_1_CLKCTRL) != 0x2);
 

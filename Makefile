@@ -3185,7 +3185,7 @@ ti816x_evm_config:	unconfig
 	{ \
 		echo "#define CONFIG_TI816X"    >>$(obj)include/config.h ; \
 		echo "#define CONFIG_TI816X_EVM"    >>$(obj)include/config.h ; \
-		echo "Setting up TI816X EVM Boot build for Cortex A8..." ; \
+		echo "Setting up TI816X EVM build for Cortex A8..." ; \
 	}
 	@$(MKCONFIG) -a ti816x_evm arm arm_cortexa8 ti816x_evm NULL ti816x
 

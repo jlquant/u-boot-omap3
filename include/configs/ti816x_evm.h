@@ -44,12 +44,15 @@
 #ifdef CONFIG_TI816X_SIM
 	#define CONFIG_SKIP_LOWLEVEL_INIT
 	#define CONFIG_NOFLASH
+	#define CONFIG_SKIP_RELOCATE_UBOOT
 #endif
-	
-#define CONFIG_SKIP_RELOCATE_UBOOT
+
 #define CONFIG_NOETH
 #define CONFIG_L2_OFF			/* Avoid (OMAP3) secure mode stuff */
 
+#ifndef CONFIG_NOR_BOOT
+	#define CONFIG_NOFLASH		/* Revisit: For boot modes without NOR */
+#endif
 
 #ifdef CONFIG_NOR_BOOT
 	#define CONFIG_SYS_FLASH_CFI
@@ -59,8 +62,8 @@
 	#define CONFIG_SYS_MAX_FLASH_SECT	512
 	#define CONFIG_SYS_MAX_FLASH_BANKS	1
 	#define CONFIG_ENV_IS_IN_FLASH		1
-	#define CONFIG_SYS_FLASH_BASE		(0x00000000)	
-	#define CONFIG_SYS_MONITOR_BASE		CONFIG_SYS_FLASH_BASE  
+	#define CONFIG_SYS_FLASH_BASE		(0x00000000)
+	#define CONFIG_SYS_MONITOR_BASE		CONFIG_SYS_FLASH_BASE
 	#define NOR_SECT_SIZE				(128 * 1024)
 	#define CONFIG_SYS_ENV_SECT_SIZE	(NOR_SECT_SIZE)
 	#define CONFIG_ENV_OFFSET			(5 * NOR_SECT_SIZE)
@@ -97,9 +100,8 @@
 
 #define CONFIG_BOOTDELAY        	3	/* set -1 for no autoboot */
 #define CONFIG_VERSION_VARIABLE
-#define CONFIG_BOOTARGS         "console=ttyS0,115200n8 \
-				root=/dev/SimBlkDev0 lpj=50000 mem=248M \
-				earlyprintk"
+#define CONFIG_BOOTARGS         "console=ttyS0,115200n8 root=/dev/SimBlkDev0 \
+lpj=50000 mem=248M earlyprintk"
 
 #define CONFIG_BOOTCOMMAND	"source 0x80000100; bootm 0x80700000"
 

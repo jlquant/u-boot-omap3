@@ -34,7 +34,7 @@ _TEXT_BASE:
  * these defines to evm.h
  * Values used here are for nominal speed, tweak it to improve performance
  */
-#define SPNOR_GPMC_CONFIG1	0x00001010	
+#define SPNOR_GPMC_CONFIG1	0x00001010
 #define SPNOR_GPMC_CONFIG2	0x00101080
 #define SPNOR_GPMC_CONFIG3	0x00020201
 #define SPNOR_GPMC_CONFIG4	0x0f031003
@@ -46,12 +46,12 @@ _TEXT_BASE:
 #define GPMC_PAD_DEF_VAL	(0x00000009)
 
 /**************************************************************************
- * cpy_nor_gpmc_code: relocates nor gpmc init code into ocmc0 where its 
+ * cpy_nor_gpmc_code: relocates nor gpmc init code into ocmc0 where its
  * safer to execute
  * R2 is loaded wtih size of data to be copied, this should be calculated
  * if we are modifying nor_gpmc_init()
  *************************************************************************/
-.global cpy_nor_gpmc_code 
+.global cpy_nor_gpmc_code
  cpy_nor_gpmc_code:
 	/* Copy NOR GPMC init code into SRAM */
 	adr r0, nor_gpmc_init     /* get addr of nor gpmc init code */
@@ -70,7 +70,7 @@ next2:
  *
  *  R0 - used for saving SP, hence do not use it anywhere
  ****************************************************************************/
-.global nor_gpmc_init 
+.global nor_gpmc_init
  nor_gpmc_init:
 	mov r0, sp
 	ldr sp, SRAM_STACK_GPMC
@@ -84,7 +84,7 @@ next2:
 	/* wait for gpmc enable to settle */
  gpmc_next_wait0:
 	ldr r2, [r5]
-	ands r2, r2, #0x00030000	
+	ands r2, r2, #0x00030000
 	cmp r2, #0
 	bne gpmc_next_wait0
 
@@ -93,7 +93,7 @@ next2:
 	ldr r5, gpmc_cfg7_addr
 	mov r2, #0
 	str r2, [r5]
-	/* wait for disable to settle */	
+	/* wait for disable to settle */
 	mov r3, #0x900
  gpmc_next_wait1:
 	sub r3, r3, #1
@@ -123,8 +123,8 @@ next2:
 	ldr r2, gpmc_cfg7_val
 	str r2, [r5]
 
-	/* do pin muxing */	
-	ldr r2, gpmc_pad_def_val 
+	/* do pin muxing */
+	ldr r2, gpmc_pad_def_val
 	ldr r5, tim7_out_addr
 	str r2, [r5]
 	ldr r5, sc1_data_addr
@@ -151,13 +151,13 @@ next2:
 	str r2, [r5]
 	ldr r5, tim6_out_addr
 	str r2, [r5]
-	
+
 	/* enable CS0 */
 	ldr r5, gpmc_cfg7_addr
 	ldr r2, gpmc_cfg7_val
 	orr r2, r2, #0x40
 	str r2, [r5]
-	/* wait for enable to settle */	
+	/* wait for enable to settle */
 	mov r3, #0x900
  gpmc_next_wait2:
 	sub r3, r3, #1
@@ -254,7 +254,7 @@ gpmc_pad_def_val:
 mark1:
 	ldr r5, _mark1
 	sub r5, r5, r2 /* bytes between mark1 and lowlevel_init */
-	sub r0, r0, r5 /* r0 <- _start w.r.t current place of execution */  
+	sub r0, r0, r5 /* r0 <- _start w.r.t current place of execution */
 	ldr r1, _TEXT_BASE   /* test if we run from flash or RAM */
 	cmp r0, r1          /* don't reloc during debug */
 	bne gpmc_init_ret
@@ -267,7 +267,7 @@ mark1:
 	/* wait for gpmc enable to settle */
  ocmc0_wait0:
 	ldr r2, [r5]
-	ands r2, r2, #0x00000010	
+	ands r2, r2, #0x00000010
 	cmp r2, #1
 	bne ocmc0_wait0
 	/* CLKCTRL */
@@ -277,7 +277,7 @@ mark1:
 	/* wait for gpmc enable to settle */
  ocmc0_wait1:
 	ldr r2, [r5]
-	ands r2, r2, #0x00030000	
+	ands r2, r2, #0x00030000
 	cmp r2, #0
 	bne ocmc0_wait1
 
@@ -289,7 +289,7 @@ mark1:
 	/* wait for gpmc enable to settle */
  ocmc1_wait0:
 	ldr r2, [r5]
-	ands r2, r2, #0x00000010	
+	ands r2, r2, #0x00000010
 	cmp r2, #1
 	bne ocmc1_wait0
 	/* CLKCTRL */
@@ -299,7 +299,7 @@ mark1:
 	/* wait for gpmc enable to settle */
  ocmc1_wait1:
 	ldr r2, [r5]
-	ands r2, r2, #0x00030000	
+	ands r2, r2, #0x00030000
 	cmp r2, #0
 	bne ocmc1_wait1
 
@@ -312,7 +312,7 @@ mark1:
 	ldr r0, _gpmc_init_ret
 	mov lr, r0	 /* gpmc init code in sram should return to gpmc_init_ret */
 	ldr r0, sram0_start
-	mov pc, r0	/* transfer ctrl to nor_gpmc_init() in sram */ 
+	mov pc, r0	/* transfer ctrl to nor_gpmc_init() in sram */
 
 gpmc_init_ret:
 	ldr r5, sysclk10_clksel_addr	/* Fix ROM code bug */
@@ -350,7 +350,7 @@ sysclk10_clksel_addr:
 sysclk10_clksel_val:
 	.word DDR_SYSCLK10_DIV
 
-	
+
 .global invalidate_dcache
 .global l2_cache_enable
 .global l2_cache_disable
@@ -455,16 +455,16 @@ l2_cache_disable:
 	mcr	15, 0, r3, cr1, cr0, 1
 	pop	{r1, r2, r3, pc}
 
-		
+
 /* DPLL(1-4) PARAM TABLES */
 
 /*
  * The first row in the table is the N,P values for the VCO
- *  
+ *
  * The other rows have INT_FREQ, FRAC_FREQ, M_POST_DIV values.
- * 
+ *
  * The fields are defined according to dpll_param struct (clock.c).
- * 
+ *
  * The values are defined for all possible pll block outputs. One line for each DPLL o/p
  *
  * The PRCM dividers are present in a separate table
