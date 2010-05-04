@@ -161,6 +161,15 @@ int board_init(void)
 }
 #endif
 
+#ifdef CONFIG_DRIVER_TI_EMAC
+int board_eth_init(bd_t *bis)
+{
+	/* TODO : read MAC address from EFUSE */
+	davinci_emac_initialize();
+	return 0;
+}
+#endif
+
 /*
  * Configure DRAM banks
  *
