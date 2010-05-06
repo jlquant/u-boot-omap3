@@ -42,6 +42,11 @@ typedef struct {
 	unsigned int icont2_itcm_base_addr;
 } ivahd_standby_param;
 
+extern ivahd_standby_param *get_iva_param(void);
+
+static void ivahd_standby();
+static void ivahd_clk_enable();
+void ivahd_standby_steps(ivahd_standby_param *ivahd_param);
 /*******************************************************
  * Routine: delay
  * Description: spinning delay to use before udelay works
@@ -434,38 +439,80 @@ static void audio_pll_init_ti816x(u32 sil_index, u32 clk_index)
 	 */
 }
 
+static void ivahd_clk_enable()
+{
+	__raw_writel(0x2, CM_IVAHD0_CLKSTCTRL);
+	while(__raw_readl(PM_IVAHD0_PWRSTST)!= 0x37);
+
+	__raw_writel(0x2, CM_IVAHD0_IVAHD_CLKCTRL);
+	__raw_writel(0x2, CM_IVAHD0_SL2_CLKCTRL);
+
+	while((__raw_readl(CM_IVAHD0_CLKSTCTRL)&0x100) != 0x100);
+
+	__raw_writel(0x3, RM_IVAHD0_RSTCTRL);
+
+	while(__raw_readl(RM_IVAHD0_RSTST)!=4);
+
+	__raw_writel(0xEAFFFFFE, 0x58088000);
+	__raw_writel(0xEAFFFFFE, 0x58098000);
+
+	__raw_writel(0, RM_IVAHD0_RSTCTRL);
+	while(__raw_readl(RM_IVAHD0_RSTST)!=7);
+
+	/*
+	__raw_writel(0x2, CM_IVAHD1_CLKSTCTRL);
+	while(__raw_readl(PM_IVAHD1_PWRSTST)!= 0x37);
+
+	__raw_writel(0x2, CM_IVAHD1_IVAHD_CLKCTRL);
+	__raw_writel(0x2, CM_IVAHD1_SL2_CLKCTRL);
+
+	while((__raw_readl(CM_IVAHD1_CLKSTCTRL)&0x100) != 0x100);
+
+	__raw_writel(0x3, RM_IVAHD1_RSTCTRL);
+
+	while(__raw_readl(RM_IVAHD1_RSTST)!=4);
+
+	__raw_writel(0xEAFFFFFE, 0x5A088000);
+	__raw_writel(0xEAFFFFFE, 0x5A098000);
+
+	__raw_writel(0, RM_IVAHD1_RSTCTRL);
+	while(__raw_readl(RM_IVAHD1_RSTST)!=7);
+
+
+	__raw_writel(0x2, CM_IVAHD2_CLKSTCTRL);
+	while(__raw_readl(PM_IVAHD2_PWRSTST)!= 0x37);
+
+	__raw_writel(0x2, CM_IVAHD2_IVAHD_CLKCTRL);
+	__raw_writel(0x2, CM_IVAHD2_SL2_CLKCTRL);
+
+	while((__raw_readl(CM_IVAHD2_CLKSTCTRL)&0x100) != 0x100);
+
+	__raw_writel(0x3, RM_IVAHD2_RSTCTRL);
+
+	while(__raw_readl(RM_IVAHD2_RSTST)!=4);
+
+	__raw_writel(0xEAFFFFFE, 0x53088000);
+	__raw_writel(0xEAFFFFFE, 0x53098000);
+
+	__raw_writel(0, RM_IVAHD2_RSTCTRL);
+	while(__raw_readl(RM_IVAHD2_RSTST)!=7);
+	*/
+
+}
 /* Puts IVAHDs in standby state */
 static void ivahd_standby()
 {
 	ivahd_standby_param *ptr;
 
 	ptr = (ivahd_standby_param *)get_iva_param();
+	ivahd_standby_steps(ptr);
 	/*
-	ptr->base_addr = IVAHD0_CONFIG_REG_BASE;
-	ptr->rst_cntl_addr = PRCM_IVAHD0_ICONT_RST_CNTL_ADDR;
-	ptr->icont1_itcm_base_addr = IVAHD0_ICONT1_ITCM_BASE;
-	ptr->icont2_itcm_base_addr = IVAHD0_ICONT2_ITCM_BASE;
-	*/
+	ptr++;
 	ivahd_standby_steps(ptr);
 
 	ptr++;
-	/*
-	ptr->base_addr = IVAHD1_CONFIG_REG_BASE;
-	ptr->rst_cntl_addr = PRCM_IVAHD1_ICONT_RST_CNTL_ADDR;
-	ptr->icont1_itcm_base_addr = IVAHD1_ICONT1_ITCM_BASE;
-	ptr->icont2_itcm_base_addr = IVAHD1_ICONT2_ITCM_BASE;
-	*/
 	ivahd_standby_steps(ptr);
-
-	ptr++;
-	/*
-	ptr->base_addr = IVAHD2_CONFIG_REG_BASE;
-	ptr->rst_cntl_addr = PRCM_IVAHD2_ICONT_RST_CNTL_ADDR;
-	ptr->icont1_itcm_base_addr = IVAHD2_ICONT1_ITCM_BASE;
-	ptr->icont2_itcm_base_addr = IVAHD2_ICONT2_ITCM_BASE;
 	*/
-	ivahd_standby_steps(ptr);
-
 }
 
 void ivahd_standby_steps(ivahd_standby_param *ivahd_param)
@@ -488,11 +535,8 @@ void ivahd_standby_steps(ivahd_standby_param *ivahd_param)
 		};
 
 	unsigned int length = 0;
+	u32 regVal;
 
-	volatile unsigned int *ivahd_config_base_addr = ivahd_param->base_addr;
-	volatile unsigned int *prcm_ivahd_icont_rst_cntl_addr = ivahd_param->rst_cntl_addr;
-	volatile unsigned int *icont1_itcm_base_addr = ivahd_param->icont1_itcm_base_addr;
-	volatile unsigned int *icont2_itcm_base_addr = ivahd_param->icont2_itcm_base_addr;
 	/*--------------------------------------------------------------------------*/
 	/* Set IVAHD in reset mode to enable downloading of boot code               */
 	/* Please note that this state can be SKIPPED if IVAHD is alredy in reset   */
@@ -500,14 +544,16 @@ void ivahd_standby_steps(ivahd_standby_param *ivahd_param)
 	/* Set bit0 to 1 to put ICONT1 in reset state                               */
 	/* Set bit1 to 1 to put ICONT2 in reset state                               */
 	/*--------------------------------------------------------------------------*/
-	*prcm_ivahd_icont_rst_cntl_addr |=  0x00000003;
-
+	regVal = __raw_readl(ivahd_param->rst_cntl_addr);
+	__raw_writel((regVal | 0x00000003), ivahd_param->rst_cntl_addr);
 	/*--------------------------------------------------------------------------*/
 	/* Copy boot code to ICONT1 & INCOT2 memory                                 */
 	/*--------------------------------------------------------------------------*/
 	for (length = 0; length < IVAHD_LENGTH_BOOT_CODE; length++) {
-	*icont1_itcm_base_addr++ = IVAHD_memory_wfi[length];
-	*icont2_itcm_base_addr++ = IVAHD_memory_wfi[length];
+	__raw_writel(IVAHD_memory_wfi[length],ivahd_param->icont1_itcm_base_addr);
+	__raw_writel(IVAHD_memory_wfi[length],ivahd_param->icont2_itcm_base_addr);
+	ivahd_param->icont1_itcm_base_addr+=4;
+	ivahd_param->icont2_itcm_base_addr+=4;
 	}
 	/*--------------------------------------------------------------------------*/
 	/* Take IVAHD out of reset mode.                                            */
@@ -515,7 +561,8 @@ void ivahd_standby_steps(ivahd_standby_param *ivahd_param)
 	/* Set bit1 to 0 to take ICONT1 out of reset state                          */
 	/* This implies ICONT inside IVAHD will exectute WFI                        */
 	/*--------------------------------------------------------------------------*/
-	*prcm_ivahd_icont_rst_cntl_addr &=  0xFFFFFFFC;
+	regVal = __raw_readl(ivahd_param->rst_cntl_addr);
+	__raw_writel((regVal & 0xFFFFFFFC), ivahd_param->rst_cntl_addr);
 }
 
 /******************************************************************************
@@ -535,7 +582,10 @@ void prcm_init(void)
 
 	delay(5000);
 
-	/* ivahd_standby(); */
+	/*
+	ivahd_clk_enable();
+	ivahd_standby();
+	*/
 }
 
 /**********************************************************
@@ -641,10 +691,6 @@ void watchdog_init(void)
  ******************************************************************/
 void per_clocks_enable(void)
 {
-	/*sr32(CM_ALWON_L3_SLOW_CLKSTCTRL, 1, 2, 0x2);
-	sr32(TI816X_PRCM_BASE + CM_ALWON_TIMER_1_CLKCTRL, 1, 2, 0x2);
-	sr32(TI816X_PRCM_BASE + CM_ALWON_UART_0_CLKCTRL, 1, 2, 0x2);
-	*/
 	__raw_writel(0x2, CM_ALWON_L3_SLOW_CLKSTCTRL);
 
 	__raw_writel(0x2, CM_ALWON_TIMER_1_CLKCTRL);
@@ -660,7 +706,6 @@ void per_clocks_enable(void)
 	while(__raw_readl(CM_ALWON_UART_0_CLKCTRL) != 0x2);
 
 	while((__raw_readl(CM_ALWON_L3_SLOW_CLKSTCTRL) & 0x2100) != 0x2100);
-	/*wait_on_value(0x2100, 0x2100, CM_ALWON_L3_SLOW_CLKSTCTRL, LDELAY);*/
 	/* delay(1000); */
 }
 
