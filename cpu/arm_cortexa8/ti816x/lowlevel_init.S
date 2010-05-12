@@ -241,23 +241,26 @@ gpmc_pad_def_val:
 
 /*****************************************************************************
  * lowlevel_init: - Platform low level init.
- * Corrupted Register : r0, r1, r2, r3, r4, r5
+ * Corrupted Register : r0, r1, r2, r3, r4, r5, r6
  ****************************************************************************/
 .globl lowlevel_init
  lowlevel_init:
 
+	mov r6, lr
 	/* check if we are already running from RAM */
 	ldr r2, _lowlevel_init
 	ldr r3, _TEXT_BASE
 	sub r4, r2, r3
 	sub r0, pc, r4
+	/* require dummy instr or subtract pc by 4 instead i'm doing stack init */
+	ldr sp, SRAM_STACK
 mark1:
 	ldr r5, _mark1
 	sub r5, r5, r2 /* bytes between mark1 and lowlevel_init */
 	sub r0, r0, r5 /* r0 <- _start w.r.t current place of execution */
 	ldr r1, _TEXT_BASE   /* test if we run from flash or RAM */
 	cmp r0, r1          /* don't reloc during debug */
-	bne gpmc_init_ret
+	beq gpmc_init_ret
 
 	/**** enable ocmc 0 ****/
 	/* CLKSTCTRL */
@@ -303,10 +306,6 @@ mark1:
 	cmp r2, #0
 	bne ocmc1_wait1
 
-	/* init stack */
-	ldr sp, SRAM_STACK
-	stmfd sp!, {r0 - r6}
-	stmfd sp!, {ip,lr}
 	/* gpmc init */
 	bl  cpy_nor_gpmc_code /* copy nor gpmc init code to sram */
 	ldr r0, _gpmc_init_ret
@@ -319,10 +318,8 @@ gpmc_init_ret:
 	ldr r2, sysclk10_clksel_val
 	str r2, [r5]
 	bl s_init
-	ldmfd sp!, {ip,lr}
-	ldmfd sp!, {r0 - r6}
 	/* back to arch calling code */
-	mov pc, lr
+	mov pc, r6
 	/* the literal pools origin */
 	.ltorg
 
