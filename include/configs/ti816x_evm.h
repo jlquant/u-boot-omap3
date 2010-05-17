@@ -47,7 +47,7 @@
 	#define CONFIG_SKIP_RELOCATE_UBOOT
 #endif
 
-#define CONFIG_L2_OFF			/* Avoid (OMAP3) secure mode stuff */
+/* #define CONFIG_L2_OFF			 Avoid (OMAP3) secure mode stuff */
 
 #ifndef CONFIG_NOR_BOOT
 	#define CONFIG_NOFLASH		/* Revisit: For boot modes without NOR */
