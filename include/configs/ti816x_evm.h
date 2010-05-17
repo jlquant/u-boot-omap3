@@ -130,8 +130,9 @@ lpj=50000 mem=248M earlyprintk"
 /**
  * Platform/Board specific defs
  */
-#define CONFIG_SYS_CLK_FREQ		12000000	/* TODO: Check! */
-#define CONFIG_SYS_TIMERBASE		0x4802C000	/* TODO: Check! */
+#define CONFIG_SYS_CLK_FREQ		27000000	/* TODO: Check! */
+#define CONFIG_SYS_TIMERBASE		0x4802E000	/* TODO: Check! */
+/* Timer 0 is secure timer. We use Timer 1. The clk freq is 27Mhz */
 
 /*
  * NS16550 Configuration
