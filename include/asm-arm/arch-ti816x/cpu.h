@@ -24,6 +24,11 @@
 
 #ifndef _TI816X_CPU_H
 #define  _TI816X_CPU_H
+
+#if !(defined(__KERNEL_STRICT_NAMES) || defined(__ASSEMBLY__))
+#include <asm/types.h>
+#endif /* !(__KERNEL_STRICT_NAMES || __ASSEMBLY__) */
+
 #include <asm/arch/hardware.h>
 
 /* Register offsets of common modules */
@@ -253,4 +258,9 @@ Fixed at 32kHz
 #define SC0_VCCEN	(CFG_MOD_BASE + 0xb04)  /* a23 */
 #define TIM6_OUT	(CFG_MOD_BASE + 0xb30)  /* a24 */
 
-#endif
+/* BCH Error Location Module */
+
+#define ELM_BASE	(0x48080000)
+
+
+#endif /* _TI816X_CPU_H */
