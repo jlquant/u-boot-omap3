@@ -616,8 +616,8 @@ int misc_init_r (void)
 "r:r;rrsrsihXSi2&##MHB&Ahh3AGHGA9G9h&#H##@@@##MAMMXXX9SSS29&&HGGX2i5iisiiisisi:,",
 ";;rrrrsSiiiA&ABH&A9GAGhAhBAMHA9HM@@@@@@@@@@@@@@@@@@@HHhAh2S2SX9&Gh22SSiisiiisii",
 "r:rrssisiS2XM##&h3AGAX&3GG3Ssr5H@M#HM2; ;2X&&&MHMB###GBB#B&XXSSs529XX55iSsisisi",
-"r;rsrisSi2XHAhX99A3XXG&&XS;:,rH#HGhAS   :r :3rs2XBM@@A552&&AHA2XiisSS252SSsisSs",
-"r;issi5S22&&3iSSX292&hXsr;;:;h@&G339&S9@@3;2@MA&9&HB##Xris29ABMAAX2ir;rsSi5iss5",
+"r;rsrisSi2XHAhX99A3XXG&&XS;:,rH#HGhAS   @@@@3rs2XBM@@A552&&AHA2XiisSS252SSsisSs",
+"r;issi5S22&&3iSSX292&hXsr;;:;h@&G339&S9@@@@2@MA&9&HB##Xris29ABMAAX2ir;rsSi5iss5",
 "rrsSi2XhG&9GXh399&X99i;;;;;;r#H&293H9X#@@@@@@@B&9GhAH@XrrsrsiXABHB&HG2rr;rrSiSi",
 ";:rsisS599&AA9XG&3A35r;:::;,;BMh&&2iX5A@@@@@@@&392X5GB2;;;r;iSX393A##A&Xi:::rsi",
 ";:rss552222X553&XHMhir;;::,:,h#HhGSXhG3#@@@@#AXXS2XAHA;::;;;;ss55XShBA3239r:,;;",
@@ -692,6 +692,8 @@ void watchdog_init(void)
  ******************************************************************/
 void peripheral_enable(void)
 {
+#ifndef CONFIG_TI816X_SIM
+	int i=0;
 	/* DMTimers */
 	__raw_writel(0x2, CM_ALWON_L3_SLOW_CLKSTCTRL);
 
@@ -715,10 +717,100 @@ void peripheral_enable(void)
 	 * We select CLKIN and use that
 	 */
 
-	__raw_writel(0x2, CM_ALWON_TIMER_1_CLKCTRL);
-	while(__raw_readl(CM_ALWON_TIMER_1_CLKCTRL) != 0x2);	/* Selects CLKIN (27MHz) */
+	for(i=0; i<3; i++)
+	{
 
+		/* TIMER 1 */
+		__raw_writel(0x2, CM_ALWON_TIMER_0_CLKCTRL + (i*4));
 
+		/* Selects CLKIN (27MHz) */
+		__raw_writel(0x2, CM_TIMER1_CLKSEL);
+
+		while(((__raw_readl(CM_ALWON_L3_SLOW_CLKSTCTRL) & (0x80000<<i)) >> (19 + i)) != 1);
+
+		while(((__raw_readl(CM_ALWON_TIMER_0_CLKCTRL + (i*4)) & 0x30000)>>16) !=0);
+
+		if(i == 0)
+		{
+
+			__raw_writel(0x2,(DM_TIMER0_BASE_ADDR + 0x10));
+			while(__raw_readl(DM_TIMER0_BASE_ADDR + 0x10) !=0x2);
+
+			__raw_writel(0x1,(DM_TIMER0_BASE_ADDR + 0x38));
+			while(__raw_readl(DM_TIMER0_BASE_ADDR + 0x38) !=0x1);
+		}
+
+		if(i == 1)
+		{
+
+			__raw_writel(0x2,(DM_TIMER1_BASE_ADDR + 0x10));
+			while(__raw_readl(DM_TIMER1_BASE_ADDR + 0x10) !=0x2);
+
+			__raw_writel(0x1,(DM_TIMER1_BASE_ADDR + 0x38));
+			while(__raw_readl(DM_TIMER1_BASE_ADDR + 0x38) !=0x1);
+		}
+
+		if(i == 2)
+		{
+
+			__raw_writel(0x2,(DM_TIMER2_BASE_ADDR + 0x10));
+			while(__raw_readl(DM_TIMER2_BASE_ADDR + 0x10) !=0x2);
+
+			__raw_writel(0x1,(DM_TIMER2_BASE_ADDR + 0x38));
+			while(__raw_readl(DM_TIMER2_BASE_ADDR + 0x38) !=0x1);
+		}
+
+		if(i == 3)
+		{
+
+			__raw_writel(0x2,(DM_TIMER3_BASE_ADDR + 0x10));
+			while(__raw_readl(DM_TIMER3_BASE_ADDR + 0x10) !=0x2);
+
+			__raw_writel(0x1,(DM_TIMER3_BASE_ADDR + 0x38));
+			while(__raw_readl(DM_TIMER3_BASE_ADDR + 0x38) !=0x1);
+		}
+
+		if(i == 4)
+		{
+
+			__raw_writel(0x2,(DM_TIMER4_BASE_ADDR + 0x10));
+			while(__raw_readl(DM_TIMER4_BASE_ADDR + 0x10) !=0x2);
+
+			__raw_writel(0x1,(DM_TIMER4_BASE_ADDR + 0x38));
+			while(__raw_readl(DM_TIMER4_BASE_ADDR + 0x38) !=0x1);
+		}
+
+		if(i == 5)
+		{
+
+			__raw_writel(0x2,(DM_TIMER5_BASE_ADDR + 0x10));
+			while(__raw_readl(DM_TIMER5_BASE_ADDR + 0x10) !=0x2);
+
+			__raw_writel(0x1,(DM_TIMER5_BASE_ADDR + 0x38));
+			while(__raw_readl(DM_TIMER5_BASE_ADDR + 0x38) !=0x1);
+		}
+
+		if(i == 6)
+		{
+
+			__raw_writel(0x2,(DM_TIMER6_BASE_ADDR + 0x10));
+			while(__raw_readl(DM_TIMER6_BASE_ADDR + 0x10) !=0x2);
+
+			__raw_writel(0x1,(DM_TIMER6_BASE_ADDR + 0x38));
+			while(__raw_readl(DM_TIMER6_BASE_ADDR + 0x38) !=0x1);
+		}
+
+		if(i == 7)
+		{
+
+			__raw_writel(0x2,(DM_TIMER7_BASE_ADDR + 0x10));
+			while(__raw_readl(DM_TIMER7_BASE_ADDR + 0x10) !=0x2);
+
+			__raw_writel(0x1,(DM_TIMER7_BASE_ADDR + 0x38));
+			while(__raw_readl(DM_TIMER7_BASE_ADDR + 0x38) !=0x1);
+		}
+
+	}
 
 
 	/* UARTs */
@@ -742,9 +834,15 @@ void peripheral_enable(void)
 	__raw_writel(0x2, CM_ALWON_GPIO_0_CLKCTRL);
 	while(__raw_readl(CM_ALWON_GPIO_0_CLKCTRL) != 0x2);
 
-	__raw_writel((0x1<<x), CM_ALWON_GPIO_0_OPTFCLKEN_DBCLK);
-	while(__raw_readl(CM_ALWON_GPIO_0_OPTFCLKEN_DBCLK) != 0x1);
+	__raw_writel((BIT(8)), CM_ALWON_GPIO_0_OPTFCLKEN_DBCLK);
 
+	/* Ethernet */
+	__raw_writel(0x2, CM_ETHERNET_CLKSTCTRL);
+	__raw_writel(0x2, CM_ALWON_ETHERNET_0_CLKCTRL);
+	__raw_writel(0x2, CM_ALWON_ETHERNET_1_CLKCTRL);
+	while(__raw_readl(CM_ALWON_ETHERNET_0_CLKCTRL) != 0);
+	while(__raw_readl(CM_ALWON_ETHERNET_0_CLKCTRL) != 0);
+#endif
 }
 
 /* MUX setting */

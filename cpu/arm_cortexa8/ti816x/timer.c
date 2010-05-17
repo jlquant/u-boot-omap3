@@ -32,7 +32,7 @@
 #define TIMER_REG(offset)	(CONFIG_SYS_TIMERBASE + offset)
 
 static ulong timestamp;
-static ulong lastdec;
+static ulong lastinc;
 
 /*
  * Start the timer. The timer is an upcounter.
