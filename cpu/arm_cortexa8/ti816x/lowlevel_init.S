@@ -246,7 +246,8 @@ gpmc_pad_def_val:
 .globl lowlevel_init
  lowlevel_init:
 
-	mov r6, lr
+	/* The link register is saved in ip by start.S */
+	mov r6, ip
 	/* check if we are already running from RAM */
 	ldr r2, _lowlevel_init
 	ldr r3, _TEXT_BASE
