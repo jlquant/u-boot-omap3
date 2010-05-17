@@ -104,13 +104,12 @@
 
 #define CONFIG_BOOTDELAY        	3	/* set -1 for no autoboot */
 #define CONFIG_VERSION_VARIABLE
-#define CONFIG_BOOTARGS         "console=ttyS0,115200n8 root=/dev/SimBlkDev0 \
-lpj=50000 mem=248M earlyprintk"
+#define CONFIG_BOOTARGS         "console=ttyS0,115200n8 root=/dev/ram \
+rw initrd=0x81000000,16MB init=/bin/ash lpj=50000 mem=256M earlyprintk"
 
 #define CONFIG_BOOTCOMMAND	"source 0x80000100; bootm 0x80700000"
 
-#define	CONFIG_EXTRA_ENV_SETTINGS				        \
-   "verify=no\0"
+#define	CONFIG_EXTRA_ENV_SETTINGS	"verify=no\0"
 
 /*
  * Hardware drivers
@@ -169,7 +168,7 @@ lpj=50000 mem=248M earlyprintk"
 /* Undef to save memory */
 #define CONFIG_SYS_LONGHELP
 /* Monitor Command Prompt */
-#define CONFIG_SYS_PROMPT		"=> "
+#define CONFIG_SYS_PROMPT		"TI8168EVM#"
 /* Console I/O Buffer Size */
 #define CONFIG_SYS_CBSIZE		512
 /* Print Buffer Size */
@@ -180,15 +179,15 @@ lpj=50000 mem=248M earlyprintk"
 /* Boot Argument Buffer Size */
 #define CONFIG_SYS_BARGSIZE		CONFIG_SYS_CBSIZE
 
-/* memtest works on 8 MB in DRAM */
-#define CONFIG_SYS_MEMTEST_START	(TEXT_BASE - (8 * 1024 * 1024) \
-					- (1024 * 1024))
+/* memtest works on 8 MB in DRAM after skipping 32MB from start addr of ram disk*/
+#define CONFIG_SYS_MEMTEST_START	(PHYS_DRAM_1 + (64 *1024 *1024))
+
 #define CONFIG_SYS_MEMTEST_END		(CONFIG_SYS_MEMTEST_START \
 					+ (8 * 1024 * 1024))
 
 #undef  CONFIG_SYS_CLKS_IN_HZ	/* everything, incl board info, in Hz */
 
-#define CONFIG_SYS_LOAD_ADDR	0x80000100  /* Default load address */
+#define CONFIG_SYS_LOAD_ADDR	0x80700000  /* Default load address */
 
 #define CONFIG_SYS_HZ		1000        /* 1ms clock */
 
