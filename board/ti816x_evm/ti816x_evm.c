@@ -260,32 +260,20 @@ u32 get_mem_type(void)
 u32 is_cpu_family(void)
 {
 	u32 cpuid = 0, cpu_family = 816;
-	/* u16 hawkeye;
 
+	/* TODO:VB__Revsisit
 	__asm__ __volatile__("mrc p15, 0, %0, c0, c0, 0":"=r"(cpuid));
 	if ((cpuid & 0xf) == 0x0) {
 		cpu_family = CPU_OMAP34XX;
 	} else {
 		cpuid = __raw_readl(OMAP34XX_CONTROL_ID);
-		hawkeye  = (cpuid >> HAWKEYE_SHIFT) & 0xffff;
-
-		switch (hawkeye) {
-			case HAWKEYE_OMAP34XX:
-				cpu_family = CPU_OMAP34XX;
-				break;
-			case HAWKEYE_AM35XX:
-				cpu_family = CPU_AM35XX;
-				break;
-			case HAWKEYE_OMAP36XX:
-				cpu_family = CPU_OMAP36XX;
-				break;
-			default:
-				cpu_family = CPU_OMAP34XX;
-				break;
 		}
-	}*/
+	}
+	*/
+
 	return cpu_family;
 }
+
 /******************************************
  * cpu_is_ti816x(void) - returns true for ti816x
  ******************************************/
@@ -575,6 +563,7 @@ void ivahd_standby_steps(ivahd_standby_param *ivahd_param)
  *****************************************************************************/
 void prcm_init(void)
 {
+	/* TODO:VB__Do we need sil_index for future? */
 	u32 clk_index = 0, sil_index = 0;
 
 	if (is_cpu_family() == CPU_TI816X) {
@@ -584,12 +573,15 @@ void prcm_init(void)
 		audio_pll_init_ti816x(clk_index, sil_index);
 	}
 
-	delay(5000);
+	/* Waiting for the clks to get stable will be done in individual funcs */
 
 	/*
 	ivahd_clk_enable();
 	ivahd_standby();
 	*/
+
+	/* With clk freqs setup to desired values, enable the required peripherals */
+	peripheral_enable();
 }
 
 /**********************************************************
@@ -600,12 +592,10 @@ void prcm_init(void)
 
 void s_init(void)
 {
-	l2_cache_enable();
-	watchdog_init();
-	set_muxconf_regs();
-	delay(100);
-	prcm_init();
-	per_clocks_enable();
+	l2_cache_enable();	/* Not strictly needed since A8 comes up with L2 enabled */
+	watchdog_init();	/* Just a stub right now */
+	set_muxconf_regs();	/* Just a stub right now */
+	prcm_init();		/* Just a stub right now */
 	config_ti816x_sdram_ddr();
 }
 
@@ -635,19 +625,22 @@ int misc_init_r (void)
 ";:;rrrrssiriXGSi::shs;;;,,,:,,rBBA9h5s5h5iS5isi2SAHB5:,,,:::;rrs5&SrisSX5Srrr:,",
 ";,r;;;;rsriSSrrrr;;5Xrr;;,:,,.,;9AA2SsisS5323XXXG9&i:.,,::;;r;;;srrrrrr;;:;::::",
 ":,;r;r;rrissrrr;:;::;s;;;;,:,,..,r293h222hXXAAGGGX;:,,,:,:,::;:;::,:,,,,...,,,,",
-";,;;;;rrrrrrrrirr;,.,,:::::::,,,,.,;SX&ABAB2hhXir:, .,,.,,:,,,,..,,,..,..,,,..:",
-":.:;:;;;:;;;;r;rrs;:.. ,,:::::,:,:,,.::rrsrr;;,,   ....,..,....,,,,,,,...,.,,:,",
-":.:::,::::::;;r;rrr;:.......,.,.,,:::,,............... ,::.,,,,:,::,,:,:,,,:,;:",
+";,;;;;rrrrrrrrirr;,.,,:::::::,,,,.,;SX&ABAB2hhXir:,,.,,.,,:,,,,..,,,..,..,,,..:",
+":.:;:;;;:;;;;r;rrs;:.. ,,:::::,:,:,,.::rrsrr;;,,.......,..,....,,,,,,,...,.,,:,",
+":.:::,::::::;;r;rrr;:.......,.,.,,:::,,...............,,::.,,,,:,::,,:,:,,,:,;:",
 ",.::,:,,,,,;;;;;;;;r;;::,..............................;;;:;::::,:::::::,:,:,,,",
-": ,,:,,,,,:::::,,,:;rrr;;:;,,,,,,,::,.,.:.,.,;s,:;;;;:;:;;;;;::::,:::,:::,:,:,:",
-",.,,,,,,,:::,,.,,;;;;::;rsrr;;;ssSrrisrr;;r:::;r::::,;;;:;:::;:;::,:,,,:,:,,,,,"};
+": ,,:,,,,,,,,,,,,,:;rrr;;:;,,,,,,,::,.,.:.,.,;s,:;;;;:;:;;;;;::::,:::,:::,:,:,:",
+",.,,,,,,,...,,.,,....................................:,............:,,,:,:,,,,,"};
+
 	for (i = 0; i<23; i++)
 	{
 		for(j = 0; j<79; j++)
 			printf("%c",ti816x[i][j]);
 			printf("\n");
 	}
+	printf("\n");
 	#endif
+
 	return 0;
 }
 
