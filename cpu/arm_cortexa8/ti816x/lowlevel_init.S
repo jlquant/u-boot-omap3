@@ -315,15 +315,59 @@ mark1:
 	mov pc, r0	/* transfer ctrl to nor_gpmc_init() in sram */
 
 gpmc_init_ret:
-	ldr r5, sysclk10_clksel_addr	/* Fix ROM code bug */
+	/* Fix bug with DDR clk */
+	/*
+	ldr r5, sysclk10_clksel_addr*/	/* Fix ROM code bug */
+	/*
 	ldr r2, sysclk10_clksel_val
 	str r2, [r5]
+	*/
+
+	/* Other way of fixing the bug */
+	ldr r5, ddr_pll_control_addr
+	ldr r2, ddr1
+	str r2, [r5]
+	ldr r5, ddr_pll_powerdown_reg
+	ldr r2, ddr2
+	str r2, [r5]
+	mov r2, #0xC8
+wait200:
+	subs r2,r2,#1
+	bgt wait200
+
+	ldr r5, ddr_div2_reg
+	ldr r2, [r5]
+	ldr r2, ddr3
+	str r2, [r5]
+
+	ldr r2, [r5]
+	ldr r2, ddr4
+	str r2, [r5]
+	mov r2, #0xa
+wait10:
+	subs r2,r2,#1
+	bgt wait10
+	ldr r5, ddr_pll_control_addr
+	ldr r2, ddr5
+	str r2, [r5]
+
+
 	bl s_init
 	/* back to arch calling code */
 	mov pc, r6
 	/* the literal pools origin */
 	.ltorg
 
+ddr1:
+	.word 0x003b018c
+ddr2:
+	.word 0x00000030
+ddr3:
+	.word 0x0000000f
+ddr4:
+	.word 0x0000010f
+ddr5:
+	.word 0x003b0188
 cm_alwon_ocmc_0_clkstctrl_addr:
 	.word CM_ALWON_OCMC_0_CLKSTCTRL
 cm_alwon_ocmc_0_clkctrl_addr:
@@ -348,6 +392,13 @@ sysclk10_clksel_addr:
 sysclk10_clksel_val:
 	.word DDR_SYSCLK10_DIV
 
+/* Documentation mismatch for CLK == ROM code bug */
+ddr_pll_control_addr:
+	.word DDRPLL_CTRL
+ddr_pll_powerdown_reg:
+	.word DDRPLL_PWD
+ddr_div2_reg:
+	.word DDRPLL_DIV2
 
 .global invalidate_dcache
 .global l2_cache_enable

@@ -36,7 +36,7 @@
 /* DDR PLL */
 
 #define DDR_SYSCLK8_DIV		0	/* 400MHZ DMM,EMIFS	: CM_SYSCLK8_CLKSEL */
-#define DDR_SYSCLK9_DIV		0	/* 16MHz VTP		: CM_SYSCLK9_CLKSEL */ 
+#define DDR_SYSCLK9_DIV		0	/* 16MHz VTP		: CM_SYSCLK9_CLKSEL */
 #define DDR_SYSCLK10_DIV	0	/* 48MHz SPI,I2C,UART	: CM_SYSCLK10_CLKSEL */
 /* ROM CODE BUG: SYSCLK10_CLKSEL is taken as 1 i.e. DIV by2 giving 24Mhz and not 48Mhz.
  * The actual value has to be 0 i.e. DIV by 1 */
@@ -92,7 +92,7 @@
 
 #define DDR_INTFREQ2		8
 #define DDR_FRACFREQ2		850
-#define DDR_M_POST_DIV2		30
+#define DDR_M_POST_DIV2		15	/* Note: This is diff from what is documented */
 #define DDR_INTFREQ3		8
 #define DDR_FRACFREQ3		0
 #define DDR_M_POST_DIV3		4
@@ -128,10 +128,15 @@
 #define AUDIO_INTFREQ4		9
 #define AUDIO_FRACFREQ4		796
 #define AUDIO_M_POST_DIV4	20
-#define AUDIO_INTFREQ5		13	
+#define AUDIO_INTFREQ5		13
 #define AUDIO_FRACFREQ5		500
 #define AUDIO_M_POST_DIV5	20
 
 #define DUMMY_VAL		57005 /* 0xDEAD == 57005 */
+
+#define DDRPLL_CTRL	(0x0440 + TI816X_CTRL_BASE)
+#define DDRPLL_PWD	(0x0444 + TI816X_CTRL_BASE)
+#define DDRPLL_DIV2	(0x0454 + TI816X_CTRL_BASE)
+
 
 #endif	/* endif _CLOCKS_TI816X_H_ */
