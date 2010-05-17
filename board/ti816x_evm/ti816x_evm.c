@@ -47,6 +47,7 @@ extern ivahd_standby_param *get_iva_param(void);
 static void ivahd_standby();
 static void ivahd_clk_enable();
 void ivahd_standby_steps(ivahd_standby_param *ivahd_param);
+
 /*******************************************************
  * Routine: delay
  * Description: spinning delay to use before udelay works
@@ -57,7 +58,7 @@ static inline void delay(unsigned long loops)
 			  "bne 1b" : "=r" (loops) : "0"(loops));
 }
 
-void udelay (unsigned long usecs)
+void udelay(unsigned long usecs)
 {
 	delay(usecs);
 }
@@ -212,6 +213,7 @@ u32 get_sysboot_value(void)
 	mode = __raw_readl(CONTROL_STATUS) & (SYSBOOT_MASK);
 	return mode;
 }
+
 /*************************************************************
  * Routine: get_mem_type(void) - returns the kind of memory connected
  * to GPMC that we are trying to boot form. Uses SYS BOOT settings.
@@ -546,6 +548,7 @@ void ivahd_standby_steps(ivahd_standby_param *ivahd_param)
 	/*--------------------------------------------------------------------------*/
 	regVal = __raw_readl(ivahd_param->rst_cntl_addr);
 	__raw_writel((regVal | 0x00000003), ivahd_param->rst_cntl_addr);
+
 	/*--------------------------------------------------------------------------*/
 	/* Copy boot code to ICONT1 & INCOT2 memory                                 */
 	/*--------------------------------------------------------------------------*/
@@ -555,6 +558,7 @@ void ivahd_standby_steps(ivahd_standby_param *ivahd_param)
 	ivahd_param->icont1_itcm_base_addr+=4;
 	ivahd_param->icont2_itcm_base_addr+=4;
 	}
+
 	/*--------------------------------------------------------------------------*/
 	/* Take IVAHD out of reset mode.                                            */
 	/* Set bit0 to 0 to take ICONT1 out of reset state                          */
@@ -740,8 +744,7 @@ void per_clocks_enable(void)
 /**********************************************************
  * Routine: set_muxconf_regs
  * Description: Setting up the configuration Mux registers
- *              specific to the hardware. Many pins need
- *              to be moved from protect to primary mode.
+ *              specific to the hardware.
  *********************************************************/
 void set_muxconf_regs(void)
 {

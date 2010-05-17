@@ -3165,7 +3165,7 @@ ti816x_sim_config:	unconfig
 	{ \
 		echo "#define CONFIG_TI816X"    >>$(obj)include/config.h ; \
 		echo "#define CONFIG_TI816X_SIM"    >>$(obj)include/config.h ; \
-		echo "Setting up TI816X simulator build for Cortex A8..." ; \
+		echo "Setting up TI816X simulator build for Cortex A8... this skips UART and ETH init" ; \
 	}
 	@$(MKCONFIG) -a ti816x_evm arm arm_cortexa8 ti816x_evm NULL ti816x
 

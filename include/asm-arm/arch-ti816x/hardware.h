@@ -26,7 +26,14 @@
 /* Make a new file sys_info.h for this #define */
 #define CPU_TI816X            816
 
+/* The objective is to keep only the top level memory map here
+ * The break-up of the memory map for individual modules should
+ * in a diff file like cpu.h so that when this is the only place
+ * where change is needed for new SoCs when the ip is the same
+ */
+
 #define BIT(x)				(1 << x)
+
 /* Register Base Addresses */
 #define REG_TIMER_BASE			0x4802C000
 #define REG_UART0_BASE			0x48020000
@@ -34,15 +41,15 @@
 #define REG_UART2_BASE			0x48024000
 
 /* Timer registers */
-#define REG_TIMER_TCLR			0x38
-#define REG_TIMER_TCRR			0x3C
-#define REG_TIMER_TLDR			0x40
+#define REG_TIMER_TCLR			0x38	/* Timer control register */
+#define REG_TIMER_TCRR			0x3C	/* Timer counter register */
+#define REG_TIMER_TLDR			0x40	/* Timer load value register*/
 
 /* Timer register bits */
-#define TCLR_ST				BIT(0)
-#define TCLR_AR				BIT(1)
-#define TCLR_PRE			BIT(5)
-#define TCLR_PTV_SHIFT			(2)
+#define TCLR_ST				BIT(0)	/* Start=1 Stop=0 */
+#define TCLR_AR				BIT(1)	/* Auto reload */
+#define TCLR_PRE			BIT(5)	/* Pre-scaler enable for the timer input clk */
+#define TCLR_PTV_SHIFT			(2)	/* Pre-scaler shift value */
 
 /* McSPI register */
 #define OMAP3_MCSPI1_BASE		0x48030100
