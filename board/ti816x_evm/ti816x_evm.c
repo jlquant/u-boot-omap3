@@ -685,25 +685,66 @@ void watchdog_init(void)
 /*****************************************************************
  * Routine: peripheral_enable
  * Description: Enable the clks & power for perifs (TIMER1, UART0,...)
+ *
+ * TODO:VB__This we can probably split as ones needed to get U-Boot
+ * and the ones needed to get the kernel up
+ *
  ******************************************************************/
-void per_clocks_enable(void)
+void peripheral_enable(void)
 {
+	/* DMTimers */
 	__raw_writel(0x2, CM_ALWON_L3_SLOW_CLKSTCTRL);
 
+	/* We need to select the proper clk input for the timers
+	 * On reset the path is setup from external 32KHz clk
+	 * Enable the clk and then setup the correct path
+	 */
+
+	/* First we need to enable the modules and setup the clk path
+	 * Then the timers need to be configured by writing to their registers
+	 * Note that to access the timer registers we need the module to be
+	 * enabled which is what we do in the first step
+	 */
+
+	/* Note on Timers:
+	 * There are 8 timers(0-7) out of which timer 0 is a secure timer.
+	 * Timer 0 mux should not be changed
+	 *
+	 * For other timers, there are 3 inputs TCLKIN, 32KHz (external clk or SYSCLK18?) and CLKIN(27MHz)
+	 *
+	 * We select CLKIN and use that
+	 */
+
 	__raw_writel(0x2, CM_ALWON_TIMER_1_CLKCTRL);
-	while(__raw_readl(CM_ALWON_TIMER_1_CLKCTRL) != 0x2);
+	while(__raw_readl(CM_ALWON_TIMER_1_CLKCTRL) != 0x2);	/* Selects CLKIN (27MHz) */
 
+
+
+
+	/* UARTs */
+	/* Note: The clock has been set to correct rate before this step */
 	__raw_writel(0x2, CM_ALWON_UART_0_CLKCTRL);
 	while(__raw_readl(CM_ALWON_UART_0_CLKCTRL) != 0x2);
 
-	__raw_writel(0x2, CM_ALWON_UART_0_CLKCTRL);
-	while(__raw_readl(CM_ALWON_UART_0_CLKCTRL) != 0x2);
+	__raw_writel(0x2, CM_ALWON_UART_1_CLKCTRL);
+	while(__raw_readl(CM_ALWON_UART_1_CLKCTRL) != 0x2);
 
-	__raw_writel(0x2, CM_ALWON_UART_0_CLKCTRL);
-	while(__raw_readl(CM_ALWON_UART_0_CLKCTRL) != 0x2);
+	__raw_writel(0x2, CM_ALWON_UART_2_CLKCTRL);
+	while(__raw_readl(CM_ALWON_UART_2_CLKCTRL) != 0x2);
 
 	while((__raw_readl(CM_ALWON_L3_SLOW_CLKSTCTRL) & 0x2100) != 0x2100);
-	/* delay(1000); */
+
+	/* eFuse */
+	__raw_writel(0x2, CM_ALWON_CUST_EFUSE_CLKCTRL);
+	while(__raw_readl(CM_ALWON_CUST_EFUSE_CLKCTRL) != 0x2);
+
+	/* GPIO0 */
+	__raw_writel(0x2, CM_ALWON_GPIO_0_CLKCTRL);
+	while(__raw_readl(CM_ALWON_GPIO_0_CLKCTRL) != 0x2);
+
+	__raw_writel((0x1<<x), CM_ALWON_GPIO_0_OPTFCLKEN_DBCLK);
+	while(__raw_readl(CM_ALWON_GPIO_0_OPTFCLKEN_DBCLK) != 0x1);
+
 }
 
 /* MUX setting */
