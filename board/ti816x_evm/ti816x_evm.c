@@ -44,10 +44,10 @@ typedef struct {
 
 extern ivahd_standby_param *get_iva_param(void);
 
-static void ivahd_standby();
-static void ivahd_clk_enable();
+static void ivahd_standby(void);
+static void ivahd_clk_enable(void);
 void ivahd_standby_steps(ivahd_standby_param *ivahd_param);
-
+void peripheral_enable(void);
 /*******************************************************
  * Routine: delay
  * Description: spinning delay to use before udelay works
@@ -58,11 +58,12 @@ static inline void delay(unsigned long loops)
 			  "bne 1b" : "=r" (loops) : "0"(loops));
 }
 
+/*
 void udelay(unsigned long usecs)
 {
 	delay(usecs);
 }
-
+*/
 
 /*
  * Basic board specific setup
@@ -220,9 +221,9 @@ u32 get_sysboot_value(void)
  *************************************************************/
 u32 get_mem_type(void)
 {
+	/* TODO: VB_ Check the values over here
 	u32   mem_type = get_sysboot_value();
-	/* TODO: VB_ Check the values over here */
-	/*switch (mem_type){
+	switch (mem_type){
             case 0:
             case 2:
             case 4:
