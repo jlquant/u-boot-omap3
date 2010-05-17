@@ -718,7 +718,7 @@ void peripheral_enable(void)
 	 * We select CLKIN and use that
 	 */
 
-	for(i=0; i<3; i++)
+	for(i=1; i<3; i++)
 	{
 
 		/* TIMER 1 */
@@ -841,8 +841,8 @@ void peripheral_enable(void)
 	__raw_writel(0x2, CM_ETHERNET_CLKSTCTRL);
 	__raw_writel(0x2, CM_ALWON_ETHERNET_0_CLKCTRL);
 	__raw_writel(0x2, CM_ALWON_ETHERNET_1_CLKCTRL);
-	while(__raw_readl(CM_ALWON_ETHERNET_0_CLKCTRL) != 0);
-	while(__raw_readl(CM_ALWON_ETHERNET_0_CLKCTRL) != 0);
+//	while(__raw_readl(CM_ALWON_ETHERNET_0_CLKCTRL) != 0x2);
+//	while(__raw_readl(CM_ALWON_ETHERNET_0_CLKCTRL) != 0x2);
 #endif
 }
 

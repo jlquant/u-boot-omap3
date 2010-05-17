@@ -38,7 +38,7 @@
 /*
  * Size of malloc() pool
  */
-#define CONFIG_SYS_MALLOC_LEN		(CONFIG_ENV_SIZE + (64 * 1024))
+#define CONFIG_SYS_MALLOC_LEN		(CONFIG_ENV_SIZE + (32 * 1024))
 #define CONFIG_SYS_GBL_DATA_SIZE	128	/* size in bytes reserved for
 						   initial data */
 
@@ -92,12 +92,12 @@
 #undef CONFIG_CMD_NET
 #endif
 
-/*
+
 #define CONFIG_ZEBU_HACK
 #ifdef CONFIG_ZEBU_HACK
 #undef CONFIG_CMD_NET
 #endif
-*/
+
 
 #ifdef CONFIG_TI816X_SIM
 #undef CONFIG_CMD_NET
@@ -169,7 +169,7 @@ rw initrd=0x81000000,16MB init=/bin/ash lpj=50000 mem=256M earlyprintk"
 #define CONFIG_ENV_IS_NOWHERE
 #endif
 
-#define CONFIG_ENV_SIZE			0x8000
+#define CONFIG_ENV_SIZE			0x2000
 
 /*
  * Miscellaneous configurable options
