@@ -51,6 +51,7 @@
 	#define CONFIG_MTD_DEVICE
 	#define CONFIG_SPI_FLASH
 	#define CONFIG_SPI_FLASH_WINBOND
+	#define CONFIG_CMD_SF
 #endif
 
 #ifndef CONFIG_NOR_BOOT
