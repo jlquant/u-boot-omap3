@@ -46,6 +46,11 @@
 	#define CONFIG_SKIP_LOWLEVEL_INIT
 	#define CONFIG_NOFLASH
 	#define CONFIG_SKIP_RELOCATE_UBOOT
+#else
+	#define CONFIG_OMAP3_SPI
+	#define CONFIG_MTD_DEVICE
+	#define CONFIG_SPI_FLASH
+	#define CONFIG_SPI_FLASH_WINBOND
 #endif
 
 #ifndef CONFIG_NOR_BOOT
@@ -54,7 +59,6 @@
 
 #ifdef CONFIG_NOR_BOOT
 	#define CONFIG_SYS_FLASH_CFI
-	#define CONFIG_MTD_DEVICE
 	#define CONFIG_FLASH_CFI_DRIVER
 	#define CONFIG_FLASH_CFI_MTD
 	#define CONFIG_SYS_MAX_FLASH_SECT	512
@@ -77,9 +81,6 @@
 #define CONFIG_CMDLINE_TAG        1	/* enable passing of ATAGs  */
 #define CONFIG_SETUP_MEMORY_TAGS  1
 #define CONFIG_INITRD_TAG	  1	/* Required for ramdisk support */
-
-#define CONFIG_OMAP3_SPI
-#define CONFIG_SPI_FLASH_STMICRO
 
 
 /* U-Boot default commands */
