@@ -1,6 +1,6 @@
 /*
  * (C) Copyright 2004-2008 Texas Instruments, <www.ti.com>
- * Mansoor Ahamed <mansoor.ahamed@ti.com> 
+ * Mansoor Ahamed <mansoor.ahamed@ti.com>
  *
  * Derived from work done by Rohit Choraria <rohitkc@ti.com> for omap
  *
@@ -56,7 +56,7 @@ static struct nand_bch_priv bch_priv = {
 	.type = ECC_BCH8,
 	.nibbles = ECC_BCH8_NIBBLES
 #else /* hamming code */
-	.mode = NAND_ECC_HW,	
+	.mode = NAND_ECC_HW,
 #endif
 };
 /*
@@ -224,9 +224,9 @@ static int ti816x_calculate_ecc(struct mtd_info *mtd, const uint8_t *dat,
  * @mtd:        MTD device structure
  * @mode:       Read/Write mode
  *
- * FIXME Incomplete 
+ * FIXME Incomplete
  */
-static void ti816x_enable_ecc_bch(struct mtd_info *mtd, int32_t mode) 
+static void ti816x_enable_ecc_bch(struct mtd_info *mtd, int32_t mode)
 {
 	struct nand_chip *chip = mtd->priv;
 	uint32_t val, dev_width = (chip->options & NAND_BUSWIDTH_16) >> 1;
@@ -244,7 +244,7 @@ static void ti816x_enable_ecc_bch(struct mtd_info *mtd, int32_t mode)
 
 			/* by default 512kB sector page is selected */
 			/* set bch mode */
-			val  = (1 << 16); 
+			val  = (1 << 16);
 			/* bch4 / bch8 / bch16 */
 			val |= (bch->type << 12);
 			/* set wrap mode to 1 */
