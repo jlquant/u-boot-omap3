@@ -124,11 +124,15 @@ void blue_LED_off(void) __attribute__((weak, alias("__blue_LED_off")));
 #endif
 static int init_baudrate (void)
 {
+#if 0
 	char tmp[64];	/* long enough for environment variables */
 	int i = getenv_r ("baudrate", tmp, sizeof (tmp));
 	gd->bd->bi_baudrate = gd->baudrate = (i > 0)
 			? (int) simple_strtoul (tmp, NULL, 10)
 			: CONFIG_BAUDRATE;
+#else
+	gd->bd->bi_baudrate = gd->baudrate = CONFIG_BAUDRATE;
+#endif
 
 	return (0);
 }

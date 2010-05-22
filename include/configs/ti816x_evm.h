@@ -77,7 +77,7 @@
 #endif
 
 #define CONFIG_TI816X_EVM_DDR
-#define CONFIG_TI816X_ASCIIART
+//#define CONFIG_TI816X_ASCIIART
 #define CONFIG_MISC_INIT_R
 
 #define CONFIG_CMDLINE_TAG        1	/* enable passing of ATAGs  */
@@ -128,7 +128,7 @@
 # undef CONFIG_CMD_IMLS
 #endif
 
-#define CONFIG_BOOTDELAY        	3	/* set -1 for no autoboot */
+#define CONFIG_BOOTDELAY        	-1	/* set 0 or greater for autoboot */
 #define CONFIG_VERSION_VARIABLE
 #define CONFIG_BOOTARGS         "console=ttyS0,115200n8 root=/dev/ram \
 rw initrd=0x81000000,16MB init=/bin/ash lpj=50000 mem=256M earlyprintk"
@@ -165,9 +165,8 @@ rw initrd=0x81000000,16MB init=/bin/ash lpj=50000 mem=256M earlyprintk"
 #define CONFIG_SYS_NS16550
 #define CONFIG_SYS_NS16550_SERIAL
 #define CONFIG_SYS_NS16550_REG_SIZE	(-4)
-#define CONFIG_SYS_NS16550_CLK		(48000000)	/* TODO */
-#define CONFIG_SYS_NS16550_COM1		0x48020000 	/* TODO */
-					/*uart0 with h/w flow ctrl */
+#define CONFIG_SYS_NS16550_CLK		(13500000)	/* FIXME: (48000000) */
+#define CONFIG_SYS_NS16550_COM1		0x48024000	/* Base EVM has UART2 */
 
 #define CONFIG_BAUDRATE			115200
 #define CONFIG_SYS_BAUDRATE_TABLE	{ 110, 300, 600, 1200, 2400, \

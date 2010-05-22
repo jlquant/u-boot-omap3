@@ -180,18 +180,18 @@ Fixed at 32kHz
 #define CM_ALWON_ETHERNET_1_CLKCTRL	(TI816X_PRCM_BASE + 0x15D8)
 
 
-/* UART registers */
-#define UART_SYSCFG			(REG_UART0_BASE + 0x54)
-#define UART_SYSSTS			(REG_UART0_BASE + 0x58)
-#define UART_LCR			(REG_UART0_BASE + 0x0C)
-#define UART_EFR			(REG_UART0_BASE + 0x08)
-#define UART_MCR			(REG_UART0_BASE + 0x10)
-#define UART_SCR			(REG_UART0_BASE + 0x40)
-#define UART_TCR			(REG_UART0_BASE + 0x18)
-#define UART_FCR			(REG_UART0_BASE + 0x08)
-#define UART_DLL			(REG_UART0_BASE + 0x00)
-#define UART_DLH			(REG_UART0_BASE + 0x04)
-#define UART_MDR			(REG_UART0_BASE + 0x20)
+/* UART registers. FIXME: hardcoding for UART2 */
+#define UART_SYSCFG			(REG_UART2_BASE + 0x54)
+#define UART_SYSSTS			(REG_UART2_BASE + 0x58)
+#define UART_LCR			(REG_UART2_BASE + 0x0C)
+#define UART_EFR			(REG_UART2_BASE + 0x08)
+#define UART_MCR			(REG_UART2_BASE + 0x10)
+#define UART_SCR			(REG_UART2_BASE + 0x40)
+#define UART_TCR			(REG_UART2_BASE + 0x18)
+#define UART_FCR			(REG_UART2_BASE + 0x08)
+#define UART_DLL			(REG_UART2_BASE + 0x00)
+#define UART_DLH			(REG_UART2_BASE + 0x04)
+#define UART_MDR			(REG_UART2_BASE + 0x20)
 
 /*DMM & EMIF4 MMR Declaration*/
 #define DMM_LISA_MAP__0			(DMM_BASE_ADDR + 0x40)

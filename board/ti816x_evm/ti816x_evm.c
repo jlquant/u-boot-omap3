@@ -156,6 +156,11 @@ int board_init(void)
 	regVal |= (1<<3);
 	__raw_writel(regVal, UART_SYSCFG);
 
+	/* 
+	 * XXX: Most of the code below should already be in the driver and
+ 	 * should be arranged with board/SoC level init
+	 */
+#if 0
 	__raw_writel((regVal | 0x80), UART_LCR);
 	__raw_writel(0, UART_DLL);
 	__raw_writel(0, UART_DLH);
@@ -208,9 +213,10 @@ int board_init(void)
 	__raw_writel((regVal & 0xFB), UART_LCR);
 
 	regVal = __raw_readl(UART_LCR);
+
 	__raw_writel((regVal | 0x80), UART_LCR);
-	__raw_writel(0x1A, UART_DLL);
-	__raw_writel(((0x1A & 0xFF00)>>8), UART_DLH);
+	__raw_writel(0x07, UART_DLL);
+	__raw_writel(((0 & 0xFF00)>>8), UART_DLH);
 
 	regVal = __raw_readl(UART_LCR);
 	__raw_writel((regVal & 0x7F), UART_LCR);
@@ -218,7 +224,7 @@ int board_init(void)
 	regVal = __raw_readl(UART_MDR);
 	__raw_writel((regVal & 0xF8), UART_MDR);
 
-
+#endif
 	gd->bd->bi_arch_number = MACH_TYPE_TI816X;
 
 	/* address of boot parameters */
@@ -609,10 +615,10 @@ void prcm_init(void)
 	u32 clk_index = 0, sil_index = 0;
 
 	if (is_cpu_family() == CPU_TI816X) {
-		main_pll_init_ti816x(clk_index, sil_index);
-		ddr_pll_init_ti816x(clk_index, sil_index);
-		video_pll_init_ti816x(clk_index, sil_index);
-		audio_pll_init_ti816x(clk_index, sil_index);
+		//main_pll_init_ti816x(clk_index, sil_index);
+		//ddr_pll_init_ti816x(clk_index, sil_index);
+		//video_pll_init_ti816x(clk_index, sil_index);
+		//audio_pll_init_ti816x(clk_index, sil_index);
 	}
 
 	/* Waiting for the clks to get stable will be done in individual funcs */
@@ -638,9 +644,9 @@ void s_init(void)
 	watchdog_init();	/* Just a stub right now */
 	set_muxconf_regs();	/* Just a stub right now */
 	prcm_init();		/* Just a stub right now */
-	config_ti816x_sdram_ddr();
+	//config_ti816x_sdram_ddr();
 #ifdef CONFIG_TI816X_VOLT_SCALE
-	voltage_scale_init();
+	//voltage_scale_init();
 #endif
 }
 
@@ -762,7 +768,7 @@ void peripheral_enable(void)
 	 * We select CLKIN and use that
 	 */
 
-	for(i=1; i<3; i++)
+	for(i=1; i<2; i++)
 	{
 
 		/* TIMER 1 */
@@ -788,11 +794,11 @@ void peripheral_enable(void)
 		if(i == 1)
 		{
 
-			__raw_writel(0x2,(DM_TIMER1_BASE_ADDR + 0x10));
-			while(__raw_readl(DM_TIMER1_BASE_ADDR + 0x10) !=0x2);
+			__raw_writel(0x2,(DM_TIMER1_BASE_ADDR + 0x54));
+			while(__raw_readl(DM_TIMER1_BASE_ADDR + 0x10) & 1);
 
 			__raw_writel(0x1,(DM_TIMER1_BASE_ADDR + 0x38));
-			while(__raw_readl(DM_TIMER1_BASE_ADDR + 0x38) !=0x1);
+			//while(__raw_readl(DM_TIMER1_BASE_ADDR + 0x38) !=0x1);
 		}
 
 		if(i == 2)
