@@ -43,36 +43,37 @@
 						   initial data */
 
 #ifdef CONFIG_TI816X_SIM
-	#define CONFIG_SKIP_LOWLEVEL_INIT
-	#define CONFIG_NOFLASH
-	#define CONFIG_SKIP_RELOCATE_UBOOT
+# define CONFIG_SKIP_LOWLEVEL_INIT
+# define CONFIG_NOFLASH
+# define CONFIG_SKIP_RELOCATE_UBOOT
 #else
-	#define CONFIG_OMAP3_SPI
-	#define CONFIG_MTD_DEVICE
-	#define CONFIG_SPI_FLASH
-	#define CONFIG_SPI_FLASH_WINBOND
-	#define CONFIG_CMD_SF
+# define CONFIG_OMAP3_SPI
+# define CONFIG_MTD_DEVICE
+# define CONFIG_SPI_FLASH
+# define CONFIG_SPI_FLASH_WINBOND
+# define CONFIG_CMD_SF
+# define CONFIG_CMD_NAND     /* NAND support         */
 #endif
 
 #ifndef CONFIG_NOR_BOOT
-	#define CONFIG_NOFLASH		/* Revisit: For boot modes without NOR */
+# define CONFIG_NOFLASH		/* Revisit: For boot modes without NOR */
 #endif
 
 #ifdef CONFIG_NOR_BOOT
-	#define CONFIG_SYS_FLASH_CFI
-	#define CONFIG_FLASH_CFI_DRIVER
-	#define CONFIG_FLASH_CFI_MTD
-	#define CONFIG_SYS_MAX_FLASH_SECT	512
-	#define CONFIG_SYS_MAX_FLASH_BANKS	1
-	#define CONFIG_ENV_IS_IN_FLASH		1
-	#define CONFIG_SYS_FLASH_BASE		(0x00000000)
-	#define CONFIG_SYS_MONITOR_BASE		CONFIG_SYS_FLASH_BASE
-	#define NOR_SECT_SIZE				(128 * 1024)
-	#define CONFIG_SYS_ENV_SECT_SIZE	(NOR_SECT_SIZE)
-	#define CONFIG_ENV_OFFSET			(5 * NOR_SECT_SIZE)
-	#define CONFIG_ENV_ADDR				(CONFIG_ENV_OFFSET)
+# define CONFIG_SYS_FLASH_CFI
+# define CONFIG_FLASH_CFI_DRIVER
+# define CONFIG_FLASH_CFI_MTD
+# define CONFIG_SYS_MAX_FLASH_SECT	512
+# define CONFIG_SYS_MAX_FLASH_BANKS	1
+# define CONFIG_ENV_IS_IN_FLASH		1
+# define CONFIG_SYS_FLASH_BASE		(0x00000000)
+# define CONFIG_SYS_MONITOR_BASE		CONFIG_SYS_FLASH_BASE
+# define NOR_SECT_SIZE				(128 * 1024)
+# define CONFIG_SYS_ENV_SECT_SIZE	(NOR_SECT_SIZE)
+# define CONFIG_ENV_OFFSET			(5 * NOR_SECT_SIZE)
+# define CONFIG_ENV_ADDR				(CONFIG_ENV_OFFSET)
 #else
-	#define CONFIG_SYS_MONITOR_BASE	    	TEXT_BASE
+# define CONFIG_SYS_MONITOR_BASE	    	TEXT_BASE
 #endif
 
 #define CONFIG_TI816X_EVM_DDR
@@ -83,6 +84,13 @@
 #define CONFIG_SETUP_MEMORY_TAGS  1
 #define CONFIG_INITRD_TAG	  1	/* Required for ramdisk support */
 
+/*
+ * Board NAND Info.
+ */
+#define CONFIG_NAND_TI816X
+#define GPMC_NAND_ECC_LP_x16_LAYOUT 1
+
+
 
 /* U-Boot default commands */
 #include <config_cmd_default.h>
@@ -91,26 +99,26 @@
 #define CONFIG_CMD_PING
 
 #ifdef CONFIG_NOETH
-#undef CONFIG_CMD_NET
+# undef CONFIG_CMD_NET
 #endif
 
 
 #define CONFIG_ZEBU_HACK
 #ifdef CONFIG_ZEBU_HACK
-#undef CONFIG_CMD_NET
+# undef CONFIG_CMD_NET
 #endif
 
 
 #ifdef CONFIG_TI816X_SIM
-#undef CONFIG_CMD_NET
+# undef CONFIG_CMD_NET
 #endif
 /*
  * REVISIT: If we move this before including config_cmd_default.h, we won't need
  * to explicitly remove CONFIG_CMD_IMLS.
  */
 #ifdef CONFIG_NOFLASH
-#define CONFIG_SYS_NO_FLASH
-#undef CONFIG_CMD_IMLS
+# define CONFIG_SYS_NO_FLASH
+# undef CONFIG_CMD_IMLS
 #endif
 
 #define CONFIG_BOOTDELAY        	3	/* set -1 for no autoboot */
@@ -168,7 +176,7 @@ rw initrd=0x81000000,16MB init=/bin/ash lpj=50000 mem=256M earlyprintk"
  * Environment settings
  */
 #ifdef CONFIG_NOFLASH
-#define CONFIG_ENV_IS_NOWHERE
+# define CONFIG_ENV_IS_NOWHERE
 #endif
 
 #define CONFIG_ENV_SIZE			0x2000
@@ -203,13 +211,13 @@ rw initrd=0x81000000,16MB init=/bin/ash lpj=50000 mem=256M earlyprintk"
 #define CONFIG_SYS_HZ		1000        /* 1ms clock */
 
 #if defined(CONFIG_CMD_NET)
-#define CONFIG_DRIVER_TI_EMAC
-#define CONFIG_MII
-#define CONFIG_BOOTP_DEFAULT
-#define CONFIG_BOOTP_DNS
-#define CONFIG_BOOTP_DNS2
-#define CONFIG_BOOTP_SEND_HOSTNAME
-#define CONFIG_NET_RETRY_COUNT 10
-#define CONFIG_NET_MULTI
+# define CONFIG_DRIVER_TI_EMAC
+# define CONFIG_MII
+# define CONFIG_BOOTP_DEFAULT
+# define CONFIG_BOOTP_DNS
+# define CONFIG_BOOTP_DNS2
+# define CONFIG_BOOTP_SEND_HOSTNAME
+# define CONFIG_NET_RETRY_COUNT 10
+# define CONFIG_NET_MULTI
 #endif
 #endif	  /* ! __CONFIG_TI816X_EVM_H */
