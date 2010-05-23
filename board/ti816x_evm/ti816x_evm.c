@@ -34,19 +34,6 @@
 
 DECLARE_GLOBAL_DATA_PTR;
 
-/* Used to index into DPLL parameter tables */
-typedef struct {
-	unsigned int base_addr;
-	unsigned int rst_cntl_addr;
-	unsigned int icont1_itcm_base_addr;
-	unsigned int icont2_itcm_base_addr;
-} ivahd_standby_param;
-
-extern ivahd_standby_param *get_iva_param(void);
-
-static void ivahd_standby(void);
-static void ivahd_clk_enable(void);
-void ivahd_standby_steps(ivahd_standby_param *ivahd_param);
 void peripheral_enable(void);
 
 #ifdef CONFIG_TI816X_VOLT_SCALE
@@ -477,134 +464,6 @@ static void audio_pll_init_ti816x(u32 sil_index, u32 clk_index)
 	 */
 }
 
-static void ivahd_clk_enable()
-{
-	__raw_writel(0x2, CM_IVAHD0_CLKSTCTRL);
-	while(__raw_readl(PM_IVAHD0_PWRSTST)!= 0x37);
-
-	__raw_writel(0x2, CM_IVAHD0_IVAHD_CLKCTRL);
-	__raw_writel(0x2, CM_IVAHD0_SL2_CLKCTRL);
-
-	while((__raw_readl(CM_IVAHD0_CLKSTCTRL)&0x100) != 0x100);
-
-	__raw_writel(0x3, RM_IVAHD0_RSTCTRL);
-
-	while(__raw_readl(RM_IVAHD0_RSTST)!=4);
-
-	__raw_writel(0xEAFFFFFE, 0x58088000);
-	__raw_writel(0xEAFFFFFE, 0x58098000);
-
-	__raw_writel(0, RM_IVAHD0_RSTCTRL);
-	while(__raw_readl(RM_IVAHD0_RSTST)!=7);
-
-	/*
-	__raw_writel(0x2, CM_IVAHD1_CLKSTCTRL);
-	while(__raw_readl(PM_IVAHD1_PWRSTST)!= 0x37);
-
-	__raw_writel(0x2, CM_IVAHD1_IVAHD_CLKCTRL);
-	__raw_writel(0x2, CM_IVAHD1_SL2_CLKCTRL);
-
-	while((__raw_readl(CM_IVAHD1_CLKSTCTRL)&0x100) != 0x100);
-
-	__raw_writel(0x3, RM_IVAHD1_RSTCTRL);
-
-	while(__raw_readl(RM_IVAHD1_RSTST)!=4);
-
-	__raw_writel(0xEAFFFFFE, 0x5A088000);
-	__raw_writel(0xEAFFFFFE, 0x5A098000);
-
-	__raw_writel(0, RM_IVAHD1_RSTCTRL);
-	while(__raw_readl(RM_IVAHD1_RSTST)!=7);
-
-
-	__raw_writel(0x2, CM_IVAHD2_CLKSTCTRL);
-	while(__raw_readl(PM_IVAHD2_PWRSTST)!= 0x37);
-
-	__raw_writel(0x2, CM_IVAHD2_IVAHD_CLKCTRL);
-	__raw_writel(0x2, CM_IVAHD2_SL2_CLKCTRL);
-
-	while((__raw_readl(CM_IVAHD2_CLKSTCTRL)&0x100) != 0x100);
-
-	__raw_writel(0x3, RM_IVAHD2_RSTCTRL);
-
-	while(__raw_readl(RM_IVAHD2_RSTST)!=4);
-
-	__raw_writel(0xEAFFFFFE, 0x53088000);
-	__raw_writel(0xEAFFFFFE, 0x53098000);
-
-	__raw_writel(0, RM_IVAHD2_RSTCTRL);
-	while(__raw_readl(RM_IVAHD2_RSTST)!=7);
-	*/
-
-}
-/* Puts IVAHDs in standby state */
-static void ivahd_standby()
-{
-	ivahd_standby_param *ptr;
-
-	ptr = (ivahd_standby_param *)get_iva_param();
-	ivahd_standby_steps(ptr);
-	/*
-	ptr++;
-	ivahd_standby_steps(ptr);
-
-	ptr++;
-	ivahd_standby_steps(ptr);
-	*/
-}
-
-void ivahd_standby_steps(ivahd_standby_param *ivahd_param)
-{
-	const unsigned int IVAHD_memory_wfi[IVAHD_LENGTH_BOOT_CODE] = {
-		0xEA000006,
-		0xEAFFFFFE,
-		0xEAFFFFFE,
-		0xEAFFFFFE,
-		0xEAFFFFFE,
-		0xEAFFFFFE,
-		0xEAFFFFFE,
-		0xEAFFFFFE,
-		0xE3A00000,
-		0xEE070F9A,
-		0xEE070F90,
-		0xE3A00000,
-		0xEAFFFFFE,
-		0xEAFFFFF1
-		};
-
-	unsigned int length = 0;
-	u32 regVal;
-
-	/*--------------------------------------------------------------------------*/
-	/* Set IVAHD in reset mode to enable downloading of boot code               */
-	/* Please note that this state can be SKIPPED if IVAHD is alredy in reset   */
-	/* state during uboot and reset is not de-asserted                          */
-	/* Set bit0 to 1 to put ICONT1 in reset state                               */
-	/* Set bit1 to 1 to put ICONT2 in reset state                               */
-	/*--------------------------------------------------------------------------*/
-	regVal = __raw_readl(ivahd_param->rst_cntl_addr);
-	__raw_writel((regVal | 0x00000003), ivahd_param->rst_cntl_addr);
-
-	/*--------------------------------------------------------------------------*/
-	/* Copy boot code to ICONT1 & INCOT2 memory                                 */
-	/*--------------------------------------------------------------------------*/
-	for (length = 0; length < IVAHD_LENGTH_BOOT_CODE; length++) {
-	__raw_writel(IVAHD_memory_wfi[length],ivahd_param->icont1_itcm_base_addr);
-	__raw_writel(IVAHD_memory_wfi[length],ivahd_param->icont2_itcm_base_addr);
-	ivahd_param->icont1_itcm_base_addr+=4;
-	ivahd_param->icont2_itcm_base_addr+=4;
-	}
-
-	/*--------------------------------------------------------------------------*/
-	/* Take IVAHD out of reset mode.                                            */
-	/* Set bit0 to 0 to take ICONT1 out of reset state                          */
-	/* Set bit1 to 0 to take ICONT1 out of reset state                          */
-	/* This implies ICONT inside IVAHD will exectute WFI                        */
-	/*--------------------------------------------------------------------------*/
-	regVal = __raw_readl(ivahd_param->rst_cntl_addr);
-	__raw_writel((regVal & 0xFFFFFFFC), ivahd_param->rst_cntl_addr);
-}
-
 /******************************************************************************
  * prcm_init() - inits clocks for PRCM as defined in clocks.h
  *   -- called from SRAM, or Flash (using temp SRAM stack).
@@ -622,11 +481,6 @@ void prcm_init(void)
 	}
 
 	/* Waiting for the clks to get stable will be done in individual funcs */
-
-	/*
-	ivahd_clk_enable();
-	ivahd_standby();
-	*/
 
 	/* With clk freqs setup to desired values, enable the required peripherals */
 	peripheral_enable();
@@ -646,6 +500,7 @@ void s_init(void)
 	prcm_init();		/* Just a stub right now */
 	//config_ti816x_sdram_ddr();
 #ifdef CONFIG_TI816X_VOLT_SCALE
+	/* FIXME: Probably need to move this as first step in init */ 
 	//voltage_scale_init();
 #endif
 }
@@ -744,7 +599,6 @@ void watchdog_init(void)
 void peripheral_enable(void)
 {
 #ifndef CONFIG_TI816X_SIM
-	int i=0;
 	/* DMTimers */
 	__raw_writel(0x2, CM_ALWON_L3_SLOW_CLKSTCTRL);
 
@@ -768,100 +622,22 @@ void peripheral_enable(void)
 	 * We select CLKIN and use that
 	 */
 
-	for(i=1; i<2; i++)
-	{
+	/* TIMER 1 */
+	__raw_writel(0x2, CM_ALWON_TIMER_1_CLKCTRL);
 
-		/* TIMER 1 */
-		__raw_writel(0x2, CM_ALWON_TIMER_0_CLKCTRL + (i*4));
+	/* Selects CLKIN (27MHz) */
+	__raw_writel(0x2, CM_TIMER1_CLKSEL);
 
-		/* Selects CLKIN (27MHz) */
-		__raw_writel(0x2, CM_TIMER1_CLKSEL);
+	while(((__raw_readl(CM_ALWON_L3_SLOW_CLKSTCTRL) & (0x80000<<1)) >> (19+1)) != 1);
 
-		while(((__raw_readl(CM_ALWON_L3_SLOW_CLKSTCTRL) & (0x80000<<i)) >> (19 + i)) != 1);
+	while(((__raw_readl(CM_ALWON_TIMER_1_CLKCTRL) & 0x30000)>>16) !=0);
 
-		while(((__raw_readl(CM_ALWON_TIMER_0_CLKCTRL + (i*4)) & 0x30000)>>16) !=0);
 
-		if(i == 0)
-		{
+	__raw_writel(0x2,(DM_TIMER1_BASE_ADDR + 0x54));
+	while(__raw_readl(DM_TIMER1_BASE_ADDR + 0x10) & 1);
 
-			__raw_writel(0x2,(DM_TIMER0_BASE_ADDR + 0x10));
-			while(__raw_readl(DM_TIMER0_BASE_ADDR + 0x10) !=0x2);
-
-			__raw_writel(0x1,(DM_TIMER0_BASE_ADDR + 0x38));
-			while(__raw_readl(DM_TIMER0_BASE_ADDR + 0x38) !=0x1);
-		}
-
-		if(i == 1)
-		{
-
-			__raw_writel(0x2,(DM_TIMER1_BASE_ADDR + 0x54));
-			while(__raw_readl(DM_TIMER1_BASE_ADDR + 0x10) & 1);
-
-			__raw_writel(0x1,(DM_TIMER1_BASE_ADDR + 0x38));
-			//while(__raw_readl(DM_TIMER1_BASE_ADDR + 0x38) !=0x1);
-		}
-
-		if(i == 2)
-		{
-
-			__raw_writel(0x2,(DM_TIMER2_BASE_ADDR + 0x10));
-			while(__raw_readl(DM_TIMER2_BASE_ADDR + 0x10) !=0x2);
-
-			__raw_writel(0x1,(DM_TIMER2_BASE_ADDR + 0x38));
-			while(__raw_readl(DM_TIMER2_BASE_ADDR + 0x38) !=0x1);
-		}
-
-		if(i == 3)
-		{
-
-			__raw_writel(0x2,(DM_TIMER3_BASE_ADDR + 0x10));
-			while(__raw_readl(DM_TIMER3_BASE_ADDR + 0x10) !=0x2);
-
-			__raw_writel(0x1,(DM_TIMER3_BASE_ADDR + 0x38));
-			while(__raw_readl(DM_TIMER3_BASE_ADDR + 0x38) !=0x1);
-		}
-
-		if(i == 4)
-		{
-
-			__raw_writel(0x2,(DM_TIMER4_BASE_ADDR + 0x10));
-			while(__raw_readl(DM_TIMER4_BASE_ADDR + 0x10) !=0x2);
-
-			__raw_writel(0x1,(DM_TIMER4_BASE_ADDR + 0x38));
-			while(__raw_readl(DM_TIMER4_BASE_ADDR + 0x38) !=0x1);
-		}
-
-		if(i == 5)
-		{
-
-			__raw_writel(0x2,(DM_TIMER5_BASE_ADDR + 0x10));
-			while(__raw_readl(DM_TIMER5_BASE_ADDR + 0x10) !=0x2);
-
-			__raw_writel(0x1,(DM_TIMER5_BASE_ADDR + 0x38));
-			while(__raw_readl(DM_TIMER5_BASE_ADDR + 0x38) !=0x1);
-		}
-
-		if(i == 6)
-		{
-
-			__raw_writel(0x2,(DM_TIMER6_BASE_ADDR + 0x10));
-			while(__raw_readl(DM_TIMER6_BASE_ADDR + 0x10) !=0x2);
-
-			__raw_writel(0x1,(DM_TIMER6_BASE_ADDR + 0x38));
-			while(__raw_readl(DM_TIMER6_BASE_ADDR + 0x38) !=0x1);
-		}
-
-		if(i == 7)
-		{
-
-			__raw_writel(0x2,(DM_TIMER7_BASE_ADDR + 0x10));
-			while(__raw_readl(DM_TIMER7_BASE_ADDR + 0x10) !=0x2);
-
-			__raw_writel(0x1,(DM_TIMER7_BASE_ADDR + 0x38));
-			while(__raw_readl(DM_TIMER7_BASE_ADDR + 0x38) !=0x1);
-		}
-
-	}
+	__raw_writel(0x1,(DM_TIMER1_BASE_ADDR + 0x38));
+	//while(__raw_readl(DM_TIMER1_BASE_ADDR + 0x38) !=0x1);
 
 
 	/* UARTs */

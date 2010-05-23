@@ -359,15 +359,15 @@ wait10:
 	.ltorg
 
 ddr1:
-	.word 0x003b018c
+	.word 0x003b0188
 ddr2:
-	.word 0x00000030
+	.word 0x00000000	/* FIXME: GEL currently turns on spare clocks too */
 ddr3:
 	.word 0x0000000f
 ddr4:
 	.word 0x0000010f
 ddr5:
-	.word 0x003b0188
+	.word 0x003b018c
 cm_alwon_ocmc_0_clkstctrl_addr:
 	.word CM_ALWON_OCMC_0_CLKSTCTRL
 cm_alwon_ocmc_0_clkctrl_addr:
