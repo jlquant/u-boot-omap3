@@ -89,7 +89,7 @@
  */
 #define CONFIG_NAND_TI816X
 #define GPMC_NAND_ECC_LP_x16_LAYOUT 	1
-#define NAND_BASE					(0x0)	/* FIXME not sure */
+#define NAND_BASE					(0x50000000)	/* FIXME not sure */
 #define CONFIG_SYS_NAND_ADDR		NAND_BASE   /* physical address */
 												/* to access nand */
 #define CONFIG_SYS_NAND_BASE		NAND_BASE   /* physical address */

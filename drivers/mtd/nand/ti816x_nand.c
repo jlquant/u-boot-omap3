@@ -446,6 +446,9 @@ int board_nand_init(struct nand_chip *nand)
 	 */
 	nand->ecc.mode = NAND_ECC_HW;
 
+	/* FIXME bringup in no ecc */
+	ti816x_nand_switch_ecc(NAND_ECC_NONE, 0);
+
 	/* ecc info */
 	nand->priv = &bch_priv;
 
