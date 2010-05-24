@@ -88,9 +88,16 @@
  * Board NAND Info.
  */
 #define CONFIG_NAND_TI816X
-#define GPMC_NAND_ECC_LP_x16_LAYOUT 1
-
-
+#define GPMC_NAND_ECC_LP_x16_LAYOUT 	1
+#define NAND_BASE					(0x0)	/* FIXME not sure */
+#define CONFIG_SYS_NAND_ADDR		NAND_BASE   /* physical address */
+												/* to access nand */
+#define CONFIG_SYS_NAND_BASE		NAND_BASE   /* physical address */
+												/* to access nand at */
+				                    	        /* CS0 */
+#define CONFIG_SYS_MAX_NAND_DEVICE  1		/* Max number of NAND */
+											/* devices */
+/* #define CONFIG_ENV_IS_IN_NAND		1 */
 
 /* U-Boot default commands */
 #include <config_cmd_default.h>

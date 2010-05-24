@@ -26,13 +26,11 @@
 #include <common.h>
 #include <asm/io.h>
 #include <asm/errno.h>
+#include <asm/arch/cpu.h>
 #include <asm/arch/mem.h>
 #include <asm/arch/nand.h>
 #include <linux/mtd/nand_ecc.h>
 #include <nand.h>
-
-static uint8_t cs;
-static struct nand_ecclayout hw_nand_oob = GPMC_NAND_HW_ECC_LAYOUT;
 
 struct nand_bch_priv {
 	uint8_t mode;
@@ -45,10 +43,15 @@ struct nand_bch_priv {
 #define ECC_BCH_8	1
 #define ECC_BCH_16	2
 
+/* BCH nibbles for diff bch levels */
 #define NAND_ECC_HW_BCH ((uint8_t)(NAND_ECC_HW_OOB_FIRST) + 1)
-#define TI816X_NAND_BCH4_NIBBLES	13
-#define TI816X_NAND_BCH8_NIBBLES	26
-#define TI816X_NAND_BCH16_NIBBLES	52
+#define ECC_BCH4_NIBBLES	13
+#define ECC_BCH8_NIBBLES	26
+#define ECC_BCH16_NIBBLES	52
+
+static uint8_t cs;
+static struct nand_ecclayout hw_nand_oob = GPMC_NAND_HW_ECC_LAYOUT;
+
 
 static struct nand_bch_priv bch_priv = {
 #ifdef CONFIG_TI816X_DEF_ECC_BCH
@@ -267,7 +270,7 @@ static void ti816x_enable_ecc_bch(struct mtd_info *mtd, int32_t mode)
  * @mtd:        MTD device structure
  * @mode:       Read/Write mode
  */
-static void ti816x_enable_ecc(struct mtd_info *mtd, int32_t mode) ===DONE===
+static void ti816x_enable_ecc(struct mtd_info *mtd, int32_t mode) 
 {
 	struct nand_chip *chip = mtd->priv;
 	uint32_t val, dev_width = (chip->options & NAND_BUSWIDTH_16) >> 1;
@@ -309,7 +312,7 @@ static void ti816x_enable_ecc(struct mtd_info *mtd, int32_t mode) ===DONE===
  *				
  *
  */
-void ti816x_nand_switch_ecc(nand_ecc_modes_t hardware, int32_t mode) ===DONE===
+void ti816x_nand_switch_ecc(nand_ecc_modes_t hardware, int32_t mode) 
 {
 	struct nand_chip *nand;
 	struct mtd_info *mtd;
@@ -347,14 +350,14 @@ void ti816x_nand_switch_ecc(nand_ecc_modes_t hardware, int32_t mode) ===DONE===
 			bch->type = mode - 1;
 			switch (bch->type) {
 				case ECC_BCH_4:
-					bch->nibble = ECC_BCH4_NIBBLES;
+					bch->nibbles = ECC_BCH4_NIBBLES;
 					break;
 				case ECC_BCH_16:
-					bch->nibble = ECC_BCH16_NIBBLES;
+					bch->nibbles = ECC_BCH16_NIBBLES;
 					break;
 				case ECC_BCH_8:
 				default:
-					bch->nibble = ECC_BCH8_NIBBLES;
+					bch->nibbles = ECC_BCH8_NIBBLES;
 					break;
 			}
 		} else {
@@ -368,7 +371,7 @@ void ti816x_nand_switch_ecc(nand_ecc_modes_t hardware, int32_t mode) ===DONE===
 			ti816x_hwecc_init(nand);
 			printf("HW ECC Hamming Code selected\n");
 		}
-	} else if{mode == NAND_ECC_SOFT)
+	} else if(mode == NAND_ECC_SOFT) {
 		/* Use mtd default settings */
 		nand->ecc.layout = NULL;
 		printf("SW ECC selected\n");
@@ -397,7 +400,7 @@ void ti816x_nand_switch_ecc(nand_ecc_modes_t hardware, int32_t mode) ===DONE===
  *   nand_scan about special functionality. See the defines for further
  *   explanation
  */
-int board_nand_init(struct nand_chip *nand) ===DONE===
+int board_nand_init(struct nand_chip *nand) 
 {
 	int32_t gpmc_config = 0;
 	cs = 0;
