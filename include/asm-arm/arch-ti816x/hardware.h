@@ -52,7 +52,7 @@
 #define TCLR_PTV_SHIFT			(2)	/* Pre-scaler shift value */
 
 /* McSPI register */
-#define OMAP3_MCSPI1_BASE		0x48030100
+#define OMAP3_MCSPI1_BASE		0x48030000
 /* TODO Cross check */
 #define OMAP3_MCSPI_MAX_FREQ		48000000
 /* Watchdog Timer */
