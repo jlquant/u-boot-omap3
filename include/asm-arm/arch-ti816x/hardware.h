@@ -33,6 +33,7 @@
  */
 
 #define BIT(x)				(1 << x)
+#define CL_BIT(x)			(0 << x)
 
 /* Register Base Addresses */
 #define REG_TIMER_BASE			0x4802C000
@@ -41,15 +42,16 @@
 #define REG_UART2_BASE			0x48024000
 
 /* Timer registers */
-#define REG_TIMER_TCLR			0x38	/* Timer control register */
-#define REG_TIMER_TCRR			0x3C	/* Timer counter register */
-#define REG_TIMER_TLDR			0x40	/* Timer load value register*/
+#define REG_TIMER_TCLR			0x38		/* Timer control register */
+#define REG_TIMER_TCRR			0x3C		/* Timer counter register */
+#define REG_TIMER_TLDR			0x40		/* Timer load value register*/
 
 /* Timer register bits */
-#define TCLR_ST				BIT(0)	/* Start=1 Stop=0 */
-#define TCLR_AR				BIT(1)	/* Auto reload */
-#define TCLR_PRE			BIT(5)	/* Pre-scaler enable for the timer input clk */
-#define TCLR_PTV_SHIFT			(2)	/* Pre-scaler shift value */
+#define TCLR_ST				BIT(0)		/* Start=1 Stop=0 */
+#define TCLR_AR				BIT(1)		/* Auto reload */
+#define TCLR_PTV_SHIFT			(2)		/* Pre-scaler shift value */
+#define TCLR_PRE			BIT(5)		/* Pre-scaler enable for the timer input clk */
+#define TCLR_PRE_DISABLE		CL_BIT(5)	/* Pre-scalar disable for the timer input clk */
 
 /* McSPI register */
 #define OMAP3_MCSPI1_BASE		0x48030000

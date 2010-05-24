@@ -41,8 +41,9 @@ static ulong lastinc;
  * With CLKIN = 27 MHz, timer clk period = 1/27MHz = 370.37 uSec
  * Timer overflows after:
  * 	(0xFFFFFFFF - TLDR + 1) * clk period * clock divider (2^(PTV+1))
- * With PTV = 0 we get timer period = (0xFFFFFFFF - 0 + 1) * 370.37 * 10e-6 * 1
- * i.e. timer period =  ~159secs
+ * With PTV = 0 we get 
+ *	timer period = (0xFFFFFFFF - 0 + 1) * 370.37 * 10e-6 * 1 (with PRE-SCALAR disabled)
+ * 	timer period = (0xFFFFFFFF - 0 + 1) * 370.37 * 10e-6 * 2 (with PRE-SCALAR enabled)
  */
 
 int timer_init(void)
@@ -51,10 +52,10 @@ int timer_init(void)
 	/* TODO: Select clock source? */
 	/* Clk source selection is s_init code, we select CLKIN ie 27MHz */
 	/* TODO: Determine 'ptv' value */
-	/* Keeping ptv value as 0 right now */
+	/* Keeping ptv value as 0 right now AND disabling the PRE_SCALAR */
 
 	writel(TIMER_LOAD_VAL, TIMER_REG(REG_TIMER_TLDR));
-	writel((ptv << TCLR_PTV_SHIFT) | TCLR_PRE
+	writel((ptv << TCLR_PTV_SHIFT) | TCLR_PRE_DISABLE
 			| TCLR_AR | TCLR_ST, TIMER_REG(REG_TIMER_TCLR));
 
 	reset_timer_masked();	/* init the timestamp and lastinc value */
