@@ -23,8 +23,12 @@
 #include <asm/arch/clocks.h>
 #include <asm/arch/cpu.h>
 #include <asm/arch/hardware.h>
+#include <asm/arch/mem.h>
 #include <asm/arch/mux.h>
 #include <asm/arch/sys_proto.h>
+#include <asm/arch/nand.h>
+#include <linux/mtd/nand_ecc.h>
+#include <nand.h>
 
 
 #define __raw_readl(a)    (*(volatile unsigned int *)(a))
@@ -715,3 +719,35 @@ void set_muxconf_regs(void)
 /* optionally do something like blinking LED */
 void board_hang (void)
 { while (0) {};}
+
+
+#ifdef CONFIG_NAND_TI816X 
+/******************************************************************************
+ * Command to switch between NAND HW and SW ecc
+ *****************************************************************************/
+static int do_switch_ecc(cmd_tbl_t * cmdtp, int flag, int argc, char *argv[])
+{
+	if (argc != 2)
+		goto usage;
+	if (strncmp(argv[1], "hw", 2) == 0)
+		ti816x_nand_switch_ecc(NAND_ECC_HW, 0);
+	else if (strncmp(argv[1], "sw", 2) == 0)
+		ti816x_nand_switch_ecc(NAND_ECC_SOFT, 0);
+	else
+		goto usage;
+
+	return 0;
+
+usage:
+	printf ("Usage: nandecc %s\n", cmdtp->usage);
+	return 1;
+}
+
+U_BOOT_CMD(
+	nandecc, 2, 1,	do_switch_ecc,
+	"switch NAND ECC calculation algorithm",
+	"[hw/sw] - Switch between NAND hardware (hw) or software (sw) ecc algorithm"
+);
+
+#endif /* CONFIG_NAND_OMAP_GPMC */
+

@@ -59,7 +59,7 @@ static struct nand_bch_priv bch_priv = {
 	.type = ECC_BCH8,
 	.nibbles = ECC_BCH8_NIBBLES
 #else /* hamming code */
-	.mode = NAND_ECC_HW,
+	.mode = NAND_ECC_SOFT,
 #endif
 };
 /*
@@ -318,12 +318,108 @@ void ti816x_nand_switch_ecc(nand_ecc_modes_t hardware, int32_t mode)
 	struct mtd_info *mtd;
 	struct nand_bch_priv *bch;
 
+#if 1
 	if (nand_curr_device < 0 ||
 	    nand_curr_device >= CONFIG_SYS_MAX_NAND_DEVICE ||
 	    !nand_info[nand_curr_device].name) {
 		printf("Error: Can't switch ecc, no devices available\n");
 		return;
 	}
+#else
+	nand_curr_device = 0;
+#endif
+
+	mtd = &nand_info[nand_curr_device];
+	nand = mtd->priv;
+	bch = nand->priv;
+
+	nand->options |= NAND_OWN_BUFFERS;
+
+	/* Reset ecc interface */
+	nand->ecc.read_page = NULL;
+	nand->ecc.write_page = NULL;
+	nand->ecc.read_oob = NULL;
+	nand->ecc.write_oob = NULL;
+	nand->ecc.hwctl = NULL;
+	nand->ecc.correct = NULL;
+	nand->ecc.calculate = NULL;
+
+	nand->ecc.mode = hardware;
+	/* Setup the ecc configurations again */
+	if (hardware == NAND_ECC_HW) {
+		if (mode) {
+			printf("BCH not support yet\n");
+			bch->mode = NAND_ECC_HW_BCH;
+			/* -1 for converting mode to bch type */
+			bch->type = mode - 1;
+			switch (bch->type) {
+				case ECC_BCH_4:
+					bch->nibbles = ECC_BCH4_NIBBLES;
+					break;
+				case ECC_BCH_16:
+					bch->nibbles = ECC_BCH16_NIBBLES;
+					break;
+				case ECC_BCH_8:
+				default:
+					bch->nibbles = ECC_BCH8_NIBBLES;
+					break;
+			}
+		} else {
+			bch->mode = NAND_ECC_HW;
+			nand->ecc.layout = &hw_nand_oob;
+			nand->ecc.size = 512;
+			nand->ecc.bytes = 3;
+			nand->ecc.hwctl = ti816x_enable_ecc;
+			nand->ecc.correct = ti816x_correct_data;
+			nand->ecc.calculate = ti816x_calculate_ecc;
+			ti816x_hwecc_init(nand);
+			printf("HW ECC Hamming Code selected\n");
+		}
+	} else if(mode == NAND_ECC_SOFT) {
+		/* Use mtd default settings */
+		nand->ecc.layout = NULL;
+		printf("SW ECC selected\n");
+	} else {
+		printf("ECC Disabled\n");
+	}
+
+	/* Update NAND handling after ECC mode switch */
+	nand_scan_tail(mtd);
+
+	nand->options &= ~NAND_OWN_BUFFERS;
+}
+
+/*
+ * ti816x_nand_ecc_init - switch the ECC operation ib/w h/w ecc 
+ * (i.e. hamming / bch) and s/w ecc.
+ * The default is to come up on s/w ecc
+ *
+ * @hardware -  NAND_ECC_HW -switch to h/w ecc 
+ * 				NAND_ECC_SOFT -switch to s/w ecc
+ *
+ * @mode - 		0 - hamming code
+ * 				1 - bch4
+ *				2 - bch8
+ *				3 - bch16
+ *				
+ *
+ */
+void ti816x_nand_ecc_init(nand_ecc_modes_t hardware, int32_t mode) 
+{
+	struct nand_chip *nand;
+	struct mtd_info *mtd;
+	struct nand_bch_priv *bch;
+
+#if 0
+	if (nand_curr_device < 0 ||
+	    nand_curr_device >= CONFIG_SYS_MAX_NAND_DEVICE ||
+	    !nand_info[nand_curr_device].name) {
+		printf("Error: Can't switch ecc, no devices available\n");
+		return;
+	}
+#else
+	nand_curr_device = 0;
+#endif
 
 	mtd = &nand_info[nand_curr_device];
 	nand = mtd->priv;
@@ -385,6 +481,7 @@ void ti816x_nand_switch_ecc(nand_ecc_modes_t hardware, int32_t mode)
 	nand->options &= ~NAND_OWN_BUFFERS;
 }
 
+
 /*
  * Board-specific NAND initialization. The following members of the
  * argument are board-specific:
@@ -416,6 +513,7 @@ int board_nand_init(struct nand_chip *nand)
 		/* Check if NAND type is set */
 		if ((readl(&gpmc_cfg->cs[cs].config1) & 0xC00) == 0x800) {
 			/* Found it!! */
+			printf("Found NAND device @ GPMC CS:%1d\n", cs);
 			break;
 		}
 		cs++;
@@ -426,10 +524,12 @@ int board_nand_init(struct nand_chip *nand)
 		return -ENODEV;
 	}
 
+#if 0
 	gpmc_config = readl(&gpmc_cfg->config);
 	/* Disable Write protect */
-	gpmc_config |= 0x10;
+	gpmc_config = 0x12;
 	writel(gpmc_config, &gpmc_cfg->config);
+#endif
 
 	nand->IO_ADDR_R = (void __iomem *)&gpmc_cfg->cs[cs].nand_dat;
 	nand->IO_ADDR_W = (void __iomem *)&gpmc_cfg->cs[cs].nand_cmd;
@@ -437,20 +537,33 @@ int board_nand_init(struct nand_chip *nand)
 	nand->cmd_ctrl = ti816x_nand_hwcontrol;
 	nand->options = NAND_NO_PADDING | NAND_CACHEPRG | NAND_NO_AUTOINCR;
 	/* If we are 16 bit dev, our gpmc config tells us that */
-	if ((readl(&gpmc_cfg->cs[cs].config1) & 0x3000) == 0x1000)
+	if ((readl(&gpmc_cfg->cs[cs].config1) & 0x3000) == 0x1000) {
+		printf("NAND device width is 16-bit\n");
 		nand->options |= NAND_BUSWIDTH_16;
+	}
 
 	nand->chip_delay = 100;
+
+	/* ecc info */
+	nand->priv = &bch_priv;
+
+
+	nand->ecc.mode = NAND_ECC_SOFT;
+#if 0
 	/* Hamming code is selected by default, BCH will be selected 
 	 * only when we flash u-boot from u-boot
 	 */
 	nand->ecc.mode = NAND_ECC_HW;
 
-	/* FIXME bringup in no ecc */
-	ti816x_nand_switch_ecc(NAND_ECC_NONE, 0);
-
-	/* ecc info */
-	nand->priv = &bch_priv;
-
+	/* FIXME bringup in h/w hamming code ecc */
+	/* ti816x_nand_ecc_init(NAND_ECC_HW, 0); */
+	nand->ecc.layout = &hw_nand_oob;
+	nand->ecc.size = 512;
+	nand->ecc.bytes = 3;
+	nand->ecc.hwctl = ti816x_enable_ecc;
+	nand->ecc.correct = ti816x_correct_data;
+	nand->ecc.calculate = ti816x_calculate_ecc;
+	ti816x_hwecc_init(nand);
+#endif
 	return 0;
 }

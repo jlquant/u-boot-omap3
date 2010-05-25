@@ -92,7 +92,8 @@ void gpmc_init(void)
 	/* putting a blanket check on GPMC based on ZeBu for now */
 	gpmc_cfg = (struct gpmc *)GPMC_BASE;
 
-#ifndef CONFIG_NOFLASH
+/* #ifndef CONFIG_NOFLASH */
+#if 1
 
 #if defined(CONFIG_CMD_NAND) || defined(CONFIG_CMD_ONENAND)
 	const u32 *gpmc_config = NULL;
@@ -106,13 +107,20 @@ void gpmc_init(void)
 	u32 config = 0;
 
 	/* global settings */
+	writel(0x00000008, &gpmc_cfg->sysconfig);
+	writel(0x00000100, &gpmc_cfg->irqstatus);
+	writel(0x00000200, &gpmc_cfg->irqenable);
+
+#if 0
 	writel(0, &gpmc_cfg->irqenable); /* isr's sources masked */
 	writel(0, &gpmc_cfg->timeout_control);/* timeout disable */
 
 	config = readl(&gpmc_cfg->config);
 	config &= (~0xf00);
 	writel(config, &gpmc_cfg->config);
-
+#else
+	writel(0x00000012, &gpmc_cfg->config);
+#endif
 	/*
 	 * Disable the GPMC0 config set by ROM code
 	 */
