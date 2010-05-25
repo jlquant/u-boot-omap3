@@ -55,11 +55,7 @@ static const u32 gpmc_m_nand[GPMC_MAX_REG] = {
 	M_NAND_GPMC_CONFIG6, 0
 };
 
-#if defined(CONFIG_ENV_IS_IN_NAND)
 #define GPMC_CS 0
-#else
-#define GPMC_CS 1
-#endif
 
 #endif
 
@@ -134,7 +130,7 @@ void gpmc_init(void)
 	size = PISMO1_NAND_SIZE;
 	enable_gpmc_cs_config(gpmc_config, &gpmc_cfg->cs[0], base, size);
 #if defined(CONFIG_ENV_IS_IN_NAND)
-	f_off = SMNAND_ENV_OFFSET;
+	f_off = MNAND_ENV_OFFSET;
 	f_sec = (128 << 10);	/* 128 KiB */
 	/* env setup */
 	boot_flash_base = base;

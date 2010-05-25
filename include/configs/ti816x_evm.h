@@ -55,9 +55,6 @@
 # define CONFIG_CMD_NAND     /* NAND support         */
 #endif
 
-#ifndef CONFIG_NOR_BOOT
-# define CONFIG_NOFLASH		/* Revisit: For boot modes without NOR */
-#endif
 
 #ifdef CONFIG_NOR_BOOT
 # define CONFIG_SYS_FLASH_CFI
@@ -67,13 +64,11 @@
 # define CONFIG_SYS_MAX_FLASH_BANKS	1
 # define CONFIG_ENV_IS_IN_FLASH		1
 # define CONFIG_SYS_FLASH_BASE		(0x00000000)
-# define CONFIG_SYS_MONITOR_BASE		CONFIG_SYS_FLASH_BASE
+# define CONFIG_SYS_MONITOR_BASE	CONFIG_SYS_FLASH_BASE
 # define NOR_SECT_SIZE				(128 * 1024)
 # define CONFIG_SYS_ENV_SECT_SIZE	(NOR_SECT_SIZE)
 # define CONFIG_ENV_OFFSET			(5 * NOR_SECT_SIZE)
-# define CONFIG_ENV_ADDR				(CONFIG_ENV_OFFSET)
-#else
-# define CONFIG_SYS_MONITOR_BASE	    	TEXT_BASE
+# define CONFIG_ENV_ADDR			(CONFIG_ENV_OFFSET)
 #endif
 
 #define CONFIG_TI816X_EVM_DDR
@@ -97,7 +92,35 @@
 				                    	        /* CS0 */
 #define CONFIG_SYS_MAX_NAND_DEVICE  1		/* Max number of NAND */
 											/* devices */
-/* #define CONFIG_ENV_IS_IN_NAND		1 */
+#define CONFIG_ENV_IS_IN_NAND		1 
+
+#ifdef CONFIG_ENV_IS_IN_NAND
+# define CONFIG_SYS_MAX_FLASH_SECT	520	/* max number of sectors in a chip */
+# define CONFIG_SYS_MAX_FLASH_BANKS	2	/* max number of flash banks */
+# define CONFIG_SYS_MONITOR_LEN		(256 << 10)	/* Reserve 2 sectors */
+# define CONFIG_SYS_FLASH_BASE		boot_flash_base
+/* Monitor at start of flash */
+# define CONFIG_SYS_MONITOR_BASE	CONFIG_SYS_FLASH_BASE
+# define MNAND_ENV_OFFSET			0x260000 /* environment starts here */
+# define CONFIG_SYS_ENV_SECT_SIZE	boot_flash_sec
+# define CONFIG_ENV_OFFSET			boot_flash_off
+# define CONFIG_ENV_ADDR			MNAND_ENV_OFFSET
+# define CONFIG_CMD_SAVEENV		
+# define CONFIG_NOFLASH
+# undef CONFIG_ENV_IS_NOWHERE
+#else
+# define CONFIG_SYS_MONITOR_BASE	TEXT_BASE
+# define CONFIG_NOFLASH		/* Revisit: For boot modes without NOR */
+#endif
+
+#ifndef __ASSEMBLY__
+extern unsigned int boot_flash_base;
+extern volatile unsigned int boot_flash_env_addr;
+extern unsigned int boot_flash_off;
+extern unsigned int boot_flash_sec;
+extern unsigned int boot_flash_type;
+#endif
+
 
 /* U-Boot default commands */
 #include <config_cmd_default.h>
@@ -182,7 +205,9 @@ rw initrd=0x81000000,16MB init=/bin/ash lpj=50000 mem=256M earlyprintk"
  * Environment settings
  */
 #ifdef CONFIG_NOFLASH
-# define CONFIG_ENV_IS_NOWHERE
+# ifndef CONFIG_ENV_IS_IN_NAND
+#  define CONFIG_ENV_IS_NOWHERE
+# endif
 #endif
 
 #define CONFIG_ENV_SIZE			0x2000
