@@ -51,6 +51,9 @@ struct nand_bch_priv {
 
 static uint8_t cs;
 static struct nand_ecclayout hw_nand_oob = GPMC_NAND_HW_ECC_LAYOUT;
+static struct nand_ecclayout hw_bch4_nand_oob = GPMC_NAND_HW_BCH4_ECC_LAYOUT;
+static struct nand_ecclayout hw_bch8_nand_oob = GPMC_NAND_HW_BCH8_ECC_LAYOUT;
+static struct nand_ecclayout hw_bch16_nand_oob = GPMC_NAND_HW_BCH16_ECC_LAYOUT;
 
 
 static struct nand_bch_priv bch_priv = {
@@ -63,7 +66,7 @@ static struct nand_bch_priv bch_priv = {
 #endif
 };
 /*
- * ti816x_nand_hwcontrol - Set the address pointers corretly for the
+ * ti816x_nand_hwcontrol - Set the address pointers correctly for the
  *			following address/data/command operation
  */
 static void ti816x_nand_hwcontrol(struct mtd_info *mtd, int32_t cmd,
@@ -236,32 +239,41 @@ static void ti816x_enable_ecc_bch(struct mtd_info *mtd, int32_t mode)
 	uint32_t unused_length;
 	struct nand_bch_priv *bch = chip->priv;
 
+	/* Clear the ecc result registers, select ecc reg as 1 */
+	writel(ECCCLEAR | ECCRESULTREG1, &gpmc_cfg->ecc_control);
+
 	switch (mode) {
+		case NAND_ECC_WRITE:
+			/* by default eccsize0 selected for ecc1resultsize */
+			/* eccsize0 config */
+			val  = (bch->nibbles << 12);
+			/* eccsize1 config */
+			val |= ((unused_length + bch->nibbles) << 22);
+			break;
+
 		case NAND_ECC_READ:
+		default:
 			/* by default eccsize0 selected for ecc1resultsize */
 			/* eccsize0 config */
 			val  = (bch->nibbles << 12);
 			/* eccsize1 config */
 			val |= (unused_length << 22);
-			writel(val, &gpmc_cfg->ecc_size_config);
-
-			/* by default 512kB sector page is selected */
-			/* set bch mode */
-			val  = (1 << 16);
-			/* bch4 / bch8 / bch16 */
-			val |= (bch->type << 12);
-			/* set wrap mode to 1 */
-			val |= (1 << 8);
-			val |= (dev_width << 7);
-			val |= (cs << 1);
-			/* enable ecc */
-			val |= (1);
-			writel(val, &gpmc_cfg->ecc_config);
-			break;
-		
-		case NAND_ECC_WRITE:
 			break;
 	}
+	/* ecc size configuration */
+	writel(val, &gpmc_cfg->ecc_size_config);
+	/* by default 512bytes sector page is selected */
+	/* set bch mode */
+	val  = (1 << 16);
+	/* bch4 / bch8 / bch16 */
+	val |= (bch->type << 12);
+	/* set wrap mode to 1 */
+	val |= (1 << 8);
+	val |= (dev_width << 7);
+	val |= (cs << 1);
+	/* enable ecc */
+	val |= (1);
+	writel(val, &gpmc_cfg->ecc_config);
 }
 
 
@@ -318,16 +330,12 @@ void ti816x_nand_switch_ecc(nand_ecc_modes_t hardware, int32_t mode)
 	struct mtd_info *mtd;
 	struct nand_bch_priv *bch;
 
-#if 1
 	if (nand_curr_device < 0 ||
 	    nand_curr_device >= CONFIG_SYS_MAX_NAND_DEVICE ||
 	    !nand_info[nand_curr_device].name) {
 		printf("Error: Can't switch ecc, no devices available\n");
 		return;
 	}
-#else
-	nand_curr_device = 0;
-#endif
 
 	mtd = &nand_info[nand_curr_device];
 	nand = mtd->priv;
@@ -352,110 +360,38 @@ void ti816x_nand_switch_ecc(nand_ecc_modes_t hardware, int32_t mode)
 			bch->mode = NAND_ECC_HW_BCH;
 			/* -1 for converting mode to bch type */
 			bch->type = mode - 1;
+			printf("HW ECC BCH");
 			switch (bch->type) {
 				case ECC_BCH_4:
+					nand->ecc.layout = &hw_bch4_nand_oob;
 					bch->nibbles = ECC_BCH4_NIBBLES;
+					nand->ecc.bytes = 32;
+					printf("4 not supported\n");
+					goto no_support;
 					break;
 				case ECC_BCH_16:
+					nand->ecc.bytes = 104;
+					nand->ecc.layout = &hw_bch8_nand_oob;
 					bch->nibbles = ECC_BCH16_NIBBLES;
+					printf("16 not supported\n");
+					goto no_support;
 					break;
 				case ECC_BCH_8:
 				default:
+					nand->ecc.bytes = 56;
+					nand->ecc.layout = &hw_bch16_nand_oob;
 					bch->nibbles = ECC_BCH8_NIBBLES;
+					printf("8 Selected\n");
 					break;
 			}
-		} else {
 			bch->mode = NAND_ECC_HW;
-			nand->ecc.layout = &hw_nand_oob;
 			nand->ecc.size = 512;
-			nand->ecc.bytes = 3;
-			nand->ecc.hwctl = ti816x_enable_ecc;
-			nand->ecc.correct = ti816x_correct_data;
-			nand->ecc.calculate = ti816x_calculate_ecc;
-			ti816x_hwecc_init(nand);
-			printf("HW ECC Hamming Code selected\n");
-		}
-	} else if(mode == NAND_ECC_SOFT) {
-		/* Use mtd default settings */
-		nand->ecc.layout = NULL;
-		printf("SW ECC selected\n");
-	} else {
-		printf("ECC Disabled\n");
-	}
-
-	/* Update NAND handling after ECC mode switch */
-	nand_scan_tail(mtd);
-
-	nand->options &= ~NAND_OWN_BUFFERS;
-}
-
-/*
- * ti816x_nand_ecc_init - switch the ECC operation ib/w h/w ecc 
- * (i.e. hamming / bch) and s/w ecc.
- * The default is to come up on s/w ecc
- *
- * @hardware -  NAND_ECC_HW -switch to h/w ecc 
- * 				NAND_ECC_SOFT -switch to s/w ecc
- *
- * @mode - 		0 - hamming code
- * 				1 - bch4
- *				2 - bch8
- *				3 - bch16
- *				
- *
- */
-void ti816x_nand_ecc_init(nand_ecc_modes_t hardware, int32_t mode) 
-{
-	struct nand_chip *nand;
-	struct mtd_info *mtd;
-	struct nand_bch_priv *bch;
-
 #if 0
-	if (nand_curr_device < 0 ||
-	    nand_curr_device >= CONFIG_SYS_MAX_NAND_DEVICE ||
-	    !nand_info[nand_curr_device].name) {
-		printf("Error: Can't switch ecc, no devices available\n");
-		return;
-	}
-#else
-	nand_curr_device = 0;
+			nand->ecc.hwctl = ti816x_enable_ecc_bch;
+			nand->ecc.correct = ti816x_correct_data_bch;
+			nand->ecc.calculate = ti816x_calculate_ecc_bch;
+			ti816x_hwecc_init(nand);
 #endif
-
-	mtd = &nand_info[nand_curr_device];
-	nand = mtd->priv;
-	bch = nand->priv;
-
-	nand->options |= NAND_OWN_BUFFERS;
-
-	/* Reset ecc interface */
-	nand->ecc.read_page = NULL;
-	nand->ecc.write_page = NULL;
-	nand->ecc.read_oob = NULL;
-	nand->ecc.write_oob = NULL;
-	nand->ecc.hwctl = NULL;
-	nand->ecc.correct = NULL;
-	nand->ecc.calculate = NULL;
-
-	nand->ecc.mode = mode;
-	/* Setup the ecc configurations again */
-	if (hardware == NAND_ECC_HW) {
-		if (mode) {
-			printf("BCH not support yet\n");
-			bch->mode = NAND_ECC_HW_BCH;
-			/* -1 for converting mode to bch type */
-			bch->type = mode - 1;
-			switch (bch->type) {
-				case ECC_BCH_4:
-					bch->nibbles = ECC_BCH4_NIBBLES;
-					break;
-				case ECC_BCH_16:
-					bch->nibbles = ECC_BCH16_NIBBLES;
-					break;
-				case ECC_BCH_8:
-				default:
-					bch->nibbles = ECC_BCH8_NIBBLES;
-					break;
-			}
 		} else {
 			bch->mode = NAND_ECC_HW;
 			nand->ecc.layout = &hw_nand_oob;
@@ -479,8 +415,9 @@ void ti816x_nand_ecc_init(nand_ecc_modes_t hardware, int32_t mode)
 	nand_scan_tail(mtd);
 
 	nand->options &= ~NAND_OWN_BUFFERS;
+no_support:
+	return;
 }
-
 
 /*
  * Board-specific NAND initialization. The following members of the
@@ -546,24 +483,7 @@ int board_nand_init(struct nand_chip *nand)
 
 	/* ecc info */
 	nand->priv = &bch_priv;
-
-
 	nand->ecc.mode = NAND_ECC_SOFT;
-#if 0
-	/* Hamming code is selected by default, BCH will be selected 
-	 * only when we flash u-boot from u-boot
-	 */
-	nand->ecc.mode = NAND_ECC_HW;
 
-	/* FIXME bringup in h/w hamming code ecc */
-	/* ti816x_nand_ecc_init(NAND_ECC_HW, 0); */
-	nand->ecc.layout = &hw_nand_oob;
-	nand->ecc.size = 512;
-	nand->ecc.bytes = 3;
-	nand->ecc.hwctl = ti816x_enable_ecc;
-	nand->ecc.correct = ti816x_correct_data;
-	nand->ecc.calculate = ti816x_calculate_ecc;
-	ti816x_hwecc_init(nand);
-#endif
 	return 0;
 }
