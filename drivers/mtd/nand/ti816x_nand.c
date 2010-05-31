@@ -552,39 +552,28 @@ static void ti816x_enable_ecc(struct mtd_info *mtd, int32_t mode)
 		break;
 	}
 }
-
 /*
- * ti816x_nand_switch_ecc - switch the ECC operation ib/w h/w ecc 
+ * __ti816x_nand_switch_ecc - switch the ECC operation ib/w h/w ecc 
  * (i.e. hamming / bch) and s/w ecc.
  * The default is to come up on s/w ecc
  *
- * @hardware -  NAND_ECC_HW -switch to h/w ecc 
+ * @nand:	NAND chip datastructure  
+ * @hardware:  NAND_ECC_HW -switch to h/w ecc 
  * 				NAND_ECC_SOFT -switch to s/w ecc
  *
- * @mode - 		0 - hamming code
+ * @mode: 		0 - hamming code
  * 				1 - bch4
  *				2 - bch8
  *				3 - bch16
  *				
  *
  */
-void ti816x_nand_switch_ecc(nand_ecc_modes_t hardware, int32_t mode) 
+void __ti816x_nand_switch_ecc(struct nand_chip *nand, 
+		nand_ecc_modes_t hardware, int32_t mode) 
 {
-	struct nand_chip *nand;
-	struct mtd_info *mtd;
 	struct nand_bch_priv *bch;
 
-	if (nand_curr_device < 0 ||
-	    nand_curr_device >= CONFIG_SYS_MAX_NAND_DEVICE ||
-	    !nand_info[nand_curr_device].name) {
-		printf("Error: Can't switch ecc, no devices available\n");
-		return;
-	}
-
-	mtd = &nand_info[nand_curr_device];
-	nand = mtd->priv;
 	bch = nand->priv;
-
 	nand->options |= NAND_OWN_BUFFERS;
 
 	/* Reset ecc interface */
@@ -653,11 +642,47 @@ void ti816x_nand_switch_ecc(nand_ecc_modes_t hardware, int32_t mode)
 		printf("ECC Disabled\n");
 	}
 
+no_support:
+	return;
+}
+
+
+/*
+ * ti816x_nand_switch_ecc - switch the ECC operation ib/w h/w ecc 
+ * (i.e. hamming / bch) and s/w ecc.
+ * The default is to come up on s/w ecc
+ *
+ * @hardware -  NAND_ECC_HW -switch to h/w ecc 
+ * 				NAND_ECC_SOFT -switch to s/w ecc
+ *
+ * @mode - 		0 - hamming code
+ * 				1 - bch4
+ *				2 - bch8
+ *				3 - bch16
+ *				
+ *
+ */
+void ti816x_nand_switch_ecc(nand_ecc_modes_t hardware, int32_t mode) 
+{
+	struct nand_chip *nand;
+	struct mtd_info *mtd;
+
+	if (nand_curr_device < 0 ||
+	    nand_curr_device >= CONFIG_SYS_MAX_NAND_DEVICE ||
+	    !nand_info[nand_curr_device].name) {
+		printf("Error: Can't switch ecc, no devices available\n");
+		return;
+	}
+
+	mtd = &nand_info[nand_curr_device];
+	nand = mtd->priv;
+
+	__ti816x_nand_switch_ecc(nand, hardware, mode);
+	
 	/* Update NAND handling after ECC mode switch */
 	nand_scan_tail(mtd);
 
 	nand->options &= ~NAND_OWN_BUFFERS;
-no_support:
 	return;
 }
 
@@ -729,6 +754,10 @@ int board_nand_init(struct nand_chip *nand)
 
 	/* required in case of BCH */
 	elm_init();
-	
+
+#if 1 /* by default get H/W ECC Hamming code */
+	nand->ecc.mode = NAND_ECC_HW;
+	__ti816x_nand_switch_ecc(nand, NAND_ECC_HW, 0);
+#endif	
 	return 0;
 }
