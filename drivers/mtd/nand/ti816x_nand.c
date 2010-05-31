@@ -39,9 +39,9 @@ struct nand_bch_priv {
 };
 
 /* bch types */
-#define ECC_BCH_4	0
-#define ECC_BCH_8	1
-#define ECC_BCH_16	2
+#define ECC_BCH4	0
+#define ECC_BCH8	1
+#define ECC_BCH16	2
 
 /* BCH nibbles for diff bch levels */
 #define NAND_ECC_HW_BCH ((uint8_t)(NAND_ECC_HW_OOB_FIRST) + 1)
@@ -65,6 +65,81 @@ static struct nand_bch_priv bch_priv = {
 	.mode = NAND_ECC_SOFT,
 #endif
 };
+
+/* 
+ * ti816x_read_bch8_result - Read BCH result for BCH8 level
+ *
+ * @mtd:	MTD device structure
+ * @big_endian:	When set read register 3 first
+ * @ecc_code:	Read syndrome from BCH result registers
+ */
+static void ti816x_read_bch8_result(struct mtd_info *mtd, uint8_t big_endian, 
+				uint8_t *ecc_code)
+{
+	uint32_t *ptr;
+	int8_t i = 0, j;
+
+	if (big_endian) {
+		ptr = &gpmc_cfg->bch_result_0_3[0].bch_result_x[3];
+		ecc_code[i++] = readl(ptr) & 0xFF;
+		ptr--;
+		for (j = 0; j < 3; j++) {
+			ecc_code[i++] = (readl(ptr) >> 24) & 0xFF;
+			ecc_code[i++] = (readl(ptr) >> 16) & 0xFF;
+			ecc_code[i++] = (readl(ptr) >>  8) & 0xFF;
+			ecc_code[i++] = readl(ptr) & 0xFF;
+			ptr--;
+		}
+	}
+	else {
+		ptr = &gpmc_cfg->bch_result_0_3[0].bch_result_x[0];
+		for (j = 0; j < 3; j++) {
+			ecc_code[i++] = readl(ptr) & 0xFF;
+			ecc_code[i++] = (readl(ptr) >>  8) & 0xFF;
+			ecc_code[i++] = (readl(ptr) >> 16) & 0xFF;
+			ecc_code[i++] = (readl(ptr) >> 24) & 0xFF;
+			ptr++;	
+		}
+		ecc_code[i++] = readl(ptr) & 0xFF;
+	}
+}
+
+/* 
+ * ti816x_ecc_enable_bch - Enable BCH H/W ECC calculation
+ *
+ * @mtd:	MTD device structure
+ *
+ */
+static void ti816x_ecc_enable_bch(struct mtd_info *mtd) {
+	uint32_t val;
+
+	val = readl(&gpmc_cfg->ecc_control);
+	val |= 0x00000100u;
+	writel(val, &gpmc_cfg->ecc_control); /* clear ECC outputs */
+
+	val = readl(&gpmc_cfg->ecc_control);	
+	val &= ~0xF;
+	val |= 0x1;
+	writel(val, &gpmc_cfg->ecc_control);  /* reset ecc pointer to result 1 */
+
+	val = readl(&gpmc_cfg->ecc_config);
+	val |= 0x1;
+	writel(val, &gpmc_cfg->ecc_config); /* enable ecc */
+}
+
+/* 
+ * ti816x_ecc_disable - Disable H/W ECC calculation
+ *
+ * @mtd:	MTD device structure
+ *
+ */
+static void ti816x_ecc_disable(struct mtd_info *mtd) {
+
+	writel((readl(&gpmc_cfg->ecc_config) & ~0x1),
+		&gpmc_cfg->ecc_config);
+}
+
+
 /*
  * ti816x_nand_hwcontrol - Set the address pointers correctly for the
  *			following address/data/command operation
@@ -95,6 +170,65 @@ static void ti816x_nand_hwcontrol(struct mtd_info *mtd, int32_t cmd,
 }
 
 /*
+ * ti816x_hwecc_init_bch - Initialize the BCH Hardware ECC for NAND flash in
+ *                   GPMC controller
+ * @mtd:        MTD device structure
+ * @mode:		Read/Write mode
+ */
+static void ti816x_hwecc_init_bch(struct nand_chip *chip, int32_t mode)
+{
+	uint32_t val, dev_width = (chip->options & NAND_BUSWIDTH_16) >> 1;
+	uint32_t unused_length;
+	struct nand_bch_priv *bch = chip->priv;
+
+	switch(bch->nibbles) {
+		case ECC_BCH4_NIBBLES:
+			unused_length = 3;
+			break;
+		case ECC_BCH8_NIBBLES: 
+			unused_length = 2;
+			break;
+		case ECC_BCH16_NIBBLES:
+			unused_length = 0;
+			break;
+	}
+
+	/* Clear the ecc result registers, select ecc reg as 1 */
+	writel(ECCCLEAR | ECCRESULTREG1, &gpmc_cfg->ecc_control);
+
+	switch (mode) {
+		case NAND_ECC_WRITE:
+			/* eccsize1 config */
+			val = ((unused_length + bch->nibbles) << 22);
+			break;
+
+		case NAND_ECC_READ:
+		default:
+			/* by default eccsize0 selected for ecc1resultsize */
+			/* eccsize0 config */
+			val  = (bch->nibbles << 12);
+			/* eccsize1 config */
+			val |= (unused_length << 22);
+			break;
+	}
+	/* ecc size configuration */
+	writel(val, &gpmc_cfg->ecc_size_config);
+	/* by default 512bytes sector page is selected */
+	/* set bch mode */
+	val  = (1 << 16);
+	/* bch4 / bch8 / bch16 */
+	val |= (bch->type << 12);
+	/* set wrap mode to 1 */
+	val |= (1 << 8);
+	val |= (dev_width << 7);
+	val |= (cs << 1);
+	/* enable ecc */
+	/* val |= (1); */ /* should not enable ECC just init i.e. config */
+	writel(val, &gpmc_cfg->ecc_config);
+}
+
+
+/*
  * ti816x_hwecc_init - Initialize the Hardware ECC for NAND flash in
  *                   GPMC controller
  * @mtd:        MTD device structure
@@ -123,6 +257,121 @@ static uint32_t gen_true_ecc(uint8_t *ecc_buf)
 	return ecc_buf[0] | (ecc_buf[1] << 16) | ((ecc_buf[2] & 0xF0) << 20) |
 		((ecc_buf[2] & 0x0F) << 8);
 }
+
+/* 
+ * ti816x_rotate_ecc_bch - Rotate the syndrome bytes
+ *
+ * @mtd:	MTD device structure
+ * @calc_ecc:	ECC read from ECC registers
+ * @syndrome:	Rotated syndrome will be retuned in this array
+ *
+ */
+static void ti816x_rotate_ecc_bch(struct mtd_info *mtd, uint8_t *calc_ecc, 
+		uint8_t *syndrome)
+{
+	struct nand_chip *chip = mtd->priv;
+	struct nand_bch_priv *bch = chip->priv;
+	uint8_t n_bytes = 0;
+	int8_t i,j;
+
+	switch(bch->type) {
+		case ECC_BCH4:
+			n_bytes = 8;
+			break;
+
+		case ECC_BCH16:
+			n_bytes = 28;
+			break;
+		
+		case ECC_BCH8:
+		default:
+			n_bytes = 13;
+			break;
+	}
+
+	for (i = 0, j = n_bytes; i < n_bytes; i++, j--)
+		syndrome[i] =  calc_ecc[j];
+
+}
+
+
+/* 
+ * ti816x_fix_errors_bch - Correct bch error in the data
+ *
+ * @mtd:	MTD device structure
+ * @data:	Data read from flash
+ * @error_count:Number of errors in data
+ * @error_loc:	Locations of errors in the data
+ *
+ */
+static void ti816x_fix_errors_bch(struct mtd_info *mtd, uint8_t *data, 
+		uint32_t error_count, uint32_t *error_loc)
+{
+	struct nand_chip *chip = mtd->priv;
+	struct nand_bch_priv *bch = chip->priv;
+	uint8_t count = 0;
+	uint32_t error_byte_pos;
+	uint32_t error_bit_mask;
+	uint32_t last_bit = (bch->nibbles * 4) - 1;
+
+	/* Flip all bits as specified by the error location array. */
+	/* FOR( each found error location flip the bit ) */
+	for (count = 0; count < error_count; count++) {
+		if (error_loc[count] > last_bit) {
+			/* Remove the ECC spare bits from correction. */
+			error_loc[count] -= (last_bit + 1); 
+			/* Offset bit in data region */
+			error_byte_pos = (512 * 8) - (error_loc[count] / 8) - 1;
+			/* Error Bit mask */
+			error_bit_mask = 0x1 << (error_loc[count] % 8);
+			/* Toggle the error bit to make the correction. */
+			data[error_byte_pos] ^= error_bit_mask;
+		}
+	}
+}
+
+/*
+ * ti816x_correct_data_bch - Compares the ecc read from nand spare area 
+ * with ECC registers values and corrects one bit error if it has occured
+ *
+ * @mtd:		MTD device structure
+ * @dat:		page data
+ * @read_ecc:	ecc read from nand flash (ignored)
+ * @calc_ecc:	ecc read from ECC registers
+ *
+ * @return 0 if data is OK or corrected, else returns -1
+ */
+static int ti816x_correct_data_bch(struct mtd_info *mtd, uint8_t *dat,
+				uint8_t *read_ecc, uint8_t *calc_ecc)
+{
+	struct nand_chip *chip = mtd->priv;
+	struct nand_bch_priv *bch = chip->priv;
+	uint8_t syndrome[28];
+	uint32_t error_count = 0;
+	uint32_t error_loc[8];
+
+	elm_reset();
+	elm_config((enum bch_level)(bch->type));
+
+	/* while reading ECC result we read it in big endian.
+	 * Hence while loading to ELM we have rotate to get the right endian.
+	 */
+	ti816x_rotate_ecc_bch(mtd, calc_ecc, syndrome);
+
+	/* use elm module to check for errors */
+	if (elm_check_error(syndrome, bch->nibbles, &error_count, error_loc) != 0) {
+		printf("ECC: uncorrectable.\n");
+		return -1;
+	}
+
+	/* correct bch error */
+	if (error_count > 0) {
+		ti816x_fix_errors_bch(mtd, dat, error_count, error_loc);
+	}	
+
+	return 0;
+}
+
 
 /*
  * ti816x_correct_data - Compares the ecc read from nand spare area with ECC
@@ -190,6 +439,36 @@ static int ti816x_correct_data(struct mtd_info *mtd, uint8_t *dat,
 }
 
 /*
+ *  ti816x_calculate_ecc_bch - Read BCH ECC result
+ *
+ *  @mtd:	MTD structure
+ *  @dat:	unused
+ *  @ecc_code:	ecc_code buffer
+ */
+static int ti816x_calculate_ecc_bch(struct mtd_info *mtd, const uint8_t *dat,
+				uint8_t *ecc_code)
+{
+	struct nand_chip *chip = mtd->priv;
+	struct nand_bch_priv *bch = chip->priv;
+	uint8_t big_endian = 1;
+	int8_t ret = 0;
+
+	if (bch->type == ECC_BCH8)
+		ti816x_read_bch8_result(mtd, big_endian, ecc_code);	
+	else /* BCH4 and BCH16 currently not supported */
+		ret = -1;
+
+	/*
+	 * Stop reading anymore ECC vals and clear old results
+	 * enable will be called if more reads are required
+	 */
+	ti816x_ecc_disable(mtd);
+
+	return ret;
+}
+
+
+/*
  *  ti816x_calculate_ecc - Generate non-inverted ECC bytes.
  *
  *  Using noninverted ECC can be considered ugly since writing a blank
@@ -235,45 +514,10 @@ static int ti816x_calculate_ecc(struct mtd_info *mtd, const uint8_t *dat,
 static void ti816x_enable_ecc_bch(struct mtd_info *mtd, int32_t mode)
 {
 	struct nand_chip *chip = mtd->priv;
-	uint32_t val, dev_width = (chip->options & NAND_BUSWIDTH_16) >> 1;
-	uint32_t unused_length;
-	struct nand_bch_priv *bch = chip->priv;
 
-	/* Clear the ecc result registers, select ecc reg as 1 */
-	writel(ECCCLEAR | ECCRESULTREG1, &gpmc_cfg->ecc_control);
+	ti816x_hwecc_init_bch(chip, mode);
 
-	switch (mode) {
-		case NAND_ECC_WRITE:
-			/* by default eccsize0 selected for ecc1resultsize */
-			/* eccsize0 config */
-			val  = (bch->nibbles << 12);
-			/* eccsize1 config */
-			val |= ((unused_length + bch->nibbles) << 22);
-			break;
-
-		case NAND_ECC_READ:
-		default:
-			/* by default eccsize0 selected for ecc1resultsize */
-			/* eccsize0 config */
-			val  = (bch->nibbles << 12);
-			/* eccsize1 config */
-			val |= (unused_length << 22);
-			break;
-	}
-	/* ecc size configuration */
-	writel(val, &gpmc_cfg->ecc_size_config);
-	/* by default 512bytes sector page is selected */
-	/* set bch mode */
-	val  = (1 << 16);
-	/* bch4 / bch8 / bch16 */
-	val |= (bch->type << 12);
-	/* set wrap mode to 1 */
-	val |= (1 << 8);
-	val |= (dev_width << 7);
-	val |= (cs << 1);
-	/* enable ecc */
-	val |= (1);
-	writel(val, &gpmc_cfg->ecc_config);
+	writel((readl(&gpmc_cfg->ecc_config) | 0x1), &gpmc_cfg->ecc_config);
 }
 
 
@@ -362,21 +606,21 @@ void ti816x_nand_switch_ecc(nand_ecc_modes_t hardware, int32_t mode)
 			bch->type = mode - 1;
 			printf("HW ECC BCH");
 			switch (bch->type) {
-				case ECC_BCH_4:
+				case ECC_BCH4:
 					nand->ecc.layout = &hw_bch4_nand_oob;
 					bch->nibbles = ECC_BCH4_NIBBLES;
 					nand->ecc.bytes = 32;
 					printf("4 not supported\n");
 					goto no_support;
 					break;
-				case ECC_BCH_16:
+				case ECC_BCH16:
 					nand->ecc.bytes = 104;
 					nand->ecc.layout = &hw_bch8_nand_oob;
 					bch->nibbles = ECC_BCH16_NIBBLES;
 					printf("16 not supported\n");
 					goto no_support;
 					break;
-				case ECC_BCH_8:
+				case ECC_BCH8:
 				default:
 					nand->ecc.bytes = 56;
 					nand->ecc.layout = &hw_bch16_nand_oob;
@@ -386,12 +630,10 @@ void ti816x_nand_switch_ecc(nand_ecc_modes_t hardware, int32_t mode)
 			}
 			bch->mode = NAND_ECC_HW;
 			nand->ecc.size = 512;
-#if 0
 			nand->ecc.hwctl = ti816x_enable_ecc_bch;
 			nand->ecc.correct = ti816x_correct_data_bch;
 			nand->ecc.calculate = ti816x_calculate_ecc_bch;
-			ti816x_hwecc_init(nand);
-#endif
+			ti816x_hwecc_init_bch(nand, NAND_ECC_READ);
 		} else {
 			bch->mode = NAND_ECC_HW;
 			nand->ecc.layout = &hw_nand_oob;
@@ -436,7 +678,7 @@ no_support:
  */
 int board_nand_init(struct nand_chip *nand) 
 {
-	int32_t gpmc_config = 0;
+	/* int32_t gpmc_config = 0; */
 	cs = 0;
 
 	/*
@@ -485,5 +727,8 @@ int board_nand_init(struct nand_chip *nand)
 	nand->priv = &bch_priv;
 	nand->ecc.mode = NAND_ECC_SOFT;
 
+	/* required in case of BCH */
+	elm_init();
+	
 	return 0;
 }

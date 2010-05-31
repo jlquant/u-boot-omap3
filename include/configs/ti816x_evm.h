@@ -53,7 +53,9 @@
 # define CONFIG_SPI_FLASH_WINBOND
 # define CONFIG_CMD_SF
 # define CONFIG_CMD_NAND     /* NAND support         */
+# define CONFIG_NAND_TI816X
 #endif
+
 
 
 #ifdef CONFIG_NOR_BOOT
@@ -63,12 +65,14 @@
 # define CONFIG_SYS_MAX_FLASH_SECT	512
 # define CONFIG_SYS_MAX_FLASH_BANKS	1
 # define CONFIG_ENV_IS_IN_FLASH		1
-# define CONFIG_SYS_FLASH_BASE		(0x00000000)
+# define CONFIG_SYS_FLASH_BASE		(0x08000000)
 # define CONFIG_SYS_MONITOR_BASE	CONFIG_SYS_FLASH_BASE
 # define NOR_SECT_SIZE				(128 * 1024)
 # define CONFIG_SYS_ENV_SECT_SIZE	(NOR_SECT_SIZE)
 # define CONFIG_ENV_OFFSET			(5 * NOR_SECT_SIZE)
 # define CONFIG_ENV_ADDR			(CONFIG_ENV_OFFSET)
+# undef CONFIG_CMD_NAND 
+# undef CONFIG_NAND_TI816X
 #endif
 
 #define CONFIG_TI816X_EVM_DDR
@@ -82,35 +86,37 @@
 /*
  * Board NAND Info.
  */
-#define CONFIG_NAND_TI816X
-#define GPMC_NAND_ECC_LP_x16_LAYOUT 	1
-#define NAND_BASE					(0x8000000)	/* FIXME not sure */
-#define CONFIG_SYS_NAND_ADDR		NAND_BASE   /* physical address */
+
+#ifdef CONFIG_NAND_TI816X
+# define GPMC_NAND_ECC_LP_x16_LAYOUT 	1
+# define NAND_BASE					(0x08000000)	/* FIXME not sure */
+# define CONFIG_SYS_NAND_ADDR		NAND_BASE   /* physical address */
 												/* to access nand */
-#define CONFIG_SYS_NAND_BASE		NAND_BASE   /* physical address */
+# define CONFIG_SYS_NAND_BASE		NAND_BASE   /* physical address */
 												/* to access nand at */
 				                    	        /* CS0 */
-#define CONFIG_SYS_MAX_NAND_DEVICE  1		/* Max number of NAND */
+# define CONFIG_SYS_MAX_NAND_DEVICE  1		/* Max number of NAND */
 											/* devices */
-#define CONFIG_ENV_IS_IN_NAND		1 
+# define CONFIG_ENV_IS_IN_NAND		1 
 
-#ifdef CONFIG_ENV_IS_IN_NAND
-# define CONFIG_SYS_MAX_FLASH_SECT	520	/* max number of sectors in a chip */
-# define CONFIG_SYS_MAX_FLASH_BANKS	2	/* max number of flash banks */
-# define CONFIG_SYS_MONITOR_LEN		(256 << 10)	/* Reserve 2 sectors */
-# define CONFIG_SYS_FLASH_BASE		boot_flash_base
+# ifdef CONFIG_ENV_IS_IN_NAND
+#  define CONFIG_SYS_MAX_FLASH_SECT	520	/* max number of sectors in a chip */
+#  define CONFIG_SYS_MAX_FLASH_BANKS	2	/* max number of flash banks */
+#  define CONFIG_SYS_MONITOR_LEN		(256 << 10)	/* Reserve 2 sectors */
+#  define CONFIG_SYS_FLASH_BASE		boot_flash_base
 /* Monitor at start of flash */
-# define CONFIG_SYS_MONITOR_BASE	CONFIG_SYS_FLASH_BASE
-# define MNAND_ENV_OFFSET			0x260000 /* environment starts here */
-# define CONFIG_SYS_ENV_SECT_SIZE	boot_flash_sec
-# define CONFIG_ENV_OFFSET			boot_flash_off
-# define CONFIG_ENV_ADDR			MNAND_ENV_OFFSET
-# define CONFIG_CMD_SAVEENV		
-# define CONFIG_NOFLASH
-# undef CONFIG_ENV_IS_NOWHERE
-#else
-# define CONFIG_SYS_MONITOR_BASE	TEXT_BASE
-# define CONFIG_NOFLASH		/* Revisit: For boot modes without NOR */
+#  define CONFIG_SYS_MONITOR_BASE	CONFIG_SYS_FLASH_BASE
+#  define MNAND_ENV_OFFSET			0x260000 /* environment starts here */
+#  define CONFIG_SYS_ENV_SECT_SIZE	boot_flash_sec
+#  define CONFIG_ENV_OFFSET			boot_flash_off
+#  define CONFIG_ENV_ADDR			MNAND_ENV_OFFSET
+#  define CONFIG_CMD_SAVEENV		
+#  define CONFIG_NOFLASH
+#  undef CONFIG_ENV_IS_NOWHERE
+# else
+#  define CONFIG_SYS_MONITOR_BASE	TEXT_BASE
+#  define CONFIG_NOFLASH		/* Revisit: For boot modes without NOR */
+# endif
 #endif
 
 #ifndef __ASSEMBLY__

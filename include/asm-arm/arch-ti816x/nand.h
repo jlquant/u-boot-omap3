@@ -140,7 +140,7 @@
 #ifndef __ASSEMBLY__
 
 enum bch_level {
-	BCH_4_BIT,
+	BCH_4_BIT = 0,
 	BCH_8_BIT,
 	BCH_16_BIT
 };
@@ -181,9 +181,9 @@ struct elm {
 	struct location  error_location[8];
 };
 
-int elm_check_error(u32 *syndrome, u32 nibbles, u32 *error_count,
+int elm_check_error(u8 *syndrome, u32 nibbles, u32 *error_count,
 		u32 *error_locations);
-int elm_config(enum bch_level level, u32 buffer_size);
+int elm_config(enum bch_level level);
 void elm_reset(void);
 void elm_init( void );
 
