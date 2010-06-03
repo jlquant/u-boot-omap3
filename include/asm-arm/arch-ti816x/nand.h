@@ -148,16 +148,16 @@ enum bch_level {
 
 /* BCH syndrome registers */
 struct syndrome {
-	u32 syndrome_fragment_x[7];
-	u8 res1[36];
+	u32 syndrome_fragment_x[7]; /* 0x400, 0x404.... 0x418 */
+	u8 res1[36]; /* 0x41c */
 };
 
 /* BCH error status & location register */
 struct location {
-	u32 location_status;
-	u8 res1[124];
-	u32 error_location_x[16];
-	u8 res2[64];
+	u32 location_status; /* 0x800 */
+	u8 res1[124]; /* 0x804 */
+	u32 error_location_x[16]; /* 0x880.... */
+	u8 res2[64]; /* 0x8c0 */
 };
 
 /* BCH ELM register map - do not try to allocate memmory for this structure.
@@ -166,19 +166,19 @@ struct location {
  * Directly initialize the struct pointer to ELM base address.
  */
 struct elm {
-	u32 rev;
-	u8 res1[12];
-	u32 sysconfig;
-	u32 sysstatus;
-	u32 irqstatus;
-	u32 irqenable;
-	u32 location_config;
-	u8 res2[92]; 
-	u32 page_ctrl;
-	u8 res3[92]; 
-	struct  syndrome syndrome_fragments[8];
-	u8 res4[508];
-	struct location  error_location[8];
+	u32 rev; 		/* 0x000 */
+	u8 res1[12];	/* 0x004 */
+	u32 sysconfig;  /* 0x010 */
+	u32 sysstatus;	/* 0x014 */
+	u32 irqstatus;	/* 0x018 */ 
+	u32 irqenable;	/* 0x01c */
+	u32 location_config;	/* 0x020 */
+	u8 res2[92]; 			/* 0x024 */
+	u32 page_ctrl;			/* 0x080 */
+	u8 res3[892]; 			/* 0x084 */
+	struct  syndrome syndrome_fragments[8]; /* 0x400 */
+	u8 res4[512]; /* 0x600 */
+	struct location  error_location[8]; /* 0x800 */
 };
 
 int elm_check_error(u8 *syndrome, u32 nibbles, u32 *error_count,

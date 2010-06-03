@@ -271,8 +271,8 @@ mark1:
 	/* wait for gpmc enable to settle */
  ocmc0_wait0:
 	ldr r2, [r5]
-	ands r2, r2, #0x00000010
-	cmp r2, #1
+	ands r2, r2, #0x00000100
+	cmp r2, #0x00000100
 	bne ocmc0_wait0
 	/* CLKCTRL */
 	ldr r5, cm_alwon_ocmc_0_clkctrl_addr
@@ -293,8 +293,8 @@ mark1:
 	/* wait for gpmc enable to settle */
  ocmc1_wait0:
 	ldr r2, [r5]
-	ands r2, r2, #0x00000010
-	cmp r2, #1
+	ands r2, r2, #0x00000100
+	cmp r2, #0x00000100
 	bne ocmc1_wait0
 	/* CLKCTRL */
 	ldr r5, cm_alwon_ocmc_1_clkctrl_addr

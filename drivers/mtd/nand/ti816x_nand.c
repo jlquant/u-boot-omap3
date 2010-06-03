@@ -57,13 +57,9 @@ static struct nand_ecclayout hw_bch16_nand_oob = GPMC_NAND_HW_BCH16_ECC_LAYOUT;
 
 
 static struct nand_bch_priv bch_priv = {
-#ifdef CONFIG_TI816X_DEF_ECC_BCH
 	.mode = NAND_ECC_HW_BCH,
 	.type = ECC_BCH8,
 	.nibbles = ECC_BCH8_NIBBLES
-#else /* hamming code */
-	.mode = NAND_ECC_SOFT,
-#endif
 };
 
 /* 
@@ -589,7 +585,6 @@ void __ti816x_nand_switch_ecc(struct nand_chip *nand,
 	/* Setup the ecc configurations again */
 	if (hardware == NAND_ECC_HW) {
 		if (mode) {
-			printf("BCH not support yet\n");
 			bch->mode = NAND_ECC_HW_BCH;
 			/* -1 for converting mode to bch type */
 			bch->type = mode - 1;
@@ -717,7 +712,7 @@ int board_nand_init(struct nand_chip *nand)
 		/* Check if NAND type is set */
 		if ((readl(&gpmc_cfg->cs[cs].config1) & 0xC00) == 0x800) {
 			/* Found it!! */
-			printf("Found NAND device @ GPMC CS:%1d\n", cs);
+			printf("Searching for NAND device @ GPMC CS:%1d\n", cs);
 			break;
 		}
 		cs++;
@@ -742,7 +737,6 @@ int board_nand_init(struct nand_chip *nand)
 	nand->options = NAND_NO_PADDING | NAND_CACHEPRG | NAND_NO_AUTOINCR;
 	/* If we are 16 bit dev, our gpmc config tells us that */
 	if ((readl(&gpmc_cfg->cs[cs].config1) & 0x3000) == 0x1000) {
-		printf("NAND device width is 16-bit\n");
 		nand->options |= NAND_BUSWIDTH_16;
 	}
 
@@ -755,9 +749,9 @@ int board_nand_init(struct nand_chip *nand)
 	/* required in case of BCH */
 	elm_init();
 
-#if 1 /* by default get H/W ECC Hamming code */
+#if 0 /* by default get H/W ECC Hamming code */
 	nand->ecc.mode = NAND_ECC_HW;
-	__ti816x_nand_switch_ecc(nand, NAND_ECC_HW, 0);
+	__ti816x_nand_switch_ecc(nand, NAND_ECC_HW, 2);
 #endif	
 	return 0;
 }
