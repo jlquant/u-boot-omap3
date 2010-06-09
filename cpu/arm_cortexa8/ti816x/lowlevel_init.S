@@ -43,7 +43,7 @@ _TEXT_BASE:
 #define SPNOR_GPMC_CONFIG7	0x00000C00
 
 /* default gpmc pad config valaue */
-#define GPMC_PAD_DEF_VAL	(0x00000009)
+#define GPMC_PAD_DEF_VAL	(0x00000001)
 
 /**************************************************************************
  * cpy_nor_gpmc_code: relocates nor gpmc init code into ocmc0 where its
@@ -124,32 +124,40 @@ next2:
 	str r2, [r5]
 
 	/* do pin muxing */
-	ldr r2, gpmc_pad_def_val
-	ldr r5, tim7_out_addr
+	mov r2, #0x1
+	ldr r5, gpmc_a12_addr
 	str r2, [r5]
-	ldr r5, sc1_data_addr
+	ldr r5, gpmc_a13_addr
 	str r2, [r5]
-	ldr r5, sc1_clk_addr
+	ldr r5, gpmc_a14_addr
 	str r2, [r5]
-	ldr r5, sc1_rst_addr
+	ldr r5, gpmc_a15_addr
 	str r2, [r5]
-	ldr r5, sc1_det_addr
+	ldr r5, sc1_rst_addr /* gpmc_a15 used in two pins */
 	str r2, [r5]
-	ldr r5, uart0_rin_addr
+	ldr r5, gpmc_a16_addr
 	str r2, [r5]
-	ldr r5, uart0_dcdn_addr
+	ldr r5, gpmc_a17_addr
 	str r2, [r5]
-	ldr r5, uart0_dsrn_addr
+	ldr r5, gpmc_a18_addr
 	str r2, [r5]
-	ldr r5, uart0_dtrn_addr
+	ldr r5, gpmc_a19_addr
 	str r2, [r5]
-	ldr r5, sc1_vccen_addr
+	ldr r5, gpmc_a20_addr
 	str r2, [r5]
-	ldr r5, sc0_rst_addr
+	ldr r5, gpmc_a21_addr
 	str r2, [r5]
-	ldr r5, sc0_vccen_addr
+	ldr r5, gpmc_a22_addr
 	str r2, [r5]
-	ldr r5, tim6_out_addr
+	ldr r5, gpmc_a23_addr
+	mov r2, #0x2
+	str r2, [r5]
+	mov r2, #0x1
+	ldr r5, gpmc_a24_addr
+	str r2, [r5]
+	ldr r5, gpmc_a25_addr
+	str r2, [r5]
+	ldr r5, gpmc_a27_addr
 	str r2, [r5]
 
 	/* enable CS0 */
@@ -208,36 +216,38 @@ gpmc_cfg7_val:
     .word SPNOR_GPMC_CONFIG7
 
 /* pad config reg addresses and values */
-tim7_out_addr:
-	.word TIM7_OUT
-sc1_data_addr:
-	.word SC1_DATA
-sc1_clk_addr:
-	.word SC1_CLK
+gpmc_a12_addr:
+	.word GPMC_A12
+gpmc_a13_addr:
+	.word GPMC_A13
+gpmc_a14_addr:
+	.word GPMC_A14
+gpmc_a15_addr:
+	.word GPMC_A15
+gpmc_a16_addr:
+	.word GPMC_A16
+gpmc_a17_addr:
+	.word GPMC_A17
+gpmc_a18_addr:
+	.word GPMC_A18
+gpmc_a19_addr:
+	.word GPMC_A19
+gpmc_a20_addr:
+	.word GPMC_A20
+gpmc_a21_addr:
+	.word GPMC_A21
+gpmc_a22_addr:
+	.word GPMC_A22
+gpmc_a23_addr:
+	.word GPMC_A23
+gpmc_a24_addr:
+	.word GPMC_A24
+gpmc_a25_addr:
+	.word GPMC_A25
+gpmc_a27_addr:
+	.word GPMC_A27
 sc1_rst_addr:
-	.word SC1_RST
-sc1_det_addr:
-	.word SC1_DET
-uart0_rin_addr:
-	.word UART0_RIN
-uart0_dcdn_addr:
-	.word UART0_DCDN
-uart0_dsrn_addr:
-	.word UART0_DSRN
-uart0_dtrn_addr:
-	.word UART0_DTRN
-sc1_vccen_addr:
-	.word SC1_VCCEN
-sc0_rst_addr:
-	.word SC0_RST
-sc0_vccen_addr:
-	.word SC0_VCCEN
-tim6_out_addr:
-	.word TIM6_OUT
-
-/* default gpmc pad value */
-gpmc_pad_def_val:
-	.word GPMC_PAD_DEF_VAL
+	.word  SC1_RST
 
 /*****************************************************************************
  * lowlevel_init: - Platform low level init.
@@ -261,7 +271,11 @@ mark1:
 	sub r0, r0, r5 /* r0 <- _start w.r.t current place of execution */
 	ldr r1, _TEXT_BASE   /* test if we run from flash or RAM */
 	cmp r0, r1          /* don't reloc during debug */
+#ifndef CONFIG_NOR_BOOT
 	beq gpmc_init_ret
+#else
+	beq gpmc_init_start
+#endif
 
 	/**** enable ocmc 0 ****/
 	/* CLKSTCTRL */
@@ -307,6 +321,7 @@ mark1:
 	cmp r2, #0
 	bne ocmc1_wait1
 
+gpmc_init_start:
 	/* gpmc init */
 	bl  cpy_nor_gpmc_code /* copy nor gpmc init code to sram */
 	ldr r0, _gpmc_init_ret

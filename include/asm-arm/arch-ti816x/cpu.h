@@ -264,6 +264,8 @@ Fixed at 32kHz
  * lines a12 - a26
  */
 #define CFG_MOD_BASE 0x48140000
+
+#if 0
 #define TIM7_OUT	(CFG_MOD_BASE + 0xb34)	/* a12 */
 #define SC1_DATA	(CFG_MOD_BASE + 0xb18)	/* a13 */
 #define SC1_CLK		(CFG_MOD_BASE + 0xb14)	/* a14 */
@@ -277,6 +279,42 @@ Fixed at 32kHz
 #define SC0_RST		(CFG_MOD_BASE + 0xaf4)  /* a22 */
 #define SC0_VCCEN	(CFG_MOD_BASE + 0xb04)  /* a23 */
 #define TIM6_OUT	(CFG_MOD_BASE + 0xb30)  /* a24 */
+#define SC0_DATA	(CFG_MOD_BASE + 0xafc)  /* a25 */
+#define GPMC_A27	(CFG_MOD_BASE + 0xba0)  /* a27 */
+#else
+#define TIM7_OUT	(CFG_MOD_BASE + 0xb34)	/* a12 */
+#define UART1_CTSN	(CFG_MOD_BASE + 0xadc)	/* a13 */
+#define UART1_RTSN	(CFG_MOD_BASE + 0xad8)	/* a14 */
+#define UART2_RTSN	(CFG_MOD_BASE + 0xae8)  /* a15 */
+#define SC1_RST		(CFG_MOD_BASE + 0xb10)  /* a15 */
+#define UART2_CTSN	(CFG_MOD_BASE + 0xaec)  /* a16 */
+#define UART0_RIN	(CFG_MOD_BASE + 0xacc)  /* a17 */
+#define UART0_DCDN	(CFG_MOD_BASE + 0xac8)  /* a18 */
+#define UART0_DSRN	(CFG_MOD_BASE + 0xac4)  /* a19 */
+#define UART0_DTRN	(CFG_MOD_BASE + 0xac0)  /* a20 */
+#define SPI_SCS3	(CFG_MOD_BASE + 0xaa4)  /* a21 */
+#define SPI_SC2		(CFG_MOD_BASE + 0xaa0)  /* a22 */
+#define GPO_IO6		(CFG_MOD_BASE + 0xca0)  /* a23 */
+#define TIM6_OUT	(CFG_MOD_BASE + 0xb30)  /* a24 */
+#define SC0_DATA	(CFG_MOD_BASE + 0xafc)  /* a25 */
+#define GPMC_A27	(CFG_MOD_BASE + 0xba0)	/* a27 */
+
+#define GPMC_A12 TIM7_OUT
+#define GPMC_A13 UART1_CTSN
+#define GPMC_A14 UART1_RTSN
+#define GPMC_A15 UART2_RTSN
+#define GPMC_A16 UART2_CTSN
+#define GPMC_A17 UART0_RIN
+#define GPMC_A18 UART0_DCDN
+#define GPMC_A19 UART0_DSRN
+#define GPMC_A20 UART0_DTRN
+#define GPMC_A21 SPI_SCS3
+#define GPMC_A22 SPI_SC2
+#define GPMC_A23 GPO_IO6
+#define GPMC_A24 TIM6_OUT
+#define GPMC_A25 SC0_DATA
+
+#endif
 
 /* BCH Error Location Module */
 #define ELM_BASE	(0x48080000)

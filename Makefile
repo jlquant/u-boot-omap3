@@ -3172,7 +3172,6 @@ ti816x_sim_config:	unconfig
 ti816x_evm_nor_config:	unconfig
 	@[ -z "$(findstring _nor_,$@)" ] || \
 	{ \
-		echo "TEXT_BASE:=0x00000000" > $(obj)board/ti816x_evm/config.tmp;  \
 		echo "#define CONFIG_TI816X"    >>$(obj)include/config.h ; \
 		echo "#define CONFIG_NOR_BOOT"    >>$(obj)include/config.h ; \
 		echo "#define CONFIG_TI816X_EVM"    >>$(obj)include/config.h ; \
