@@ -119,15 +119,10 @@ static inline void delay(unsigned long loops)
 }
 
 /*
-void udelay(unsigned long usecs)
-{
-	delay(usecs);
-}
-*/
-
-/*
  * Basic board specific setup
  */
+
+/* In the simulator some peripheral registers are not modelled */
 #ifndef CONFIG_TI816X_SIM
 int board_init(void)
 {
@@ -146,7 +141,7 @@ int board_init(void)
 	regVal |= (1<<3);
 	__raw_writel(regVal, UART_SYSCFG);
 
-	/* 
+	/*
 	 * XXX: Most of the code below should already be in the driver and
  	 * should be arranged with board/SoC level init
 	 */
@@ -220,7 +215,7 @@ int board_init(void)
 	/* address of boot parameters */
 	gd->bd->bi_boot_params = PHYS_DRAM_1 + 0x100;
 
-	gpmc_init(); 
+	gpmc_init();
 
 	return 0;
 }
@@ -283,6 +278,7 @@ u32 get_sysboot_value(void)
 	return mode;
 }
 
+#if 0			/* Will be used later */
 /*************************************************************
  * Routine: get_mem_type(void) - returns the kind of memory connected
  * to GPMC that we are trying to boot form. Uses SYS BOOT settings.
@@ -330,7 +326,7 @@ u32 is_cpu_family(void)
 {
 	u32 cpuid = 0, cpu_family = 816;
 
-	/* TODO:VB__Revsisit
+	/* TODO:VB__Revisit
 	__asm__ __volatile__("mrc p15, 0, %0, c0, c0, 0":"=r"(cpuid));
 	if ((cpuid & 0xf) == 0x0) {
 		cpu_family = CPU_OMAP34XX;
@@ -350,9 +346,10 @@ u32 cpu_is_ti816x(void)
 {
 	return 1;
 }
+#endif
 
+#if 0
 #ifdef CONFIG_TI816X_EVM_DDR
-
 /*********************************************************************
  * config_ti816x_sdram_ddr() - Init DDR on TI816X EVM
  *********************************************************************/
@@ -404,17 +401,17 @@ void config_ti816x_sdram_ddr(void)
 
 }
 #endif /* CFG_TI816X_EVM_DDR */
-
+#endif
 
 /*
  * TI816X specific functions
  */
 static void main_pll_init_ti816x(u32 sil_index, u32 clk_index)
 {
-	dpll_param *ptr;
+	u32 main_pll_ctrl=0;
 
-	/* Getting the base address of MAIN DPLL param table*/
-	ptr = (dpll_param *)get_main_dpll_param();
+	/* Getting the base address of MAIN DPLL param table
+	ptr = (dpll_param *)get_main_dpll_param(); */
 
 	/* Sequence to be followed:
 	 * 1. Put the PLL in bypass mode by setting BIT2 in its ctrl reg
@@ -425,46 +422,223 @@ static void main_pll_init_ti816x(u32 sil_index, u32 clk_index)
 	 * 5. Enable the PLL by setting the appropriate bit in the CTRL reg of the PLL
 	 */
 
-	 /* Nothing to done right now as the registers have been pre-loaded @ reset and
-	  * by the ROM code also (if applicable). Retaining this function for future
+ 	 /* If the registers have been set by the ROM code dont do anything
 	  */
+
+	 main_pll_ctrl = __raw_readl(MAINPLL_CTRL);
+	 main_pll_ctrl &= 0xFFFFFFFB;
+	 main_pll_ctrl |= 4;
+	 __raw_writel(main_pll_ctrl, MAINPLL_CTRL);
+
+	 main_pll_ctrl = __raw_readl(MAINPLL_CTRL);
+	 main_pll_ctrl &= 0xFFFFFFF7;
+	 main_pll_ctrl |= 8;
+	 __raw_writel(main_pll_ctrl, MAINPLL_CTRL);
+
+	 main_pll_ctrl = __raw_readl(MAINPLL_CTRL);
+	 main_pll_ctrl &= 0xFF;
+	 main_pll_ctrl |= (MAIN_N<<16 | MAIN_P<<8);
+	 __raw_writel(main_pll_ctrl, MAINPLL_CTRL);
+
+	 __raw_writel(0x0, MAINPLL_PWD);
+
+	 __raw_writel((1<<31 | 1<<28 | (MAIN_INTFREQ1<<24) | MAIN_FRACFREQ1), MAINPLL_FREQ1);
+	 __raw_writel(((1<<8) | MAIN_MDIV1), MAINPLL_DIV1);
+
+	 //__raw_writel((1<<31 | 1<<28 | (MAIN_INTFREQ2<<24) | MAIN_FRACFREQ2), MAINPLL_FREQ2);
+	 __raw_writel(((1<<8) | MAIN_MDIV2), MAINPLL_DIV2);
+
+	 __raw_writel((1<<31 | 1<<28 | (MAIN_INTFREQ3<<24) | MAIN_FRACFREQ3), MAINPLL_FREQ3);
+	 __raw_writel(((1<<8) | MAIN_MDIV3), MAINPLL_DIV3);
+
+	 __raw_writel((1<<31 | 1<<28 | (MAIN_INTFREQ4<<24) | MAIN_FRACFREQ4), MAINPLL_FREQ4);
+	 __raw_writel(((1<<8) | MAIN_MDIV4), MAINPLL_DIV4);
+
+	 __raw_writel((1<<31 | 1<<28 | (MAIN_INTFREQ5<<24) | MAIN_FRACFREQ5), MAINPLL_FREQ5);
+	 __raw_writel(((1<<8) | MAIN_MDIV5), MAINPLL_DIV5);
+
+	 __raw_writel((1<<8 | MAIN_MDIV6), MAINPLL_DIV6);
+
+	 __raw_writel((1<<8 | MAIN_MDIV7), MAINPLL_DIV7);
+
+	 while(__raw_readl(MAINPLL_CTRL & 0x80) != 0x80);
+
+	 main_pll_ctrl = __raw_readl(MAINPLL_CTRL);
+	 main_pll_ctrl &= 0xFFFFFFFB;
+
+	 __raw_writel(main_pll_ctrl, MAINPLL_CTRL);
+
 }
 
 static void ddr_pll_init_ti816x(u32 sil_index, u32 clk_index)
 {
-	struct dpll_per_36x_param *ptr;
+	u32 ddr_pll_ctrl=0;
 
-	/* Getting the base address to DDR DPLL param table*/
-	ptr = (struct dpll_per_36x_param *)get_ddr_dpll_param();
+	/* Getting the base address of MAIN DPLL param table
+	ptr = (dpll_param *)get_main_dpll_param(); */
 
-	/* Nothing to done right now as the registers have been pre-loaded @ reset and
-	 * by the ROM code also (if applicable). Retaining this function for future
+	/* Sequence to be followed:
+	 * 1. Put the PLL in bypass mode by setting BIT2 in its ctrl reg
+	 * 2. Write the values of N,P in the CTRL reg
+	 * 3. Program the freq values, divider values for the required output in the Control module reg
+	 * 4. Note: Loading the freq value requires a particular bit to be set in the freq reg.
+	 * 4. Program the CM divider value in the CM module reg
+	 * 5. Enable the PLL by setting the appropriate bit in the CTRL reg of the PLL
 	 */
 
+ 	 /* If the registers have been set by the ROM code dont do anything
+	  */
+
+	 ddr_pll_ctrl = __raw_readl(DDRPLL_CTRL);
+	 ddr_pll_ctrl &= 0xFFFFFFFB;
+	 //ddr_pll_ctrl |= 4;
+	 __raw_writel(ddr_pll_ctrl, DDRPLL_CTRL);
+
+	 ddr_pll_ctrl = __raw_readl(DDRPLL_CTRL);
+	 ddr_pll_ctrl &= 0xFFFFFFF7;
+	 ddr_pll_ctrl |= 8;
+	 __raw_writel(ddr_pll_ctrl, DDRPLL_CTRL);
+
+	 ddr_pll_ctrl = __raw_readl(DDRPLL_CTRL);
+	 ddr_pll_ctrl &= 0xFF;
+	 ddr_pll_ctrl |= (DDR_N<<16 | DDR_P<<8);
+	 __raw_writel(ddr_pll_ctrl, DDRPLL_CTRL);
+
+	 __raw_writel(DDRPLL_PWD, 0x0);
+
+	 __raw_writel(((1<<8) | DDR_MDIV1), DDRPLL_DIV1);
+
+	 __raw_writel((1<<31 | 1<<28 | (DDR_INTFREQ2<<24) | DDR_FRACFREQ2), DDRPLL_FREQ2);
+	 __raw_writel(((1<<8) | DDR_MDIV2), DDRPLL_DIV2);
+
+	 __raw_writel((1<<31 | 1<<28 | (DDR_INTFREQ3<<24) | DDR_FRACFREQ3), DDRPLL_FREQ3);
+	 __raw_writel(((1<<8) | DDR_MDIV3), DDRPLL_DIV3);
+
+	 __raw_writel((1<<31 | 1<<28 | (DDR_INTFREQ4<<24) | DDR_FRACFREQ4), DDRPLL_FREQ4);
+	 __raw_writel(((1<<8) | DDR_MDIV4), DDRPLL_DIV4);
+
+	 __raw_writel((1<<31 | 1<<28 | (DDR_INTFREQ5<<24) | DDR_FRACFREQ5), DDRPLL_FREQ5);
+	 __raw_writel(((1<<8) | DDR_MDIV5), DDRPLL_DIV5);
+
+	 while(__raw_readl(DDRPLL_CTRL & 0x80) != 0x80);
+
+	 ddr_pll_ctrl = __raw_readl(DDRPLL_CTRL);
+	 ddr_pll_ctrl &= 0xFFFFFFFB;
+	 ddr_pll_ctrl |= 4;
+	 __raw_writel(ddr_pll_ctrl, DDRPLL_CTRL);
+
+	 __raw_writel(0x1, DDR_RCD);
 }
 
 static void video_pll_init_ti816x(u32 sil_index, u32 clk_index)
 {
-	dpll_param *ptr;
+	u32 video_pll_ctrl=0;
 
-	/* Getting the base address to video DPLL param table*/
-	ptr = (dpll_param *)get_video_dpll_param();
+	/* Getting the base address of MAIN DPLL param table
+	ptr = (dpll_param *)get_main_dpll_param(); */
 
-	/* Nothing to done right now as the registers have been pre-loaded @ reset and
-	 * by the ROM code also (if applicable). Retaining this function for future
+	/* Sequence to be followed:
+	 * 1. Put the PLL in bypass mode by setting BIT2 in its ctrl reg
+	 * 2. Write the values of N,P in the CTRL reg
+	 * 3. Program the freq values, divider values for the required output in the Control module reg
+	 * 4. Note: Loading the freq value requires a particular bit to be set in the freq reg.
+	 * 4. Program the CM divider value in the CM module reg
+	 * 5. Enable the PLL by setting the appropriate bit in the CTRL reg of the PLL
 	 */
+
+ 	 /* If the registers have been set by the ROM code dont do anything
+	  */
+
+	 video_pll_ctrl = __raw_readl(VIDEOPLL_CTRL);
+	 video_pll_ctrl &= 0xFFFFFFFB;
+	 video_pll_ctrl |= 4;
+	 __raw_writel(video_pll_ctrl, VIDEOPLL_CTRL);
+
+	 video_pll_ctrl = __raw_readl(VIDEOPLL_CTRL);
+	 video_pll_ctrl &= 0xFFFFFFF7;
+	 video_pll_ctrl |= 8;
+	 __raw_writel(video_pll_ctrl, VIDEOPLL_CTRL);
+
+	 video_pll_ctrl = __raw_read(VIDEOPLL_CTRL);
+	 video_pll_ctrl &= 0xFF;
+	 video_pll_ctrl |= (VIDEO_N<<16 | VIDEO_P<<8);
+	 __raw_writel(video_pll_ctrl, VIDEOPLL_CTRL);
+
+	 __raw_writel(VIDEOPLL_PWD, 0x0);
+
+	 __raw_writel((1<<31 | 1<<28 | (VIDEO_INTFREQ1<<24) | VIDEO_FRACFREQ1), VIDEOPLL_FREQ1);
+	 __raw_writel(((1<<8) | VIDEO_MDIV1), VIDEOPLL_DIV1);
+
+	 __raw_writel((1<<31 | 1<<28 | (VIDEO_INTFREQ2<<24) | VIDEO_FRACFREQ2), VIDEOPLL_FREQ2);
+	 __raw_writel(((1<<8) | VIDEO_MDIV2), VIDEOPLL_DIV2);
+
+	 __raw_writel((1<<31 | 1<<28 | (VIDEO_INTFREQ3<<24) | VIDEO_FRACFREQ3), VIDEOPLL_FREQ3);
+	 __raw_writel(((1<<8) | VIDEO_MDIV3), VIDEOPLL_DIV3);
+
+	 while(__raw_readl(VIDEOPLL_CTRL & 0x80) != 0x80);
+
+	 video_pll_ctrl = __raw_readl(VIDEOPLL_CTRL);
+	 video_pll_ctrl &= 0xFFFFFFFB;
+
+	 __raw_writel(video_pll_ctrl, VIDEOPLL_CTRL);
+
 }
 
 static void audio_pll_init_ti816x(u32 sil_index, u32 clk_index)
 {
-	dpll_param *ptr;
+	u32 audio_pll_ctrl=0;
 
-	/* Getting the base address to audio DPLL param table*/
-	ptr = (dpll_param *)get_audio_dpll_param();
+	/* Getting the base address of MAIN DPLL param table
+	ptr = (dpll_param *)get_main_dpll_param(); */
 
-	/* Nothing to done right now as the registers have been pre-loaded @ reset and
-	 * by the ROM code also (if applicable). Retaining this function for future
+	/* Sequence to be followed:
+	 * 1. Put the PLL in bypass mode by setting BIT2 in its ctrl reg
+	 * 2. Write the values of N,P in the CTRL reg
+	 * 3. Program the freq values, divider values for the required output in the Control module reg
+	 * 4. Note: Loading the freq value requires a particular bit to be set in the freq reg.
+	 * 4. Program the CM divider value in the CM module reg
+	 * 5. Enable the PLL by setting the appropriate bit in the CTRL reg of the PLL
 	 */
+
+ 	 /* If the registers have been set by the ROM code dont do anything
+	  */
+
+	 audio_pll_ctrl = __raw_readl(AUDIOPLL_CTRL);
+	 audio_pll_ctrl &= 0xFFFFFFFB;
+	 audio_pll_ctrl |= 4;
+	 __raw_writel(audio_pll_ctrl, AUDIOPLL_CTRL);
+
+	 audio_pll_ctrl = __raw_readl(AUDIOPLL_CTRL);
+	 audio_pll_ctrl &= 0xFFFFFFF7;
+	 audio_pll_ctrl |= 8;
+	 __raw_writel(audio_pll_ctrl, AUDIOPLL_CTRL);
+
+	 audio_pll_ctrl = __raw_read(AUDIOPLL_CTRL);
+	 audio_pll_ctrl &= 0xFF;
+	 audio_pll_ctrl |= (AUDIO_N<<16 | AUDIO_P<<8);
+	 __raw_writel(audio_pll_ctrl, AUDIOPLL_CTRL);
+
+	 __raw_writel(AUDIOPLL_PWD, 0x0);
+
+	 __raw_writel((1<<31 | 1<<28 | (AUDIO_INTFREQ2<<24) | AUDIO_FRACFREQ2), AUDIOPLL_FREQ2);
+	 __raw_writel(((1<<8) | AUDIO_MDIV2), AUDIOPLL_DIV2);
+
+	 __raw_writel((1<<31 | 1<<28 | (AUDIO_INTFREQ3<<24) | AUDIO_FRACFREQ3), AUDIOPLL_FREQ3);
+	 __raw_writel(((1<<8) | AUDIO_MDIV3), AUDIOPLL_DIV3);
+
+	 __raw_writel((1<<31 | 1<<28 | (AUDIO_INTFREQ4<<24) | AUDIO_FRACFREQ4), AUDIOPLL_FREQ4);
+	 __raw_writel(((1<<8) | AUDIO_MDIV4), AUDIOPLL_DIV4);
+
+	 __raw_writel((1<<31 | 1<<28 | (AUDIO_INTFREQ5<<24) | AUDIO_FRACFREQ5), AUDIOPLL_FREQ5);
+	 __raw_writel(((1<<8) | AUDIO_MDIV5), AUDIOPLL_DIV5);
+
+	 while(__raw_readl(AUDIOPLL_CTRL & 0x80) != 0x80);
+
+	 audio_pll_ctrl = __raw_readl(AUDIOPLL_CTRL);
+	 audio_pll_ctrl &= 0xFFFFFFFB;
+
+	 __raw_writel(audio_pll_ctrl, AUDIOPLL_CTRL);
+
 }
 
 /******************************************************************************
@@ -476,14 +650,14 @@ void prcm_init(void)
 	/* TODO:VB__Do we need sil_index for future? */
 	u32 clk_index = 0, sil_index = 0;
 
-	if (is_cpu_family() == CPU_TI816X) {
-		//main_pll_init_ti816x(clk_index, sil_index);
-		//ddr_pll_init_ti816x(clk_index, sil_index);
+	//if (is_cpu_family() == CPU_TI816X) {
+		main_pll_init_ti816x(clk_index, sil_index);
+		ddr_pll_init_ti816x(clk_index, sil_index);
 		//video_pll_init_ti816x(clk_index, sil_index);
 		//audio_pll_init_ti816x(clk_index, sil_index);
-	}
+	//}
 
-	/* Waiting for the clks to get stable will be done in individual funcs */
+	/* Waiting for the clks to get stable has been done in individual funcs */
 
 	/* With clk freqs setup to desired values, enable the required peripherals */
 	peripheral_enable();
@@ -503,7 +677,7 @@ void s_init(void)
 	prcm_init();		/* Just a stub right now */
 	//config_ti816x_sdram_ddr();
 #ifdef CONFIG_TI816X_VOLT_SCALE
-	/* FIXME: Probably need to move this as first step in init */ 
+	/* FIXME: Probably need to move this as first step in init */
 	//voltage_scale_init();
 #endif
 }
@@ -636,10 +810,10 @@ void peripheral_enable(void)
 	while(((__raw_readl(CM_ALWON_TIMER_1_CLKCTRL) & 0x30000)>>16) !=0);
 
 
-	__raw_writel(0x2,(DM_TIMER1_BASE_ADDR + 0x54));
-	while(__raw_readl(DM_TIMER1_BASE_ADDR + 0x10) & 1);
+	__raw_writel(0x2,(DM_TIMER1_BASE + 0x54));
+	while(__raw_readl(DM_TIMER1_BASE + 0x10) & 1);
 
-	__raw_writel(0x1,(DM_TIMER1_BASE_ADDR + 0x38));
+	__raw_writel(0x1,(DM_TIMER1_BASE + 0x38));
 	//while(__raw_readl(DM_TIMER1_BASE_ADDR + 0x38) !=0x1);
 
 
@@ -720,7 +894,7 @@ void board_hang (void)
 { while (0) {};}
 
 
-#ifdef CONFIG_NAND_TI816X 
+#ifdef CONFIG_NAND_TI816X
 /******************************************************************************
  * Command to switch between NAND HW and SW ecc
  *****************************************************************************/
