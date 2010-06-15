@@ -76,9 +76,9 @@
 # undef CONFIG_NAND_TI816X
 #endif
 
-#define CONFIG_TI816X_EVM_DDR
-//#define CONFIG_TI816X_ASCIIART
+#define CONFIG_TI816X_EVM_DDR		/* Configure DDR in U-Boot */
 #define CONFIG_MISC_INIT_R
+#define CONFIG_TI816X_ASCIIART		/* The eye */
 
 #define CONFIG_CMDLINE_TAG        1	/* enable passing of ATAGs  */
 #define CONFIG_SETUP_MEMORY_TAGS  1
@@ -225,7 +225,7 @@ rw initrd=0x81000000,16MB init=/bin/ash lpj=50000 mem=256M earlyprintk"
 /* Undef to save memory */
 #define CONFIG_SYS_LONGHELP
 /* Monitor Command Prompt */
-#define CONFIG_SYS_PROMPT		"TI8168EVM#"
+#define CONFIG_SYS_PROMPT		"TI8168_EVM#"
 /* Console I/O Buffer Size */
 #define CONFIG_SYS_CBSIZE		512
 /* Print Buffer Size */
@@ -260,7 +260,6 @@ rw initrd=0x81000000,16MB init=/bin/ash lpj=50000 mem=256M earlyprintk"
 # define CONFIG_NET_RETRY_COUNT 10
 # define CONFIG_NET_MULTI
 #endif
-
 
 /* EEPROM definitions for EEPROM */
 #define CONFIG_SYS_I2C_EEPROM_ADDR_LEN		3
