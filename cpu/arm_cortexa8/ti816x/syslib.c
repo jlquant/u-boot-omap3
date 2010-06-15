@@ -30,7 +30,7 @@
 /************************************************************
  * sdelay() - simple spin loop.  Will be constant time as
  *  its generally used in bypass conditions only.  This
- *  is necessary until timers are accessible.
+ *  is necessary until timers are not accessible.
  *
  *  not inline to increase chances its in cache when called
  *************************************************************/
