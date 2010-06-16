@@ -22,6 +22,7 @@
 #include <asm/io.h>
 
 #include <asm/arch/hardware.h>
+#include <asm/arch/cpu.h>
 
 /* Up counter */
 #define TIMER_LOAD_VAL		0
@@ -41,7 +42,7 @@ static ulong lastinc;
  * With CLKIN = 27 MHz, timer clk period = 1/27MHz = 370.37 uSec
  * Timer overflows after:
  * 	(0xFFFFFFFF - TLDR + 1) * clk period * clock divider (2^(PTV+1))
- * With PTV = 0 we get 
+ * With PTV = 0 we get
  *	timer period = (0xFFFFFFFF - 0 + 1) * 370.37 * 10e-6 * 1 (with PRE-SCALAR disabled)
  * 	timer period = (0xFFFFFFFF - 0 + 1) * 370.37 * 10e-6 * 2 (with PRE-SCALAR enabled)
  */
@@ -49,14 +50,12 @@ static ulong lastinc;
 int timer_init(void)
 {
 	int ptv = 0;
-	/* TODO: Select clock source? */
 	/* Clk source selection is s_init code, we select CLKIN ie 27MHz */
-	/* TODO: Determine 'ptv' value */
 	/* Keeping ptv value as 0 right now AND disabling the PRE_SCALAR */
 
-	writel(TIMER_LOAD_VAL, TIMER_REG(REG_TIMER_TLDR));
-	writel((ptv << TCLR_PTV_SHIFT) | TCLR_PRE_DISABLE
-			| TCLR_AR | TCLR_ST, TIMER_REG(REG_TIMER_TCLR));
+	writel(TIMER_LOAD_VAL, TIMER_REG(TIMER_TLDR));
+	writel((ptv << TCLR_PTV_SHIFT) | TCLR_PRE
+			| TCLR_AR | TCLR_ST, TIMER_REG(TIMER_TCLR));
 
 	reset_timer_masked();	/* init the timestamp and lastinc value */
 
@@ -85,10 +84,10 @@ void set_timer(ulong t)
 void __udelay(unsigned long usec)
 {
 	long tmo = usec * (TIMER_CLOCK / 1000) / 1000;
-	unsigned long now, last = readl(TIMER_REG(REG_TIMER_TCRR));
+	unsigned long now, last = readl(TIMER_REG(TIMER_TCRR));
 
 	while (tmo > 0) {
-		now = readl(TIMER_REG(REG_TIMER_TCRR));
+		now = readl(TIMER_REG(TIMER_TCRR));
 		if (last > now) /* count up timer overflow */
 			tmo -= TIMER_MAX_VAL - last + now;
 		else
@@ -100,14 +99,14 @@ void __udelay(unsigned long usec)
 void reset_timer_masked(void)
 {
 	/* reset time */
-	lastinc = readl(TIMER_REG(REG_TIMER_TCRR)) / (TIMER_CLOCK / CONFIG_SYS_HZ);
+	lastinc = readl(TIMER_REG(TIMER_TCRR)) / (TIMER_CLOCK / CONFIG_SYS_HZ);
 	timestamp = 0;	       /* start "advancing" time stamp from 0 */
 }
 
 ulong get_timer_masked(void)
 {
 	/* current tick value */
-	ulong now = readl(TIMER_REG(REG_TIMER_TCRR)) / (TIMER_CLOCK / CONFIG_SYS_HZ);
+	ulong now = readl(TIMER_REG(TIMER_TCRR)) / (TIMER_CLOCK / CONFIG_SYS_HZ);
 
 	if (now >= lastinc)	/* normal mode (non roll) */
 		/* move stamp fordward with absoulte diff ticks */

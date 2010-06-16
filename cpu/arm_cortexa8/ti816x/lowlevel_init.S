@@ -403,7 +403,7 @@ SRAM_STACK:
 
 /* ROM code bug */
 sysclk10_clksel_addr:
-	.word (TI816X_PRCM_BASE + 0x0324)
+	.word (PRCM_BASE + 0x0324)
 sysclk10_clksel_val:
 	.word DDR_SYSCLK10_DIV
 
@@ -522,82 +522,4 @@ l2_cache_disable:
  *
  * The PRCM dividers are present in a separate table
  */
-
-main_dpll_param:
-/* 26MHz */
-.word MAIN_N_MUL, MAIN_P_DIV, DUMMY_VAL, DUMMY_VAL
-/* main_pll_clock_1 */
-.word MAIN_INTFREQ1, MAIN_FRACFREQ1, MAIN_M_POST_DIV1, DUMMY_VAL
-/* main_pll_clock_2 */
-.word MAIN_INTFREQ2, MAIN_FRACFREQ2, MAIN_M_POST_DIV2, DUMMY_VAL
-/* main_pll_clock_3 */
-.word MAIN_INTFREQ3, MAIN_FRACFREQ3, MAIN_M_POST_DIV3, DUMMY_VAL
-/* main_pll_clock_4 */
-.word MAIN_INTFREQ4, MAIN_FRACFREQ4, MAIN_M_POST_DIV4, DUMMY_VAL
-/* main_pll_clock_5 */
-.word MAIN_INTFREQ5, MAIN_FRACFREQ5, MAIN_M_POST_DIV5, DUMMY_VAL
-
-.globl get_main_dpll_param
-get_main_dpll_param:
-	adr	r0, main_dpll_param
-	mov	pc, lr
-
-ddr_dpll_param:
-/* 26MHz */
-.word DDR_N_MUL, DDR_P_DIV, DUMMY_VAL, DUMMY_VAL
-/* ddr_pll_clock_2 */
-.word DDR_INTFREQ2, DDR_FRACFREQ2, DDR_M_POST_DIV2, DUMMY_VAL
-/* ddr_pll_clock_3 */
-.word DDR_INTFREQ3, DDR_FRACFREQ3, DDR_M_POST_DIV3, DUMMY_VAL
-
-.globl get_ddr_dpll_param
-get_ddr_dpll_param:
-	adr	r0, ddr_dpll_param
-	mov	pc, lr
-
-video_dpll_param:
-/* 26MHz */
-.word VIDEO_N_MUL, VIDEO_P_DIV, DUMMY_VAL, DUMMY_VAL
-/* video_pll_clock_1 */
-.word VIDEO_INTFREQ1, VIDEO_FRACFREQ1, VIDEO_M_POST_DIV1, DUMMY_VAL
-/* video_pll_clock_2 */
-.word VIDEO_INTFREQ2, VIDEO_FRACFREQ2, VIDEO_M_POST_DIV2, DUMMY_VAL
-/* video_pll_clock_3 */
-.word VIDEO_INTFREQ3, VIDEO_FRACFREQ3, VIDEO_M_POST_DIV3, DUMMY_VAL
-
-.globl get_video_dpll_param
-get_video_dpll_param:
-	adr	r0, video_dpll_param
-	mov	pc, lr
-
-audio_dpll_param:
-/* 26MHz */
-.word AUDIO_N_MUL, AUDIO_P_DIV, DUMMY_VAL, DUMMY_VAL
-/* audio_pll_clock_1 */
-/* .word AUDIO_INTFREQ1, AUDIO_FRACFREQ1, AUDIO_M_POST_DIV1, DUMMY_VAL*/
-/* audio_pll_clock_2 */
-.word AUDIO_INTFREQ2, AUDIO_FRACFREQ2, AUDIO_M_POST_DIV2, DUMMY_VAL
-/* audio_pll_clock_3 */
-.word AUDIO_INTFREQ3, AUDIO_FRACFREQ3, AUDIO_M_POST_DIV3, DUMMY_VAL
-/* audio_pll_clock_4 */
-.word AUDIO_INTFREQ4, AUDIO_FRACFREQ4, AUDIO_M_POST_DIV4, DUMMY_VAL
-/* audio_pll_clock_5 */
-.word AUDIO_INTFREQ5, AUDIO_FRACFREQ5, AUDIO_M_POST_DIV5, DUMMY_VAL
-
-
-.globl get_audio_dpll_param
-get_audio_dpll_param:
-	adr	r0, audio_dpll_param
-	mov	pc, lr
-
-iva_param:
-.word IVAHD0_CONFIG_REG_BASE, PRCM_IVAHD0_ICONT_RST_CNTL_ADDR, IVAHD0_ICONT1_ITCM_BASE, IVAHD0_ICONT2_ITCM_BASE
-.word IVAHD1_CONFIG_REG_BASE, PRCM_IVAHD1_ICONT_RST_CNTL_ADDR, IVAHD1_ICONT1_ITCM_BASE, IVAHD1_ICONT2_ITCM_BASE
-.word IVAHD2_CONFIG_REG_BASE, PRCM_IVAHD2_ICONT_RST_CNTL_ADDR, IVAHD2_ICONT1_ITCM_BASE, IVAHD2_ICONT2_ITCM_BASE
-
-.globl get_iva_param
-get_iva_param:
-	adr	r0,iva_param
-	mov	pc,lr
-
 
