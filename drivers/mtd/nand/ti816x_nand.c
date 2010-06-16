@@ -101,6 +101,19 @@ static void ti816x_read_bch8_result(struct mtd_info *mtd, uint8_t big_endian,
 }
 
 /* 
+ * ti816x_ecc_disable - Disable H/W ECC calculation
+ *
+ * @mtd:	MTD device structure
+ *
+ */
+static void ti816x_ecc_disable(struct mtd_info *mtd) {
+
+	writel((readl(&gpmc_cfg->ecc_config) & ~0x1),
+		&gpmc_cfg->ecc_config);
+}
+
+
+/* 
  * ti816x_ecc_enable_bch - Enable BCH H/W ECC calculation
  *
  * @mtd:	MTD device structure
@@ -121,18 +134,6 @@ static void ti816x_ecc_enable_bch(struct mtd_info *mtd) {
 	val = readl(&gpmc_cfg->ecc_config);
 	val |= 0x1;
 	writel(val, &gpmc_cfg->ecc_config); /* enable ecc */
-}
-
-/* 
- * ti816x_ecc_disable - Disable H/W ECC calculation
- *
- * @mtd:	MTD device structure
- *
- */
-static void ti816x_ecc_disable(struct mtd_info *mtd) {
-
-	writel((readl(&gpmc_cfg->ecc_config) & ~0x1),
-		&gpmc_cfg->ecc_config);
 }
 
 
@@ -285,9 +286,8 @@ static void ti816x_rotate_ecc_bch(struct mtd_info *mtd, uint8_t *calc_ecc,
 			break;
 	}
 
-	for (i = 0, j = n_bytes; i < n_bytes; i++, j--)
+	for (i = 0, j = (n_bytes-1); i < n_bytes; i++, j--) 
 		syndrome[i] =  calc_ecc[j];
-
 }
 
 
@@ -345,6 +345,7 @@ static int ti816x_correct_data_bch(struct mtd_info *mtd, uint8_t *dat,
 	uint8_t syndrome[28];
 	uint32_t error_count = 0;
 	uint32_t error_loc[8];
+	uint8_t i = 0;
 
 	elm_reset();
 	elm_config((enum bch_level)(bch->type));
@@ -352,7 +353,12 @@ static int ti816x_correct_data_bch(struct mtd_info *mtd, uint8_t *dat,
 	/* while reading ECC result we read it in big endian.
 	 * Hence while loading to ELM we have rotate to get the right endian.
 	 */
-	ti816x_rotate_ecc_bch(mtd, calc_ecc, syndrome);
+	//ti816x_rotate_ecc_bch(mtd, calc_ecc, syndrome);
+	//ti816x_ecc_disable(mtd);
+	ti816x_read_bch8_result(mtd, 0, syndrome);
+	
+	for (i = 0; i < 13; i++)
+		printf("ecc %d = 0x%2x\n", i, syndrome[i]);
 
 	/* use elm module to check for errors */
 	if (elm_check_error(syndrome, bch->nibbles, &error_count, error_loc) != 0) {
@@ -448,6 +454,7 @@ static int ti816x_calculate_ecc_bch(struct mtd_info *mtd, const uint8_t *dat,
 	struct nand_bch_priv *bch = chip->priv;
 	uint8_t big_endian = 1;
 	int8_t ret = 0;
+	int8_t i = 0;
 
 	if (bch->type == ECC_BCH8)
 		ti816x_read_bch8_result(mtd, big_endian, ecc_code);	
@@ -512,7 +519,7 @@ static void ti816x_enable_ecc_bch(struct mtd_info *mtd, int32_t mode)
 	struct nand_chip *chip = mtd->priv;
 
 	ti816x_hwecc_init_bch(chip, mode);
-
+	/* enable ecc */
 	writel((readl(&gpmc_cfg->ecc_config) | 0x1), &gpmc_cfg->ecc_config);
 }
 
@@ -593,27 +600,29 @@ void __ti816x_nand_switch_ecc(struct nand_chip *nand,
 				case ECC_BCH4:
 					nand->ecc.layout = &hw_bch4_nand_oob;
 					bch->nibbles = ECC_BCH4_NIBBLES;
-					nand->ecc.bytes = 32;
+					nand->ecc.bytes = 8;
 					printf("4 not supported\n");
 					goto no_support;
 					break;
 				case ECC_BCH16:
-					nand->ecc.bytes = 104;
-					nand->ecc.layout = &hw_bch8_nand_oob;
+					nand->ecc.bytes = 26;
+					nand->ecc.layout = &hw_bch16_nand_oob;
 					bch->nibbles = ECC_BCH16_NIBBLES;
 					printf("16 not supported\n");
 					goto no_support;
 					break;
 				case ECC_BCH8:
 				default:
-					nand->ecc.bytes = 56;
-					nand->ecc.layout = &hw_bch16_nand_oob;
+					nand->ecc.bytes = 14;
+					nand->ecc.layout = &hw_bch8_nand_oob;
 					bch->nibbles = ECC_BCH8_NIBBLES;
 					printf("8 Selected\n");
 					break;
 			}
 			bch->mode = NAND_ECC_HW;
+			nand->ecc.steps = 4;
 			nand->ecc.size = 512;
+			nand->ecc.total = (nand->ecc.steps * nand->ecc.bytes);
 			nand->ecc.hwctl = ti816x_enable_ecc_bch;
 			nand->ecc.correct = ti816x_correct_data_bch;
 			nand->ecc.calculate = ti816x_calculate_ecc_bch;
