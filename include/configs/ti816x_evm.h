@@ -140,7 +140,7 @@ extern unsigned int boot_flash_type;
 #endif
 
 
-#define CONFIG_ZEBU_HACK
+#undef CONFIG_ZEBU_HACK
 #ifdef CONFIG_ZEBU_HACK
 # undef CONFIG_CMD_NET
 #endif
@@ -255,6 +255,8 @@ rw initrd=0x81000000,16MB init=/bin/ash lpj=50000 mem=256M earlyprintk"
 # define CONFIG_BOOTP_DNS
 # define CONFIG_BOOTP_DNS2
 # define CONFIG_BOOTP_SEND_HOSTNAME
+# define CONFIG_BOOTP_GATEWAY
+# define CONFIG_BOOTP_SUBNETMASK
 # define CONFIG_NET_RETRY_COUNT 10
 # define CONFIG_NET_MULTI
 #endif
