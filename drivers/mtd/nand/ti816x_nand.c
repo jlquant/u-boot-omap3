@@ -357,10 +357,10 @@ static int ti816x_correct_data_bch(struct mtd_info *mtd, uint8_t *dat,
 #ifdef NAND_DEBUG
 	{
 		uint8_t i = 0;
-		printf("----\necc\n---\n");	
+		printf("----\necc\n---\n");
 		for (i = 0; i < 13; i++)
 			printf("  0x%2x", syndrome[i]);
-		printf("\n");	
+		printf("\n");
 	}
 #endif
 	
@@ -468,10 +468,10 @@ static int ti816x_calculate_ecc_bch(struct mtd_info *mtd, const uint8_t *dat,
 #ifdef NAND_DEBUG
 	{
 		int8_t i = 0;
-		printf("----\nECC\n---\n");	
+		printf("----\nECC\n---\n");
 		for (i = 0; i < 13; i++)
 			printf("  0x%2x", ecc_code[i]);
-		printf("\n");	
+		printf("\n");
 	}
 #endif
 
