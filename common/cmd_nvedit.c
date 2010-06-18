@@ -52,7 +52,7 @@
 #include <asm/byteorder.h>
 #if defined(CONFIG_CMD_NET)
 #include <net.h>
-#include <netdev.>
+#include <netdev.h>
 #endif
 
 DECLARE_GLOBAL_DATA_PTR;
@@ -365,7 +365,7 @@ int _do_setenv (int flag, int argc, char *argv[])
 	if (strcmp(argv[1], "ethaddr") == 0) {
 		u_int8_t mac_addr[6];
 
-		eth_getenv_enetaddr("ethaddr", mac_addr)
+		eth_getenv_enetaddr("ethaddr", mac_addr);
 		davinci_eth_set_mac_addr(mac_addr);
 
 		return 0;
