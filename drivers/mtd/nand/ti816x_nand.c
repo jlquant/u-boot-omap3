@@ -353,8 +353,6 @@ static int ti816x_correct_data_bch(struct mtd_info *mtd, uint8_t *dat,
 	 * Hence while loading to ELM we have rotate to get the right endian.
 	 */
 	ti816x_rotate_ecc_bch(mtd, calc_ecc, syndrome);
-	//ti816x_ecc_disable(mtd);
-	//ti816x_read_bch8_result(mtd, 0, syndrome);
 
 #ifdef NAND_DEBUG
 	{
@@ -551,36 +549,6 @@ static void ti816x_write_page_bch(struct mtd_info *mtd,
 	chip->write_buf(mtd, chip->oob_poi, mtd->oobsize);
 }
 
-/**
- * ti816x_set_read_pos - Set position for reading
- * @mtd:	mtd info structure
- * @chip:	nand chip info structure
- * @data_offs:	offset of requested data within the page
- * @readlen:	data length
- */
-static int ti816x_set_read_pos(struct mtd_info *mtd, struct nand_chip *chip, uint32_t data_offs, uint32_t page, uint32_t readlen)
-{
-	int start_step, end_step, num_steps;
-	uint32_t *eccpos = chip->ecc.layout->eccpos;
-	uint8_t *p;
-	int data_col_addr, i, gaps = 0;
-	int datafrag_len, eccfrag_len, aligned_len, aligned_pos;
-	int busw = (chip->options & NAND_BUSWIDTH_16) ? 2 : 1;
-
-	/* Column address wihin the page aligned to ECC size (256bytes). */
-	start_step = data_offs / chip->ecc.size;
-	end_step = (data_offs + readlen - 1) / chip->ecc.size;
-	num_steps = end_step - start_step + 1;
-
-	/* Data size aligned to ECC ecc.size*/
-	datafrag_len = num_steps * chip->ecc.size;
-	eccfrag_len = num_steps * chip->ecc.bytes;
-
-	data_col_addr = start_step * chip->ecc.size;
-	chip->cmdfunc(mtd, NAND_CMD_RNDOUT, data_col_addr, page);
-	//chip->cmdfunc(mtd, NAND_CMD_READ0, data_col_addr, page);
-}
-
 
 /**
  * ti816x_read_page_bch - hardware ecc based page read function
@@ -606,14 +574,13 @@ static int ti816x_read_page_bch(struct mtd_info *mtd, struct nand_chip *chip,
 
 	data_pos = 0;
 	/* oob area start */
-	//oob_pos = (eccsize * eccsteps) + chip->ecc.layout->eccpos[0];
-	oob_pos = (eccsize * eccsteps) + 2;
+	oob_pos = (eccsize * eccsteps) + chip->ecc.layout->eccpos[0];
+	//oob_pos = (eccsize * eccsteps) + 2;
 
 	chip->ecc.hwctl(mtd, NAND_ECC_READ);
 	for (i = 0; eccsteps; eccsteps--, i += eccbytes, p += eccsize, 
 				oob += eccbytes) {
 		/* read data */
-		//ti816x_set_read_pos(mtd, chip, data_pos, page, eccsize); 
 		chip->cmdfunc(mtd, NAND_CMD_RNDOUT, data_pos, page);
 		chip->read_buf(mtd, p, eccsize);
 #ifdef NAND_DEBUG
@@ -627,7 +594,6 @@ static int ti816x_read_page_bch(struct mtd_info *mtd, struct nand_chip *chip,
 #endif
 
 		/* read respective ecc from oob area */
-		//ti816x_set_read_pos(mtd, chip, oob_pos, page, eccbytes); 
 		chip->cmdfunc(mtd, NAND_CMD_RNDOUT, oob_pos, page);
 		chip->read_buf(mtd, oob, eccbytes);
 #ifdef NAND_DEBUG
@@ -646,10 +612,8 @@ static int ti816x_read_page_bch(struct mtd_info *mtd, struct nand_chip *chip,
 		oob_pos += eccbytes;
 	}
 
-#if 0
 	for (i = 0; i < chip->ecc.total; i++)
 		ecc_code[i] = chip->oob_poi[eccpos[i]];
-#endif
 
 	eccsteps = chip->ecc.steps;
 	p = buf;
