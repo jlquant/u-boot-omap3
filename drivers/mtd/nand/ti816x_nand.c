@@ -345,7 +345,6 @@ static int ti816x_correct_data_bch(struct mtd_info *mtd, uint8_t *dat,
 	uint8_t syndrome[28];
 	uint32_t error_count = 0;
 	uint32_t error_loc[8];
-	uint8_t i = 0;
 
 	elm_reset();
 	elm_config((enum bch_level)(bch->type));
@@ -353,12 +352,20 @@ static int ti816x_correct_data_bch(struct mtd_info *mtd, uint8_t *dat,
 	/* while reading ECC result we read it in big endian.
 	 * Hence while loading to ELM we have rotate to get the right endian.
 	 */
-	//ti816x_rotate_ecc_bch(mtd, calc_ecc, syndrome);
+	ti816x_rotate_ecc_bch(mtd, calc_ecc, syndrome);
 	//ti816x_ecc_disable(mtd);
-	ti816x_read_bch8_result(mtd, 0, syndrome);
+	//ti816x_read_bch8_result(mtd, 0, syndrome);
+
+#ifdef NAND_DEBUG
+	{
+		uint8_t i = 0;
+		printf("----\necc\n---\n");	
+		for (i = 0; i < 13; i++)
+			printf("  0x%2x", syndrome[i]);
+		printf("\n");	
+	}
+#endif
 	
-	for (i = 0; i < 13; i++)
-		printf("ecc %d = 0x%2x\n", i, syndrome[i]);
 
 	/* use elm module to check for errors */
 	if (elm_check_error(syndrome, bch->nibbles, &error_count, error_loc) != 0) {
@@ -454,12 +461,21 @@ static int ti816x_calculate_ecc_bch(struct mtd_info *mtd, const uint8_t *dat,
 	struct nand_bch_priv *bch = chip->priv;
 	uint8_t big_endian = 1;
 	int8_t ret = 0;
-	int8_t i = 0;
 
 	if (bch->type == ECC_BCH8)
 		ti816x_read_bch8_result(mtd, big_endian, ecc_code);	
 	else /* BCH4 and BCH16 currently not supported */
 		ret = -1;
+
+#ifdef NAND_DEBUG
+	{
+		int8_t i = 0;
+		printf("----\nECC\n---\n");	
+		for (i = 0; i < 13; i++)
+			printf("  0x%2x", ecc_code[i]);
+		printf("\n");	
+	}
+#endif
 
 	/*
 	 * Stop reading anymore ECC vals and clear old results
@@ -507,12 +523,155 @@ static int ti816x_calculate_ecc(struct mtd_info *mtd, const uint8_t *dat,
 	return 0;
 }
 
+/**
+ * ti816x_write_page_bch - [REPLACABLE] hardware ecc based page write function
+ * @mtd:	mtd info structure
+ * @chip:	nand chip info structure
+ * @buf:	data buffer
+ */
+static void ti816x_write_page_bch(struct mtd_info *mtd, 
+	struct nand_chip *chip, const uint8_t *buf)
+{
+	int i, eccsize = chip->ecc.size;
+	int eccbytes = chip->ecc.bytes;
+	int eccsteps = chip->ecc.steps;
+	uint8_t *ecc_calc = chip->buffers->ecccalc;
+	const uint8_t *p = buf;
+	uint32_t *eccpos = chip->ecc.layout->eccpos;
+
+	for (i = 0; eccsteps; eccsteps--, i += eccbytes, p += eccsize) {
+		chip->ecc.hwctl(mtd, NAND_ECC_WRITE);
+		chip->write_buf(mtd, p, eccsize);
+		chip->ecc.calculate(mtd, p, &ecc_calc[i]);
+	}
+
+	for (i = 0; i < chip->ecc.total; i++)
+		chip->oob_poi[eccpos[i]] = ecc_calc[i];
+
+	chip->write_buf(mtd, chip->oob_poi, mtd->oobsize);
+}
+
+/**
+ * ti816x_set_read_pos - Set position for reading
+ * @mtd:	mtd info structure
+ * @chip:	nand chip info structure
+ * @data_offs:	offset of requested data within the page
+ * @readlen:	data length
+ */
+static int ti816x_set_read_pos(struct mtd_info *mtd, struct nand_chip *chip, uint32_t data_offs, uint32_t page, uint32_t readlen)
+{
+	int start_step, end_step, num_steps;
+	uint32_t *eccpos = chip->ecc.layout->eccpos;
+	uint8_t *p;
+	int data_col_addr, i, gaps = 0;
+	int datafrag_len, eccfrag_len, aligned_len, aligned_pos;
+	int busw = (chip->options & NAND_BUSWIDTH_16) ? 2 : 1;
+
+	/* Column address wihin the page aligned to ECC size (256bytes). */
+	start_step = data_offs / chip->ecc.size;
+	end_step = (data_offs + readlen - 1) / chip->ecc.size;
+	num_steps = end_step - start_step + 1;
+
+	/* Data size aligned to ECC ecc.size*/
+	datafrag_len = num_steps * chip->ecc.size;
+	eccfrag_len = num_steps * chip->ecc.bytes;
+
+	data_col_addr = start_step * chip->ecc.size;
+	chip->cmdfunc(mtd, NAND_CMD_RNDOUT, data_col_addr, page);
+	//chip->cmdfunc(mtd, NAND_CMD_READ0, data_col_addr, page);
+}
+
+
+/**
+ * ti816x_read_page_bch - hardware ecc based page read function
+ * @mtd:	mtd info structure
+ * @chip:	nand chip info structure
+ * @buf:	buffer to store read data
+ * @page:	page number to read
+ *
+ */
+static int ti816x_read_page_bch(struct mtd_info *mtd, struct nand_chip *chip,
+				uint8_t *buf, int page)
+{
+	int i, eccsize = chip->ecc.size;
+	int eccbytes = chip->ecc.bytes;
+	int eccsteps = chip->ecc.steps;
+	uint8_t *p = buf;
+	uint8_t *ecc_calc = chip->buffers->ecccalc;
+	uint8_t *ecc_code = chip->buffers->ecccode;
+	uint32_t *eccpos = chip->ecc.layout->eccpos;
+	uint8_t *oob = chip->oob_poi;	
+	uint32_t data_pos;
+	uint32_t oob_pos;
+
+	data_pos = 0;
+	/* oob area start */
+	//oob_pos = (eccsize * eccsteps) + chip->ecc.layout->eccpos[0];
+	oob_pos = (eccsize * eccsteps) + 2;
+
+	chip->ecc.hwctl(mtd, NAND_ECC_READ);
+	for (i = 0; eccsteps; eccsteps--, i += eccbytes, p += eccsize, 
+				oob += eccbytes) {
+		/* read data */
+		//ti816x_set_read_pos(mtd, chip, data_pos, page, eccsize); 
+		chip->cmdfunc(mtd, NAND_CMD_RNDOUT, data_pos, page);
+		chip->read_buf(mtd, p, eccsize);
+#ifdef NAND_DEBUG
+		{
+			uint32_t j;
+			printf("----\nDATA\n---\n");	
+			for (j = 0; j < 13; j++)
+				printf("  0x%2x", p[j]);
+			printf("\n");	
+		}
+#endif
+
+		/* read respective ecc from oob area */
+		//ti816x_set_read_pos(mtd, chip, oob_pos, page, eccbytes); 
+		chip->cmdfunc(mtd, NAND_CMD_RNDOUT, oob_pos, page);
+		chip->read_buf(mtd, oob, eccbytes);
+#ifdef NAND_DEBUG
+		{
+			uint32_t j;
+			printf("----\nOOB\n---\n");	
+			for (j = 0; j < 13; j++)
+				printf("  0x%2x", oob[j]);
+			printf("\n");	
+		}
+#endif
+		/* read syndrome */
+		chip->ecc.calculate(mtd, p, &ecc_calc[i]);
+		
+		data_pos += eccsize;
+		oob_pos += eccbytes;
+	}
+
+#if 0
+	for (i = 0; i < chip->ecc.total; i++)
+		ecc_code[i] = chip->oob_poi[eccpos[i]];
+#endif
+
+	eccsteps = chip->ecc.steps;
+	p = buf;
+
+	for (i = 0 ; eccsteps; eccsteps--, i += eccbytes, p += eccsize) {
+		int stat;
+
+		stat = chip->ecc.correct(mtd, p, &ecc_code[i], &ecc_calc[i]);
+		if (stat < 0)
+			mtd->ecc_stats.failed++;
+		else
+			mtd->ecc_stats.corrected += stat;
+	}
+	return 0;
+}
+
+
 /*
  * ti816x_enable_ecc_bch- This function enables the bch h/w ecc functionality
  * @mtd:        MTD device structure
  * @mode:       Read/Write mode
  *
- * FIXME Incomplete
  */
 static void ti816x_enable_ecc_bch(struct mtd_info *mtd, int32_t mode)
 {
@@ -588,6 +747,8 @@ void __ti816x_nand_switch_ecc(struct nand_chip *nand,
 	nand->ecc.correct = NULL;
 	nand->ecc.calculate = NULL;
 
+	nand->ecc.write_page = NULL;
+	nand->ecc.read_page = NULL;
 	nand->ecc.mode = hardware;
 	/* Setup the ecc configurations again */
 	if (hardware == NAND_ECC_HW) {
@@ -620,9 +781,12 @@ void __ti816x_nand_switch_ecc(struct nand_chip *nand,
 					break;
 			}
 			bch->mode = NAND_ECC_HW;
+			nand->ecc.mode = NAND_ECC_HW_SYNDROME;
 			nand->ecc.steps = 4;
 			nand->ecc.size = 512;
 			nand->ecc.total = (nand->ecc.steps * nand->ecc.bytes);
+			nand->ecc.write_page = ti816x_write_page_bch;
+			nand->ecc.read_page = ti816x_read_page_bch;
 			nand->ecc.hwctl = ti816x_enable_ecc_bch;
 			nand->ecc.correct = ti816x_correct_data_bch;
 			nand->ecc.calculate = ti816x_calculate_ecc_bch;
