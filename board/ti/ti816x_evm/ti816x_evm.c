@@ -347,7 +347,7 @@ u32 cpu_is_ti816x(void)
 }
 #endif
 
-#ifdef CONFIG_TI816X_EVM_DDR
+#ifdef CONFIG_TI816X_EVM_DDR3
 /*********************************************************************
  * config_ti816x_sdram_ddr() - Init DDR on TI816X EVM
  *********************************************************************/
@@ -513,7 +513,8 @@ static void update_dqs()
 	__raw_writel(0x00000001, 0x48198314);
 
 }
-
+#endif
+#if 0
 static void config_ti816x_sdram_ddr(void)
 {
 	__raw_writel(0x2, CM_DEFAULT_FW_CLKCTRL);				/*Enable the EMIF FireWall Clocks*/
@@ -524,18 +525,22 @@ static void config_ti816x_sdram_ddr(void)
 	while((__raw_readl(CM_DEFAULT_EMIF_0_CLKCTRL) & 0x2) != 0x2);	/*Poll for Module is functional*/
 	while((__raw_readl(CM_DEFAULT_EMIF_1_CLKCTRL) & 0x2) != 0x2);	/*Poll for Module is functional*/
 
-	ddr_init_settings();
+	ddr_init_settings(0);
+
+	if (CONFIG_TI816X_TWO_EMIF){
+		ddr_init_settings(1);
+	}
 
 	__raw_writel(0x2, CM_DEFAULT_DMM_CLKCTRL); 				/*Enable EMIF1 Clock*/
 	while((__raw_readl(CM_DEFAULT_DMM_CLKCTRL) & 0x2) != 0x2);		/*Poll for Module is functional*/
 
 	/*Program the DMM to Access EMIF0*/
-	__raw_writel(0x80600100, DMM_LISA_MAP__0);
-	__raw_writel(0x80600100, DMM_LISA_MAP__1);
+	__raw_writel(0x80500100, DMM_LISA_MAP__0);
+	__raw_writel(0xC0500120, DMM_LISA_MAP__1);
 
 	/*Program the DMM to Access EMIF1*/
-	__raw_writel(0xC0600200, DMM_LISA_MAP__2);
-	__raw_writel(0xC0600200, DMM_LISA_MAP__3);
+	__raw_writel(0xA0500200, DMM_LISA_MAP__2);
+	__raw_writel(0xE0500220, DMM_LISA_MAP__3);
 
 	/*Enable Tiled Access*/
 	__raw_writel(0x80000000, DMM_PAT_BASE_ADDR);
@@ -546,80 +551,99 @@ static void config_ti816x_sdram_ddr(void)
 
 	emif4p_init(EMIF_TIM1, EMIF_TIM2, EMIF_TIM3, EMIF_SDREF & 0xFFFFFFFF, EMIF_SDCFG, 0x10B);
 	ddrsetup();
-	update_dqs();
+	update_dqs(0);
+	update_dqs(1);
 }
-#if 0
-void ddr_init_settings()
+#endif
+
+#ifdef CONFIG_TI816X_EVM_DDR2
+static void ddr_init_settings(int a)
 {
-	__raw_writel(INVERT_CLK_OUT, 0x4819802C);	/* invert_clk_out cmd0 */
-	__raw_writel(INVERT_CLK_OUT, 0x48198060);	/* invert_clk_out cmd0 */
-	__raw_writel(INVERT_CLK_OUT, 0x48198094);	/* invert_clk_out cmd0 */
-
-	__raw_writel(CMD_SLAVE_RATIO, 0x4819801C);	/* cmd0 slave ratio */
-	__raw_writel(CMD_SLAVE_RATIO, 0x48198050);	/* cmd0 slave ratio */
-	__raw_writel(CMD_SLAVE_RATIO, 0x48198084);	/* cmd0 slave ratio */
-
-	__raw_writel(0x1, 0x481980F8);			/* init mode */
-	__raw_writel(0x1, 0x48198104);
-	__raw_writel(0x1, 0x4819819C);
-	__raw_writel(0x1, 0x481981A8);
-	__raw_writel(0x1, 0x48198240);
-	__raw_writel(0x1, 0x4819824C);
-	__raw_writel(0x1, 0x481982E4);
-	__raw_writel(0x1, 0x481982F0);
-
-	/* Setup the initial levelling ratios */
-	__raw_writel(0x0000019, 0x481980F0);
-	__raw_writel(0x00000, 0x481980F4);
-	__raw_writel(0x0000019, 0x48198194);
-	__raw_writel(0x00000, 0x48198198);
-	__raw_writel(0x0000019, 0x48198238);
-	__raw_writel(0x00000, 0x4819823C);
-	__raw_writel(0x0000019, 0x481982DC);
-	__raw_writel(0x00000, 0x481982E0);
-
-	__raw_writel(0x00000D0, 0x481980FC);
-	__raw_writel(0x0, 0x48198100);
-	__raw_writel(0x0000080, 0x481981A0);
-	__raw_writel(0x0, 0x481981A4);
-	__raw_writel(0x0000080, 0x48198244);
-	__raw_writel(0x0, 0x48198248);
-	__raw_writel(0x0000080, 0x481982E8);
-	__raw_writel(0x0, 0x481982EC);
-
-
-	__raw_writel(0x5, 0x4819800C);
-	__raw_writel(0x5, 0x48198010);
-	__raw_writel(0x5, 0x48198040);
-	__raw_writel(0x5, 0x48198044);
-	__raw_writel(0x5, 0x48198074);
-	__raw_writel(0x5, 0x48198078);
-	__raw_writel(0x4, 0x481980A8);
-	__raw_writel(0x4, 0x481980AC);
-	__raw_writel(0x4, 0x4819814C);
-	__raw_writel(0x4, 0x48198150);
-	__raw_writel(0x4, 0x481981F0);
-	__raw_writel(0x4, 0x481981F4);
-	__raw_writel(0x4, 0x48198294);
-	__raw_writel(0x4, 0x48198298);
-
-	__raw_writel(0x5, 0x48198338);
-	__raw_writel(0x5, 0x48198340);
-	__raw_writel(0x5, 0x48198348);
-	__raw_writel(0x5, 0x48198350);
-
 	/* DLL Lockdiff */
-	__raw_writel(0xF, 0x48198028);
-	__raw_writel(0xF, 0x4819805C);
-	__raw_writel(0xF, 0x48198090);
-	__raw_writel(0xF, 0x48198138);
-	__raw_writel(0xF, 0x481981DC);
-	__raw_writel(0xF, 0x48198280);
-	__raw_writel(0xF, 0x48198324);
+	__raw_writel(0xF, (DDRPHY_CONFIG_BASE + 0x028));
+	__raw_writel(0xF, (DDRPHY_CONFIG_BASE + 0x05C));
+	__raw_writel(0xF, (DDRPHY_CONFIG_BASE + 0x090));
+	__raw_writel(0xF, (DDRPHY_CONFIG_BASE + 0x138));
+	__raw_writel(0xF, (DDRPHY_CONFIG_BASE + 0x1DC));
+	__raw_writel(0xF, (DDRPHY_CONFIG_BASE + 0x280));
+	__raw_writel(0xF, (DDRPHY_CONFIG_BASE + 0x324));
+
+	/* setup rank delays */
+	__raw_writel(0x1, (DDRPHY_CONFIG_BASE + 0x134));
+	__raw_writel(0x1, (DDRPHY_CONFIG_BASE + 0x1D8));
+	__raw_writel(0x1, (DDRPHY_CONFIG_BASE + 0x27C));
+	__raw_writel(0x1, (DDRPHY_CONFIG_BASE + 0x320));
+
+
+	__raw_writel(INVERT_CLK_OUT, (DDRPHY_CONFIG_BASE + 0x02C));	/* invert_clk_out cmd0 */
+	__raw_writel(INVERT_CLK_OUT, (DDRPHY_CONFIG_BASE + 0x060));	/* invert_clk_out cmd0 */
+	__raw_writel(INVERT_CLK_OUT, (DDRPHY_CONFIG_BASE + 0x094));	/* invert_clk_out cmd0 */
+
+
+	__raw_writel(CMD_SLAVE_RATIO, (DDRPHY_CONFIG_BASE + 0x01C));	/* cmd0 slave ratio */
+	__raw_writel(CMD_SLAVE_RATIO, (DDRPHY_CONFIG_BASE + 0x050));	/* cmd0 slave ratio */
+	__raw_writel(CMD_SLAVE_RATIO, (DDRPHY_CONFIG_BASE + 0x084));	/* cmd0 slave ratio */
+
+	__raw_writel(DQS_GATE_BYTE_LANE0, (DDRPHY_CONFIG_BASE + 0x108));
+	__raw_writel(0x00000000, (DDRPHY_CONFIG_BASE + 0x10C));
+	__raw_writel(DQS_GATE_BYTE_LANE1, (DDRPHY_CONFIG_BASE + 0x1AC));
+	__raw_writel(0x00000000, (DDRPHY_CONFIG_BASE + 0x1B0));
+	__raw_writel(DQS_GATE_BYTE_LANE2, (DDRPHY_CONFIG_BASE + 0x250));
+	__raw_writel(0x00000000, (DDRPHY_CONFIG_BASE + 0x254));
+	__raw_writel(DQS_GATE_BYTE_LANE3, (DDRPHY_CONFIG_BASE + 0x2F4));
+	__raw_writel(0x00000000, (DDRPHY_CONFIG_BASE + 0x2F8));
+
+	__raw_writel(WR_DQS_RATIO_BYTE_LANE0, (DDRPHY_CONFIG_BASE + 0x0DC));
+	__raw_writel(0x0, (DDRPHY_CONFIG_BASE + 0x0E0));
+	__raw_writel(WR_DQS_RATIO_BYTE_LANE1, (DDRPHY_CONFIG_BASE + 0x180));
+	__raw_writel(0x0, (DDRPHY_CONFIG_BASE + 0x184));
+	__raw_writel(WR_DQS_RATIO_BYTE_LANE2, (DDRPHY_CONFIG_BASE + 0x224));
+	__raw_writel(0x0, (DDRPHY_CONFIG_BASE + 0x228));
+	__raw_writel(WR_DQS_RATIO_BYTE_LANE3, (DDRPHY_CONFIG_BASE + 0x2C8));
+	__raw_writel(0x0, (DDRPHY_CONFIG_BASE + 0x2CC));
+
+	__raw_writel(WR_DATA_RATIO_BYTE_LANE0, (DDRPHY_CONFIG_BASE + 0x120));
+	__raw_writel(0x0, (DDRPHY_CONFIG_BASE + 0x124));
+	__raw_writel(WR_DATA_RATIO_BYTE_LANE1, (DDRPHY_CONFIG_BASE + 0x1C4));
+	__raw_writel(0x0, (DDRPHY_CONFIG_BASE + 0x1C8));
+	__raw_writel(WR_DATA_RATIO_BYTE_LANE2, (DDRPHY_CONFIG_BASE + 0x268));
+	__raw_writel(0x0, (DDRPHY_CONFIG_BASE + 0x26C));
+	__raw_writel(WR_DATA_RATIO_BYTE_LANE3, (DDRPHY_CONFIG_BASE + 0x30C));
+	__raw_writel(0x0, (DDRPHY_CONFIG_BASE + 0x310));
+
+	__raw_writel(RD_DQS_RATIO, (DDRPHY_CONFIG_BASE + 0x0C8));
+	__raw_writel(0x0, (DDRPHY_CONFIG_BASE + 0x0CC));
+	__raw_writel(RD_DQS_RATIO, (DDRPHY_CONFIG_BASE + 0x16C));
+	__raw_writel(0x0, (DDRPHY_CONFIG_BASE + 0x170));
+	__raw_writel(RD_DQS_RATIO, (DDRPHY_CONFIG_BASE + 0x210));
+	__raw_writel(0x0, (DDRPHY_CONFIG_BASE + 0x214));
+	__raw_writel(RD_DQS_RATIO, (DDRPHY_CONFIG_BASE + 0x2B4));
+	__raw_writel(0x0, (DDRPHY_CONFIG_BASE + 0x2B8));
+
+	__raw_writel(0x5, (DDRPHY_CONFIG_BASE + 0x00C));
+	__raw_writel(0x5, (DDRPHY_CONFIG_BASE + 0x010));
+	__raw_writel(0x5, (DDRPHY_CONFIG_BASE + 0x040));
+	__raw_writel(0x5, (DDRPHY_CONFIG_BASE + 0x044));
+	__raw_writel(0x5, (DDRPHY_CONFIG_BASE + 0x074));
+	__raw_writel(0x5, (DDRPHY_CONFIG_BASE + 0x078));
+
+	__raw_writel(0x4, (DDRPHY_CONFIG_BASE + 0x0A8));
+	__raw_writel(0x4, (DDRPHY_CONFIG_BASE + 0x0AC));
+	__raw_writel(0x4, (DDRPHY_CONFIG_BASE + 0x14C));
+	__raw_writel(0x4, (DDRPHY_CONFIG_BASE + 0x150));
+	__raw_writel(0x4, (DDRPHY_CONFIG_BASE + 0x1F0));
+	__raw_writel(0x4, (DDRPHY_CONFIG_BASE + 0x1F4));
+	__raw_writel(0x4, (DDRPHY_CONFIG_BASE + 0x294));
+	__raw_writel(0x4, (DDRPHY_CONFIG_BASE + 0x298));
+
+	__raw_writel(0x5, (DDRPHY_CONFIG_BASE + 0x338));
+	__raw_writel(0x5, (DDRPHY_CONFIG_BASE + 0x340));
+	__raw_writel(0x5, (DDRPHY_CONFIG_BASE + 0x348));
+	__raw_writel(0x5, (DDRPHY_CONFIG_BASE + 0x350));
 
 }
 
-void emif4p_init(u32 TIM1, u32 TIM2, u32 TIM3, u32 SDREF, u32 SDCFG, u32 RL)
+static void emif4p_init(u32 TIM1, u32 TIM2, u32 TIM3, u32 SDREF, u32 SDCFG, u32 RL)
 {
 	/*Program EMIF0 CFG Registers*/
 	__raw_writel(TIM1, EMIF4_0_SDRAM_TIM_1);
@@ -634,32 +658,47 @@ void emif4p_init(u32 TIM1, u32 TIM2, u32 TIM3, u32 SDREF, u32 SDCFG, u32 RL)
 	__raw_writel(RL, EMIF4_0_DDR_PHY_CTRL_1);
 	__raw_writel(RL, EMIF4_0_DDR_PHY_CTRL_1_SHADOW);
 
-}
-
-void __ddr_delay(u32 d)
-{
-	u32 i;
-	for(i=0; i<d; i++){
-		__raw_readl(0x48140040);
+	if (CONFIG_TI816X_TWO_EMIF){
+	__raw_writel(TIM1, EMIF4_1_SDRAM_TIM_1);
+	__raw_writel(TIM1, EMIF4_1_SDRAM_TIM_1_SHADOW);
+	__raw_writel(TIM2, EMIF4_1_SDRAM_TIM_2);
+	__raw_writel(TIM2, EMIF4_1_SDRAM_TIM_2_SHADOW);
+	__raw_writel(TIM3, EMIF4_1_SDRAM_TIM_3);
+	__raw_writel(TIM3, EMIF4_1_SDRAM_TIM_3_SHADOW);
+	__raw_writel(SDCFG, EMIF4_1_SDRAM_CONFIG);
+	//__raw_writel(SDREF, EMIF4_0_SDRAM_REF_CTRL);
+	//__raw_writel(SDREF, EMIF4_0_SDRAM_REF_CTRL_SHADOW);
+	__raw_writel(RL, EMIF4_1_DDR_PHY_CTRL_1);
+	__raw_writel(RL, EMIF4_1_DDR_PHY_CTRL_1_SHADOW);
 	}
+
 }
 
-void ddrsetup()
+static void ddrsetup()
 {
 	/* setup a small control period */
 	__raw_writel(0x0000613B, EMIF4_0_SDRAM_REF_CTRL);
-	__ddr_delay(20);
 	__raw_writel(0x1000613B, EMIF4_0_SDRAM_REF_CTRL);
-	__ddr_delay(20);
 	__raw_writel(0x10000C30, EMIF4_0_SDRAM_REF_CTRL);
-	__ddr_delay(20);
 
-	__raw_writel(EMIF_RHYCFG, EMIF4_0_DDR_PHY_CTRL_1);
+	__raw_writel(EMIF_PHYCFG, EMIF4_0_DDR_PHY_CTRL_1);
 	__raw_writel(EMIF_PHYCFG, EMIF4_0_DDR_PHY_CTRL_1_SHADOW);
+
+	if (CONFIG_TI816X_TWO_EMIF){
+	/* setup a small control period */
+	__raw_writel(0x0000613B, EMIF4_1_SDRAM_REF_CTRL);
+	__raw_writel(0x1000613B, EMIF4_1_SDRAM_REF_CTRL);
+	__raw_writel(0x10000C30, EMIF4_1_SDRAM_REF_CTRL);
+
+	__raw_writel(EMIF_PHYCFG, EMIF4_1_DDR_PHY_CTRL_1);
+	__raw_writel(EMIF_PHYCFG, EMIF4_1_DDR_PHY_CTRL_1_SHADOW);
+	}
+
 }
 
-void update_dqs()
+static void update_dqs(int a)
 {
+#if 0
 	__raw_writel(RD_DQS_FORCE, 0x481980D4);
 	__raw_writel(0x00000001, 0x481980D0);
 
@@ -709,11 +748,51 @@ void update_dqs()
 
 	__raw_writel(WR_DQS_FORCE_BYTE_LANE1 + 0x32, 0x48198318);
 	__raw_writel(0x00000001, 0x48198314);
-
+#endif
 }
 #endif
+/* CFG_TI816X_EVM_DDR3/2 */
 
-#endif /* CFG_TI816X_EVM_DDR */
+
+static void config_ti816x_sdram_ddr(void)
+{
+	__raw_writel(0x2, CM_DEFAULT_FW_CLKCTRL);				/*Enable the EMIF FireWall Clocks*/
+	__raw_writel(0x2, CM_DEFAULT_L3_FAST_CLKSTCTRL);			/*Enable the Power Domain Transition of L3 Fast Domain Peripheral*/
+	__raw_writel(0x2, CM_DEFAULT_EMIF_0_CLKCTRL);				/*Enable EMIF0 Clock*/
+	__raw_writel(0x2, CM_DEFAULT_EMIF_1_CLKCTRL); 				/*Enable EMIF1 Clock*/
+	while((__raw_readl(CM_DEFAULT_L3_FAST_CLKSTCTRL) & 0x300) != 0x300);	/*Poll for L3_FAST_GCLK  & DDR_GCLK  are active*/
+	while((__raw_readl(CM_DEFAULT_EMIF_0_CLKCTRL) & 0x2) != 0x2);	/*Poll for Module is functional*/
+	while((__raw_readl(CM_DEFAULT_EMIF_1_CLKCTRL) & 0x2) != 0x2);	/*Poll for Module is functional*/
+
+	ddr_init_settings(0);
+
+	if (CONFIG_TI816X_TWO_EMIF){
+		ddr_init_settings(1);
+	}
+
+	__raw_writel(0x2, CM_DEFAULT_DMM_CLKCTRL); 				/*Enable EMIF1 Clock*/
+	while((__raw_readl(CM_DEFAULT_DMM_CLKCTRL) & 0x2) != 0x2);		/*Poll for Module is functional*/
+
+	/*Program the DMM to Access EMIF0*/
+	__raw_writel(0x80500100, DMM_LISA_MAP__0);
+	__raw_writel(0xC0500120, DMM_LISA_MAP__1);
+
+	/*Program the DMM to Access EMIF1*/
+	__raw_writel(0xA0500200, DMM_LISA_MAP__2);
+	__raw_writel(0xE0500220, DMM_LISA_MAP__3);
+
+	/*Enable Tiled Access*/
+	__raw_writel(0x80000000, DMM_PAT_BASE_ADDR);
+
+	/* Enable firewall in Test Device type */
+	if((__raw_readl(CONTROL_STATUS) & 0x700) == 0)
+		__raw_writel(0xFFFFFFFF, 0x47C0C088);
+
+	emif4p_init(EMIF_TIM1, EMIF_TIM2, EMIF_TIM3, EMIF_SDREF & 0xFFFFFFFF, EMIF_SDCFG, 0x10B);
+	ddrsetup();
+	update_dqs(0);
+	update_dqs(1);
+}
 
 /*
  * TI816X specific functions
@@ -770,7 +849,7 @@ static void main_pll_init_ti816x(u32 sil_index, u32 clk_index)
 
 	 __raw_writel((1<<8 | MAIN_MDIV7), MAINPLL_DIV7);
 
-	 while(__raw_readl(MAINPLL_CTRL & 0x80) != 0x80);
+	 while((__raw_readl(MAINPLL_CTRL) & 0x80) != 0x80);
 
 	 main_pll_ctrl = __raw_readl(MAINPLL_CTRL);
 	 main_pll_ctrl &= 0xFFFFFFFB;
@@ -810,7 +889,7 @@ static void ddr_pll_init_ti816x(u32 sil_index, u32 clk_index)
 	ddr_pll_ctrl |= (DDR_N<<16 | DDR_P<<8);
 	__raw_writel(ddr_pll_ctrl, DDRPLL_CTRL);
 
-	__raw_writel(DDRPLL_PWD, 0x0);
+	__raw_writel(0x0,DDRPLL_PWD);
 
 	__raw_writel(((1<<8) | DDR_MDIV1), DDRPLL_DIV1);
 
@@ -827,7 +906,7 @@ static void ddr_pll_init_ti816x(u32 sil_index, u32 clk_index)
 	__raw_writel(((1<<8) | DDR_MDIV5), DDRPLL_DIV5);
 
 	/* Wait for PLL to lock */
-	while(__raw_readl(DDRPLL_CTRL & 0x80) != 0x80);
+	while((__raw_readl(DDRPLL_CTRL) & 0x80) != 0x80);
 
 	ddr_pll_ctrl = __raw_readl(DDRPLL_CTRL);
 	ddr_pll_ctrl &= 0xFFFFFFFB;
@@ -943,7 +1022,7 @@ static void audio_pll_init_ti816x(u32 sil_index, u32 clk_index)
 	 __raw_writel((1<<31 | 1<<28 | (AUDIO_INTFREQ5<<24) | AUDIO_FRACFREQ5), AUDIOPLL_FREQ5);
 	 __raw_writel(((1<<8) | AUDIO_MDIV5), AUDIOPLL_DIV5);
 
-	 while(__raw_readl(AUDIOPLL_CTRL & 0x80) != 0x80);
+	 while((__raw_readl(AUDIOPLL_CTRL) & 0x80) != 0x80);
 
 	 audio_pll_ctrl = __raw_readl(AUDIOPLL_CTRL);
 	 audio_pll_ctrl &= 0xFFFFFFFB;

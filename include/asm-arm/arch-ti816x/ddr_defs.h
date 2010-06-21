@@ -33,7 +33,7 @@
 #define INVERT_CLK_OUT              0x0
 #define CMD_SLAVE_RATIO             0x80
 
-
+#if 0
 /*
  * DDR3 force values.  These are board dependent
  */
@@ -60,6 +60,41 @@
 #define EMIF_TIM3    0x009F82CF  /* relaxed timing valeus - optimal 009F82B8 */
 #define EMIF_SDREF   0x10000C30  /* optimal refresh interval - 10000C30 */
 #define EMIF_SDCFG   0x62A412B2  /* 32 bit ddr3, CL=6, CWL=5, 14 rows, 8 banks, 10 bit column, 1 CS */
+#define EMIF_PHYCFG  0x0000030B  /* local odt = 3, read latency = 11 (max = 12, min=6) */
+
+#endif
+/*
+ * DDR2 ratio values.  These are board dependent
+ * obtained from sweep experiments
+ */
+
+/* EVM 400 MHz clock Settings */
+
+#define WR_DQS_RATIO_BYTE_LANE3   ((0x4a << 10) | 0x4a)
+#define WR_DQS_RATIO_BYTE_LANE2   ((0x4a << 10) | 0x4a)
+#define WR_DQS_RATIO_BYTE_LANE1   ((0x4a << 10) | 0x4a)
+#define WR_DQS_RATIO_BYTE_LANE0   ((0x4a << 10) | 0x4a)
+
+#define WR_DATA_RATIO_BYTE_LANE3   (((0x4a + 0x40) << 10) | (0x4a + 0x40))
+#define WR_DATA_RATIO_BYTE_LANE2   (((0x4a + 0x40) << 10) | (0x4a + 0x40))
+#define WR_DATA_RATIO_BYTE_LANE1   (((0x4a + 0x40) << 10) | (0x4a + 0x40))
+#define WR_DATA_RATIO_BYTE_LANE0   (((0x4a + 0x40) << 10) | (0x4a + 0x40))
+
+#define RD_DQS_RATIO		  ((0x40 << 10) | 0x40)
+
+#define DQS_GATE_BYTE_LANE0       ((0x13a << 10) | 0x13a)
+#define DQS_GATE_BYTE_LANE1       ((0x13a << 10) | 0x13a)
+#define DQS_GATE_BYTE_LANE2       ((0x13a << 10) | 0x13a)
+#define DQS_GATE_BYTE_LANE3       ((0x13a << 10) | 0x13a)
+
+/*
+ * EMIF Paramters
+ */
+#define EMIF_TIM1    0xAAB15E2
+#define EMIF_TIM2    0x423631D2
+#define EMIF_TIM3    0x80032F
+#define EMIF_SDREF   0x10000C30
+#define EMIF_SDCFG   0x43801A3A  /* 32 bit ddr2, CL=6, CWL=5, 13 rows, 8 banks, 10 bit column, 2 CS */
 #define EMIF_PHYCFG  0x0000030B  /* local odt = 3, read latency = 11 (max = 12, min=6) */
 
 

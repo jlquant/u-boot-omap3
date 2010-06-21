@@ -68,6 +68,7 @@
 #define EMIF4_1_CFG_BASE		0x4D000000
 #define DMM_BASE			0x4E000000
 
+#define DDRPHY_CONFIG_BASE		0x48198000
 /* GPMC Base address */
 #define GPMC_BASE			0x50000000
 

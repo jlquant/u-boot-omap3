@@ -76,7 +76,8 @@
 # undef CONFIG_NAND_TI816X
 #endif
 
-#define CONFIG_TI816X_EVM_DDR		/* Configure DDR in U-Boot */
+#define CONFIG_TI816X_EVM_DDR2		/* Configure DDR in U-Boot */
+#define CONFIG_TI816X_TWO_EMIF	1
 #define CONFIG_MISC_INIT_R
 #define CONFIG_TI816X_ASCIIART		/* The eye */
 
@@ -158,10 +159,11 @@ extern unsigned int boot_flash_type;
 # undef CONFIG_CMD_IMLS
 #endif
 
-#define CONFIG_BOOTDELAY        	-1	/* set 0 or greater for autoboot */
+#define CONFIG_BOOTDELAY        	3	/* set 0 or greater for autoboot */
 #define CONFIG_VERSION_VARIABLE
-#define CONFIG_BOOTARGS         "console=ttyS0,115200n8 root=/dev/ram \
-rw initrd=0x81000000,16MB init=/bin/ash lpj=50000 mem=256M earlyprintk"
+#define CONFIG_BOOTARGS         "console=ttyS2,115200n8 mem=256M earlyprintk \
+ip=172.24.179.112:172.24.179.98:172.24.179.1:255.255.255.0:::off \
+root=/dev/nfs nfsroot=172.24.179.98:/groups/psp/nfs_root,nolock rw"
 
 #define CONFIG_BOOTCOMMAND	"source 0x80000100; bootm 0x80700000"
 

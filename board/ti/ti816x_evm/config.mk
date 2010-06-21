@@ -1,7 +1,7 @@
 #
 # config.mk
 #
-# Make configuration file for TI816X Simulator.
+# Make configuration file for TI816X
 #
 # Copyright (C) 2009 Texas Instruments Incorporated - http://www.ti.com/
 #
@@ -28,4 +28,4 @@ CROSS_COMPILE:= arm-none-linux-gnueabi-
 # so that linking against toolchain provided library is avoided to prevent
 # EABI mismatch errors (especially in NAND code).
 #USE_PRIVATE_LIBGCC = lib_arm
-LDSCRIPT:=board/ti816x_evm/u-boot.lds
+LDSCRIPT:=board/ti/ti816x_evm/u-boot.lds

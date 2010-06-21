@@ -339,6 +339,7 @@ gpmc_init_ret:
 	*/
 
 	/* Other way of fixing the bug */
+/*
 	ldr r5, ddr_pll_control_addr
 	ldr r2, ddr1
 	str r2, [r5]
@@ -365,7 +366,7 @@ wait10:
 	ldr r5, ddr_pll_control_addr
 	ldr r2, ddr5
 	str r2, [r5]
-
+*/
 
 	bl s_init
 	/* back to arch calling code */
