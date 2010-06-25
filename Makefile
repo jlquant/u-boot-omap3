@@ -3160,15 +3160,6 @@ SMN42_config	:	unconfig
 devkit8000_config :	unconfig
 	@$(MKCONFIG) $(@:_config=) arm arm_cortexa8 devkit8000 timll omap3
 
-ti816x_sim_config:	unconfig
-	@[ -z "$(findstring _sim_,$@)" ] || \
-	{ \
-		echo "#define CONFIG_TI816X"    >>$(obj)include/config.h ; \
-		echo "#define CONFIG_TI816X_SIM"    >>$(obj)include/config.h ; \
-		echo "Setting up TI816X simulator build for Cortex A8... this skips UART and ETH init" ; \
-	}
-	@$(MKCONFIG) -a ti816x_evm arm arm_cortexa8 ti816x_evm NULL ti816x
-
 ti816x_evm_nor_config:	unconfig
 	@[ -z "$(findstring _nor_,$@)" ] || \
 	{ \

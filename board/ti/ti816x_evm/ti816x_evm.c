@@ -121,8 +121,6 @@ static inline void delay(unsigned long loops)
  * Basic board specific setup
  */
 
-/* In the simulator some peripheral registers are not modelled */
-#ifndef CONFIG_TI816X_SIM
 int board_init(void)
 {
 	u32 regVal;
@@ -218,17 +216,6 @@ int board_init(void)
 
 	return 0;
 }
-#else
-int board_init(void)
-{
-	gd->bd->bi_arch_number = MACH_TYPE_TI816X;
-
-	/* address of boot parameters */
-	gd->bd->bi_boot_params = PHYS_DRAM_1 + 0x100;
-
-	return 0;
-}
-#endif
 
 #ifdef CONFIG_DRIVER_TI_EMAC
 int board_eth_init(bd_t *bis)
@@ -1118,13 +1105,9 @@ void watchdog_init(void)
  * Routine: peripheral_enable
  * Description: Enable the clks & power for perifs (TIMER1, UART0,...)
  *
- * TODO:VB__This we can probably split as ones needed to get U-Boot
- * and the ones needed to get the kernel up
- *
  ******************************************************************/
 static void peripheral_enable(void)
 {
-#ifndef CONFIG_TI816X_SIM
 	/* DMTimers */
 	__raw_writel(0x2, CM_ALWON_L3_SLOW_CLKSTCTRL);
 
@@ -1195,7 +1178,6 @@ static void peripheral_enable(void)
 	__raw_writel(0x2, CM_ALWON_ETHERNET_1_CLKCTRL);
 //	while(__raw_readl(CM_ALWON_ETHERNET_0_CLKCTRL) != 0x2);
 //	while(__raw_readl(CM_ALWON_ETHERNET_0_CLKCTRL) != 0x2);
-#endif
 }
 
 /* MUX setting */
