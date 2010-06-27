@@ -72,7 +72,7 @@
 #define MAIN_INTFREQ1		0x8
 #define MAIN_FRACFREQ1		0x800000
 #define MAIN_MDIV1		0x2
-#define MAIN_INTFREQ2		0xE 14
+#define MAIN_INTFREQ2		0xE
 #define MAIN_FRACFREQ2		0x0
 #define MAIN_MDIV2		0x1
 #define MAIN_INTFREQ3		0x8
@@ -92,11 +92,11 @@
 #define DDR_N			59
 #define DDR_P			0x1
 
-#define DDR_MDIV1		4
+#define DDR_MDIV1		0x4
 
 #define DDR_INTFREQ2		0x8
 #define DDR_FRACFREQ2		0xD99999
-#define DDR_MDIV2		0xF /* GEL uses 0x1E */	/* With this divider value, we should change SYSCLK10 divider */
+#define DDR_MDIV2		0xF /* GEL uses 0x1E With this divider value, when ROM code runs we need to make this 0xF else console shows junk chars */
 #define DDR_INTFREQ3		0x8
 #define DDR_FRACFREQ3		0x0
 #define DDR_MDIV3		0x4

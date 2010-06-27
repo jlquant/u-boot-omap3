@@ -54,7 +54,7 @@ int timer_init(void)
 	/* Keeping ptv value as 0 right now AND disabling the PRE_SCALAR */
 
 	writel(TIMER_LOAD_VAL, TIMER_REG(TIMER_TLDR));
-	writel((ptv << TCLR_PTV_SHIFT) | TCLR_PRE
+	writel((ptv << TCLR_PTV_SHIFT) | TCLR_PRE_DISABLE
 			| TCLR_AR | TCLR_ST, TIMER_REG(TIMER_TCLR));
 
 	reset_timer_masked();	/* init the timestamp and lastinc value */

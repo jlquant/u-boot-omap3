@@ -120,7 +120,6 @@ static inline void delay(unsigned long loops)
 /*
  * Basic board specific setup
  */
-
 int board_init(void)
 {
 	u32 regVal;
@@ -333,11 +332,11 @@ u32 cpu_is_ti816x(void)
 	return 1;
 }
 #endif
-
-#ifdef CONFIG_TI816X_EVM_DDR3
 /*********************************************************************
- * config_ti816x_sdram_ddr() - Init DDR on TI816X EVM
+ * Init DDR3 on TI816X EVM
  *********************************************************************/
+#if 0
+#ifdef CONFIG_TI816X_EVM_DDR3
 static void ddr_init_settings()
 {
 	__raw_writel(INVERT_CLK_OUT, 0x4819802C);	/* invert_clk_out cmd0 */
@@ -447,7 +446,7 @@ static void ddrsetup()
 	__raw_writel(EMIF_PHYCFG, EMIF4_0_DDR_PHY_CTRL_1_SHADOW);
 }
 
-static void update_dqs()
+static void update_dqs(int a)
 {
 	__raw_writel(RD_DQS_FORCE, 0x481980D4);
 	__raw_writel(0x00000001, 0x481980D0);
@@ -501,50 +500,9 @@ static void update_dqs()
 
 }
 #endif
-#if 0
-static void config_ti816x_sdram_ddr(void)
-{
-	__raw_writel(0x2, CM_DEFAULT_FW_CLKCTRL);				/*Enable the EMIF FireWall Clocks*/
-	__raw_writel(0x2, CM_DEFAULT_L3_FAST_CLKSTCTRL);			/*Enable the Power Domain Transition of L3 Fast Domain Peripheral*/
-	__raw_writel(0x2, CM_DEFAULT_EMIF_0_CLKCTRL);				/*Enable EMIF0 Clock*/
-	__raw_writel(0x2, CM_DEFAULT_EMIF_1_CLKCTRL); 				/*Enable EMIF1 Clock*/
-	while((__raw_readl(CM_DEFAULT_L3_FAST_CLKSTCTRL) & 0x300) != 0x300);	/*Poll for L3_FAST_GCLK  & DDR_GCLK  are active*/
-	while((__raw_readl(CM_DEFAULT_EMIF_0_CLKCTRL) & 0x2) != 0x2);	/*Poll for Module is functional*/
-	while((__raw_readl(CM_DEFAULT_EMIF_1_CLKCTRL) & 0x2) != 0x2);	/*Poll for Module is functional*/
-
-	ddr_init_settings(0);
-
-	if (CONFIG_TI816X_TWO_EMIF){
-		ddr_init_settings(1);
-	}
-
-	__raw_writel(0x2, CM_DEFAULT_DMM_CLKCTRL); 				/*Enable EMIF1 Clock*/
-	while((__raw_readl(CM_DEFAULT_DMM_CLKCTRL) & 0x2) != 0x2);		/*Poll for Module is functional*/
-
-	/*Program the DMM to Access EMIF0*/
-	__raw_writel(0x80500100, DMM_LISA_MAP__0);
-	__raw_writel(0xC0500120, DMM_LISA_MAP__1);
-
-	/*Program the DMM to Access EMIF1*/
-	__raw_writel(0xA0500200, DMM_LISA_MAP__2);
-	__raw_writel(0xE0500220, DMM_LISA_MAP__3);
-
-	/*Enable Tiled Access*/
-	__raw_writel(0x80000000, DMM_PAT_BASE_ADDR);
-
-	/* Enable firewall in Test Device type */
-	if((__raw_readl(CONTROL_STATUS) & 0x700) == 0)
-		__raw_writel(0xFFFFFFFF, 0x47C0C088);
-
-	emif4p_init(EMIF_TIM1, EMIF_TIM2, EMIF_TIM3, EMIF_SDREF & 0xFFFFFFFF, EMIF_SDCFG, 0x10B);
-	ddrsetup();
-	update_dqs(0);
-	update_dqs(1);
-}
 #endif
-
 #ifdef CONFIG_TI816X_EVM_DDR2
-static void ddr_init_settings(int a)
+static void ddr_init_settings(int emif)
 {
 	/* DLL Lockdiff */
 	__raw_writel(0xF, (DDRPHY_CONFIG_BASE + 0x028));
@@ -683,62 +641,11 @@ static void ddrsetup()
 
 }
 
-static void update_dqs(int a)
+static void update_dqs(int emif)
 {
-#if 0
-	__raw_writel(RD_DQS_FORCE, 0x481980D4);
-	__raw_writel(0x00000001, 0x481980D0);
-
-	__raw_writel(RD_DQS_FORCE, 0x48198178);
-	__raw_writel(0x00000001, 0x48198174);
-
-	__raw_writel(RD_DQS_FORCE, 0x4819821C);
-	__raw_writel(0x00000001, 0x48198218);
-
-	__raw_writel(RD_DQS_FORCE, 0x481982C0);
-	__raw_writel(0x00000001, 0x481982BC);
-
-
-	__raw_writel(DQS_GATE_BYTE_LANE3, 0x48198114);
-	__raw_writel(0x00000001, 0x48198110);
-
-	__raw_writel(DQS_GATE_BYTE_LANE2, 0x481981B8);
-	__raw_writel(0x00000001, 0x481981B4);
-
-	__raw_writel(DQS_GATE_BYTE_LANE1, 0x4819825C);
-	__raw_writel(0x00000001, 0x48198258);
-
-	__raw_writel(DQS_GATE_BYTE_LANE0, 0x48198300);
-	__raw_writel(0x00000001, 0x481982FC);
-
-
-	__raw_writel(WR_DQS_FORCE_BYTE_LANE0, 0x481980E8);
-	__raw_writel(0x00000001, 0x481980E4);
-
-	__raw_writel(WR_DQS_FORCE_BYTE_LANE3, 0x4819818C);
-	__raw_writel(0x00000001, 0x48198188);
-
-	__raw_writel(WR_DQS_FORCE_BYTE_LANE2, 0x48198230);
-	__raw_writel(0x00000001, 0x4819822C);
-
-	__raw_writel(WR_DQS_FORCE_BYTE_LANE1, 0x481982D4);
-	__raw_writel(0x00000001, 0x481982D0);
-
-	__raw_writel(WR_DQS_FORCE_BYTE_LANE0, 0x4819812C);
-	__raw_writel(0x00000001, 0x48198128);
-
-	__raw_writel(WR_DQS_FORCE_BYTE_LANE3 + 0x32, 0x481981D0);
-	__raw_writel(0x00000001, 0x481981CC);
-
-	__raw_writel(WR_DQS_FORCE_BYTE_LANE2 + 0x32, 0x48198274);
-	__raw_writel(0x00000001, 0x48198270);
-
-	__raw_writel(WR_DQS_FORCE_BYTE_LANE1 + 0x32, 0x48198318);
-	__raw_writel(0x00000001, 0x48198314);
-#endif
 }
 #endif
-/* CFG_TI816X_EVM_DDR3/2 */
+/* CONFIG_TI816X_EVM_DDR3/2 */
 
 
 static void config_ti816x_sdram_ddr(void)
@@ -748,8 +655,8 @@ static void config_ti816x_sdram_ddr(void)
 	__raw_writel(0x2, CM_DEFAULT_EMIF_0_CLKCTRL);				/*Enable EMIF0 Clock*/
 	__raw_writel(0x2, CM_DEFAULT_EMIF_1_CLKCTRL); 				/*Enable EMIF1 Clock*/
 	while((__raw_readl(CM_DEFAULT_L3_FAST_CLKSTCTRL) & 0x300) != 0x300);	/*Poll for L3_FAST_GCLK  & DDR_GCLK  are active*/
-	while((__raw_readl(CM_DEFAULT_EMIF_0_CLKCTRL) & 0x2) != 0x2);	/*Poll for Module is functional*/
-	while((__raw_readl(CM_DEFAULT_EMIF_1_CLKCTRL) & 0x2) != 0x2);	/*Poll for Module is functional*/
+	while((__raw_readl(CM_DEFAULT_EMIF_0_CLKCTRL)) != 0x2);	/*Poll for Module is functional*/
+	while((__raw_readl(CM_DEFAULT_EMIF_1_CLKCTRL)) != 0x2);	/*Poll for Module is functional*/
 
 	ddr_init_settings(0);
 
@@ -758,8 +665,19 @@ static void config_ti816x_sdram_ddr(void)
 	}
 
 	__raw_writel(0x2, CM_DEFAULT_DMM_CLKCTRL); 				/*Enable EMIF1 Clock*/
-	while((__raw_readl(CM_DEFAULT_DMM_CLKCTRL) & 0x2) != 0x2);		/*Poll for Module is functional*/
+	while((__raw_readl(CM_DEFAULT_DMM_CLKCTRL)) != 0x2);		/*Poll for Module is functional*/
 
+#ifdef CONFIG_TI816X_EVM_DDR2
+	/*Program the DMM to Access EMIF0*/
+	__raw_writel(0x80640300, DMM_LISA_MAP__0);
+	__raw_writel(0xC0640320, DMM_LISA_MAP__1);
+
+	/*Program the DMM to Access EMIF1*/
+	__raw_writel(0x80640300, DMM_LISA_MAP__2);
+	__raw_writel(0xC0640320, DMM_LISA_MAP__3);
+#endif
+#if 0
+#ifdef CONFIG_TI816X_EVM_DDR2
 	/*Program the DMM to Access EMIF0*/
 	__raw_writel(0x80500100, DMM_LISA_MAP__0);
 	__raw_writel(0xC0500120, DMM_LISA_MAP__1);
@@ -767,7 +685,20 @@ static void config_ti816x_sdram_ddr(void)
 	/*Program the DMM to Access EMIF1*/
 	__raw_writel(0xA0500200, DMM_LISA_MAP__2);
 	__raw_writel(0xE0500220, DMM_LISA_MAP__3);
+#endif
+#endif
 
+#if 0
+#ifdef CONFIG_TI816X_EVM_DDR3
+	/*Program the DMM to Access EMIF0*/
+	__raw_writel(0x80600100, DMM_LISA_MAP__0);
+	__raw_writel(0x80600100, DMM_LISA_MAP__1);
+
+	/*Program the DMM to Access EMIF1*/
+	__raw_writel(0xC0600200, DMM_LISA_MAP__2);
+	__raw_writel(0xC0600200, DMM_LISA_MAP__3);
+#endif
+#endif
 	/*Enable Tiled Access*/
 	__raw_writel(0x80000000, DMM_PAT_BASE_ADDR);
 
@@ -820,7 +751,7 @@ static void main_pll_init_ti816x(u32 sil_index, u32 clk_index)
 	 __raw_writel((1<<31 | 1<<28 | (MAIN_INTFREQ1<<24) | MAIN_FRACFREQ1), MAINPLL_FREQ1);
 	 __raw_writel(((1<<8) | MAIN_MDIV1), MAINPLL_DIV1);
 
-	 //__raw_writel((1<<31 | 1<<28 | (MAIN_INTFREQ2<<24) | MAIN_FRACFREQ2), MAINPLL_FREQ2);
+	 __raw_writel((1<<31 | 1<<28 | (MAIN_INTFREQ2<<24) | MAIN_FRACFREQ2), MAINPLL_FREQ2);
 	 __raw_writel(((1<<8) | MAIN_MDIV2), MAINPLL_DIV2);
 
 	 __raw_writel((1<<31 | 1<<28 | (MAIN_INTFREQ3<<24) | MAIN_FRACFREQ3), MAINPLL_FREQ3);
@@ -863,7 +794,6 @@ static void ddr_pll_init_ti816x(u32 sil_index, u32 clk_index)
 
 	ddr_pll_ctrl = __raw_readl(DDRPLL_CTRL);
 	ddr_pll_ctrl &= 0xFFFFFFFB;
-	//ddr_pll_ctrl |= 4;
 	__raw_writel(ddr_pll_ctrl, DDRPLL_CTRL);
 
 	ddr_pll_ctrl = __raw_readl(DDRPLL_CTRL);
@@ -902,9 +832,6 @@ static void ddr_pll_init_ti816x(u32 sil_index, u32 clk_index)
 
 	__raw_writel(0x1, DDR_RCD);
 
-	/* other things to setup ddr
-	config_ti816x_sdram_ddr();
-	*/
 }
 #if 0
 static void video_pll_init_ti816x(u32 sil_index, u32 clk_index)

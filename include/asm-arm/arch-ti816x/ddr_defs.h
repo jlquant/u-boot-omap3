@@ -23,7 +23,6 @@
 
 #include <asm/arch/hardware.h>
 
-#ifdef CONFIG_TI816X
 /*
  * DDR invert clock selection - 0/1.  CMD_SLAVE_RATIO = (INVERT_CLK_OUT == 0) ? 0x80 : 0x100
  *
@@ -33,24 +32,24 @@
 #define INVERT_CLK_OUT              0x0
 #define CMD_SLAVE_RATIO             0x80
 
-#if 0
+#ifdef CONFIG_TI816X_EVM_DDR3
 /*
  * DDR3 force values.  These are board dependent
  */
 
 /* EVM 400 MHz clock Settings */
 
-#define WR_DQS_FORCE_BYTE_LANE3   0x00000032
-#define WR_DQS_FORCE_BYTE_LANE2   0x00000032
-#define WR_DQS_FORCE_BYTE_LANE1   0x00000032
-#define WR_DQS_FORCE_BYTE_LANE0   0x00000032
+#define WR_DQS_FORCE_BYTE_LANE3   0x00000010
+#define WR_DQS_FORCE_BYTE_LANE2   0x00000010
+#define WR_DQS_FORCE_BYTE_LANE1   0x00000010
+#define WR_DQS_FORCE_BYTE_LANE0   0x00000010
 
-#define RD_DQS_FORCE		  0x0000002C
+#define RD_DQS_FORCE		  0x00000028
 
-#define DQS_GATE_BYTE_LANE0       0x68
-#define DQS_GATE_BYTE_LANE1       0x63
-#define DQS_GATE_BYTE_LANE2       0x52
-#define DQS_GATE_BYTE_LANE3       0x35
+#define DQS_GATE_BYTE_LANE0       0x44
+#define DQS_GATE_BYTE_LANE1       0x44
+#define DQS_GATE_BYTE_LANE2       0x44
+#define DQS_GATE_BYTE_LANE3       0x44
 
 /*
  * EMIF Paramters
@@ -63,6 +62,8 @@
 #define EMIF_PHYCFG  0x0000030B  /* local odt = 3, read latency = 11 (max = 12, min=6) */
 
 #endif
+
+#ifdef CONFIG_TI816X_EVM_DDR2
 /*
  * DDR2 ratio values.  These are board dependent
  * obtained from sweep experiments
@@ -96,7 +97,6 @@
 #define EMIF_SDREF   0x10000C30
 #define EMIF_SDCFG   0x43801A3A  /* 32 bit ddr2, CL=6, CWL=5, 13 rows, 8 banks, 10 bit column, 2 CS */
 #define EMIF_PHYCFG  0x0000030B  /* local odt = 3, read latency = 11 (max = 12, min=6) */
-
 
 #endif
 

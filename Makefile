@@ -3168,7 +3168,7 @@ ti816x_evm_nor_config:	unconfig
 		echo "#define CONFIG_TI816X_EVM"    >>$(obj)include/config.h ; \
 		echo "Setting up TI816X EVM - NOR Boot build for Cortex A8..." ; \
 	}
-	@$(MKCONFIG) -a ti816x_evm arm arm_cortexa8 ti816x_evm NULL ti816x
+	@$(MKCONFIG) -a ti816x_evm arm arm_cortexa8 ti816x ti ti816x
 
 ti816x_evm_config:	unconfig
 	@[ -z "$(findstring _evm_,$@)" ] || \
@@ -3177,7 +3177,7 @@ ti816x_evm_config:	unconfig
 		echo "#define CONFIG_TI816X_EVM"    >>$(obj)include/config.h ; \
 		echo "Setting up TI816X EVM build for Cortex A8..." ; \
 	}
-	@$(MKCONFIG) -a ti816x_evm arm arm_cortexa8 ti816x_evm ti ti816x
+	@$(MKCONFIG) -a ti816x_evm arm arm_cortexa8 ti816x ti ti816x
 
 omap3_beagle_config :	unconfig
 	@$(MKCONFIG) $(@:_config=) arm arm_cortexa8 beagle ti omap3
