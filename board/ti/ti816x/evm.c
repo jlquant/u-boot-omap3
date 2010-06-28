@@ -702,10 +702,6 @@ static void config_ti816x_sdram_ddr(void)
 	/*Enable Tiled Access*/
 	__raw_writel(0x80000000, DMM_PAT_BASE_ADDR);
 
-	/* Enable firewall in Test Device type */
-	if((__raw_readl(CONTROL_STATUS) & 0x700) == 0)
-		__raw_writel(0xFFFFFFFF, 0x47C0C088);
-
 	emif4p_init(EMIF_TIM1, EMIF_TIM2, EMIF_TIM3, EMIF_SDREF & 0xFFFFFFFF, EMIF_SDCFG, 0x10B);
 	ddrsetup();
 	update_dqs(0);
