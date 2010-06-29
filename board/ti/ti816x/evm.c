@@ -650,7 +650,6 @@ static void update_dqs(int emif)
 
 static void config_ti816x_sdram_ddr(void)
 {
-	__raw_writel(0x2, CM_DEFAULT_FW_CLKCTRL);				/*Enable the EMIF FireWall Clocks*/
 	__raw_writel(0x2, CM_DEFAULT_L3_FAST_CLKSTCTRL);			/*Enable the Power Domain Transition of L3 Fast Domain Peripheral*/
 	__raw_writel(0x2, CM_DEFAULT_EMIF_0_CLKCTRL);				/*Enable EMIF0 Clock*/
 	__raw_writel(0x2, CM_DEFAULT_EMIF_1_CLKCTRL); 				/*Enable EMIF1 Clock*/
