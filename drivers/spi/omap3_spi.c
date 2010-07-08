@@ -27,6 +27,7 @@
  * Foundation, Inc., 59 Temple Place, Suite 330, Boston,
  * MA 02111-1307 USA
  */
+
 #include <common.h>
 #include <spi.h>
 #include <malloc.h>
@@ -197,7 +198,7 @@ int spi_claim_bus(struct spi_slave *slave)
 	conf &= ~OMAP3_MCSPI_CHCONF_TRM_MASK;
 
 	writel(conf, &ds->regs->channel[ds->slave.cs].chconf);
-
+	*(unsigned int*)(0x4803012c) =  0x1A0103E0;
 	return 0;
 }
 
@@ -216,6 +217,7 @@ int spi_xfer(struct spi_slave *slave, unsigned int bitlen,
 	unsigned int	len, i;
 	const u8	*txp = dout;
 	u8		*rxp = din;
+	u8 temp;
 
 	if (bitlen == 0)
 		/* Finish any previously submitted transfers */
@@ -235,28 +237,52 @@ int spi_xfer(struct spi_slave *slave, unsigned int bitlen,
 
 	len = bitlen / 8;
 
-	/* enable McSPI channel */
-	writel(OMAP3_MCSPI_CHCTRL_EN, &ds->regs->channel[ds->slave.cs].chctrl);
+	if (flags & SPI_XFER_BEGIN) {
+		/* enable McSPI channel */
+		writel(OMAP3_MCSPI_CHCTRL_EN, &ds->regs->channel[ds->slave.cs].chctrl);
+
+		writel((readl(&ds->regs->channel[ds->slave.cs].chconf) | (0x00100000)),
+				&ds->regs->channel[ds->slave.cs].chconf);
+	}
 
 	/* Keep writing and reading 1 byte until done */
 	for (i = 0; i < len; i++) {
 
 		/* wait till TX register is empty (TXS == 1) */
-		while (!readl(&ds->regs->channel[ds->slave.cs].chstat) & OMAP3_MCSPI_CHSTAT_TXS);
+		while ((readl(&ds->regs->channel[ds->slave.cs].chstat) &
+										 OMAP3_MCSPI_CHSTAT_TXS) == 0);
 
 		/* Write the data */
-		writel(*txp++, &ds->regs->channel[ds->slave.cs].tx);
+		if (txp) {
+			writel(*txp, &ds->regs->channel[ds->slave.cs].tx);
+			txp++;
+		}
+		else
+			writel(0, &ds->regs->channel[ds->slave.cs].tx);
 
 		/* Wait till RX register contains data (RXS == 1) */
-		while (!readl(&ds->regs->channel[ds->slave.cs].chstat) & OMAP3_MCSPI_CHSTAT_RXS);
+		while ((readl(&ds->regs->channel[ds->slave.cs].chstat) &
+										 OMAP3_MCSPI_CHSTAT_RXS) == 0);
 
 		/* Read the data */
-		*rxp++ = readl(&ds->regs->channel[ds->slave.cs].rx);
+		if  (rxp) {
+			*rxp = readl(&ds->regs->channel[ds->slave.cs].rx);
+			rxp++;
+		}
+		else
+			temp = readl(&ds->regs->channel[ds->slave.cs].rx);
+		
 	}
 
 out:
-	/* Disable McSPI channel */
-	writel(0, &ds->regs->channel[ds->slave.cs].chctrl);
+	if (flags & SPI_XFER_END) {
+		writel((readl(&ds->regs->channel[ds->slave.cs].chconf) &
+				 (~0x00100000)), &ds->regs->channel[ds->slave.cs].chconf);
+
+		/* Disable McSPI channel */
+		writel(0, &ds->regs->channel[ds->slave.cs].chctrl);
+		
+	}
 
 	return 0;
 }
