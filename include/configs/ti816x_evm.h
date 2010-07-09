@@ -32,7 +32,6 @@
  * Size of malloc() pool
  */
 #define CONFIG_SYS_MALLOC_LEN		(CONFIG_ENV_SIZE + (32 * 1024))
-//#define CONFIG_SYS_MALLOC_LEN		(-204800)
 #define CONFIG_SYS_GBL_DATA_SIZE	128	/* size in bytes reserved for
 						   initial data */
 
@@ -63,8 +62,9 @@
 # undef CONFIG_NAND_TI816X
 #endif
 
-#undef  CONFIG_TI816X_EVM_DDR3
-#define CONFIG_TI816X_EVM_DDR2			/* Configure DDR in U-Boot */
+/* Only one the following two options (DDR3/DDR2) should be enabled */
+#undef CONFIG_TI816X_EVM_DDR3			/* Configure DDR3 in U-Boot */
+#define CONFIG_TI816X_EVM_DDR2			/* Configure DDR2 in U-Boot */
 #define CONFIG_TI816X_TWO_EMIF		1
 #define CONFIG_MISC_INIT_R
 #define CONFIG_TI816X_ASCIIART			/* The eye */
@@ -140,12 +140,10 @@ extern unsigned int boot_flash_type;
 #define CONFIG_BOOTDELAY		3		/* set to negative value for no autoboot */
 #define CONFIG_VERSION_VARIABLE
 #define CONFIG_BOOTARGS         	"console=ttyS2,115200n8 mem=256M earlyprintk \
-ip=172.24.179.112:172.24.179.98:172.24.179.1:255.255.255.0:::off \
-root=/dev/nfs nfsroot=172.24.179.98:/groups/psp/nfs_root,nolock rw"
+ip=dhcp root=/dev/ram rw initrd=0x82000000,16M init=/bin/ash"
 
-#define CONFIG_BOOTCOMMAND		"source 0x80000100; bootm 0x80700000"
-
-#define	CONFIG_EXTRA_ENV_SETTINGS	"verify=no\0"
+#define CONFIG_BOOTCOMMAND		"dhcp; tftp 81000000 uImage; bootm"
+#define	CONFIG_EXTRA_ENV_SETTINGS	"verify=yes\0"
 
 /*
  * Hardware drivers
