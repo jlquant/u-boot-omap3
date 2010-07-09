@@ -88,9 +88,13 @@ void gpmc_init(void)
 	/* putting a blanket check on GPMC based on ZeBu for now */
 	gpmc_cfg = (struct gpmc *)GPMC_BASE;
 
-/* #ifndef CONFIG_NOFLASH */
-#if 1
-
+#ifdef CONFIG_NOR_BOOT
+	/* env setup */
+	boot_flash_base = CONFIG_SYS_FLASH_BASE;
+	boot_flash_off = boot_flash_base + CONFIG_ENV_OFFSET;
+	boot_flash_sec = NOR_SECT_SIZE;
+	boot_flash_env_addr = boot_flash_off;
+#else
 #if defined(CONFIG_CMD_NAND) || defined(CONFIG_CMD_ONENAND)
 	const u32 *gpmc_config = NULL;
 	u32 base = 0;
@@ -139,6 +143,7 @@ void gpmc_init(void)
 	boot_flash_env_addr = f_off;
 #endif
 #endif
-
 #endif
 }
+
+

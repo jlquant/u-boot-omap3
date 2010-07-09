@@ -45,6 +45,10 @@ _TEXT_BASE:
 /* default gpmc pad config valaue */
 #define GPMC_PAD_DEF_VAL	(0x00000001)
 
+/* GPIO clk control */
+#define GPIO0_CFG_VAL		0xFFEFFFFF
+#define GPIO0_CLKCTRL_VAL	0x102
+
 /**************************************************************************
  * cpy_nor_gpmc_code: relocates nor gpmc init code into ocmc0 where its
  * safer to execute
@@ -55,8 +59,8 @@ _TEXT_BASE:
  cpy_nor_gpmc_code:
 	/* Copy NOR GPMC init code into SRAM */
 	adr r0, nor_gpmc_init     /* get addr of nor gpmc init code */
-	mov r2, #512	/* r2 <- copy size(% by 32 bytes:r3-r10 (8) regs used) */
-	ldr r1, sram0_start     /* r1 <- dest address (passed in) */
+	mov r2, #640	/* r2 <- copy size(% by 32 bytes:r3-r10 (8) regs used) */
+	ldr r1, sram_pc_start     /* r1 <- dest address (passed in) */
 	add r2, r2, r0      /* r2 <- source end address */
 next2:
 	ldmia   r0!, {r3 - r10}     /* copy from source address [r0] */
@@ -78,7 +82,7 @@ next2:
 	stmfd sp!, {ip}
 
 	/****** GPMC out of reset ******/
-	ldr r5, cm_alwon_gpm_clkctrl_addr
+	ldr r5, cm_alwon_gpmc_clkctrl_addr
 	mov r2, #0x2
 	str r2, [r5]
 	/* wait for gpmc enable to settle */
@@ -87,6 +91,25 @@ next2:
 	ands r2, r2, #0x00030000
 	cmp r2, #0
 	bne gpmc_next_wait0
+
+	/****** GPIO out of reset *******/
+	ldr r5, cm_alwon_gpio0_clkctrl_addr
+	ldr r2, cm_alwon_gpio0_clkctrl_val
+	str r2, [r5]
+	/* wait for gpio enable to settle */
+ gpio_next_wait0:
+	ldr r2, [r5]
+	ands r2, r2, #0x3
+	cmp r2, #0x2
+	bne gpio_next_wait0
+
+	/****** Set GPIO-20 to low */
+	ldr r5, gpio0_data_addr
+	mov r2, #0x0
+	str r2, [r5]
+	ldr r5, gpio0_cfg_addr 
+	ldr r2, gpio0_cfg_val
+	str r2, [r5]
 
 	/***** GPMC CS0 init ******/
 	/* disable CS0 */
@@ -179,10 +202,20 @@ next2:
 
 /* these constants need to be close for PIC code */
 /* The Nor has to be in the Flash Base CS0 for this condition to happen */
-cm_alwon_gpm_clkctrl_addr:
+cm_alwon_gpmc_clkctrl_addr:
 	.word CM_ALWON_GPMC_CLKCTRL
-sram0_start:
-	.word SRAM0_START
+cm_alwon_gpio0_clkctrl_addr:
+	.word CM_ALWON_GPIO_0_CLKCTRL
+cm_alwon_gpio0_clkctrl_val:
+	.word GPIO0_CLKCTRL_VAL
+gpio0_cfg_addr:
+	.word (TI816X_GPIO0_BASE + 0x134)
+gpio0_data_addr:
+	.word (TI816X_GPIO0_BASE + 0x13C)
+gpio0_cfg_val:
+	.word GPIO0_CFG_VAL
+sram_pc_start:
+	.word TEXT_BASE 
 SRAM_STACK_GPMC:
 	.word (SRAM0_START + SRAM0_SIZE)
 gpmc_cfg1_addr:
@@ -274,7 +307,7 @@ mark1:
 #ifndef CONFIG_NOR_BOOT
 	beq gpmc_init_ret
 #else
-	beq gpmc_init_start
+	bne gpmc_init_start
 #endif
 
 	/**** enable ocmc 0 ****/
@@ -326,7 +359,7 @@ gpmc_init_start:
 	bl  cpy_nor_gpmc_code /* copy nor gpmc init code to sram */
 	ldr r0, _gpmc_init_ret
 	mov lr, r0	 /* gpmc init code in sram should return to gpmc_init_ret */
-	ldr r0, sram0_start
+	ldr r0, sram_pc_start
 	mov pc, r0	/* transfer ctrl to nor_gpmc_init() in sram */
 
 gpmc_init_ret:
