@@ -46,20 +46,25 @@
 
 
 #ifdef CONFIG_NOR_BOOT
+# undef CONFIG_CMD_NAND
+# undef CONFIG_NAND_TI816X
+#if 0
 # define CONFIG_SYS_FLASH_CFI
 # define CONFIG_FLASH_CFI_DRIVER
 # define CONFIG_FLASH_CFI_MTD
 # define CONFIG_SYS_MAX_FLASH_SECT	512
 # define CONFIG_SYS_MAX_FLASH_BANKS	1
-# define CONFIG_ENV_IS_IN_FLASH		1
 # define CONFIG_SYS_FLASH_BASE		(0x08000000)
 # define CONFIG_SYS_MONITOR_BASE	CONFIG_SYS_FLASH_BASE
+# define CONFIG_ENV_IS_IN_FLASH		1
 # define NOR_SECT_SIZE			(128 * 1024)
 # define CONFIG_SYS_ENV_SECT_SIZE	(NOR_SECT_SIZE)
 # define CONFIG_ENV_OFFSET		(5 * NOR_SECT_SIZE)
 # define CONFIG_ENV_ADDR		(CONFIG_ENV_OFFSET)
-# undef CONFIG_CMD_NAND
-# undef CONFIG_NAND_TI816X
+#else
+# define CONFIG_NOFLASH
+# define CONFIG_ENV_IS_NOWHERE 1
+#endif
 #endif
 
 /* Only one the following two options (DDR3/DDR2) should be enabled */
@@ -104,7 +109,7 @@
 #  define CONFIG_NOFLASH
 #  undef CONFIG_ENV_IS_NOWHERE
 # else
-#  define CONFIG_SYS_MONITOR_BASE	TEXT_BASE
+//#  define CONFIG_SYS_MONITOR_BASE	TEXT_BASE
 #  define CONFIG_NOFLASH				/* Revisit: For boot modes without NOR */
 # endif
 #endif
@@ -186,6 +191,7 @@ ip=dhcp root=/dev/ram rw initrd=0x82000000,16M init=/bin/ash"
 #define CONFIG_SERIAL1			1
 #define CONFIG_CONS_INDEX		1
 
+#if 0
 /**
  * Environment settings
  */
@@ -193,6 +199,7 @@ ip=dhcp root=/dev/ram rw initrd=0x82000000,16M init=/bin/ash"
 # ifndef CONFIG_ENV_IS_IN_NAND
 #  define CONFIG_ENV_IS_NOWHERE
 # endif
+#endif
 #endif
 
 #define CONFIG_ENV_SIZE			0x2000

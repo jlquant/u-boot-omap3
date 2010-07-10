@@ -40,7 +40,7 @@ _TEXT_BASE:
 #define SPNOR_GPMC_CONFIG4	0x0f031003
 #define SPNOR_GPMC_CONFIG5	0x000f1111
 #define SPNOR_GPMC_CONFIG6	0x0f030080
-#define SPNOR_GPMC_CONFIG7	0x00000C00
+#define SPNOR_GPMC_CONFIG7	0x00000C08
 
 /* default gpmc pad config valaue */
 #define GPMC_PAD_DEF_VAL	(0x00000001)
@@ -57,6 +57,7 @@ _TEXT_BASE:
  *************************************************************************/
 .global cpy_nor_gpmc_code
  cpy_nor_gpmc_code:
+	stmfd sp!, {r0 - r10}
 	/* Copy NOR GPMC init code into SRAM */
 	adr r0, nor_gpmc_init     /* get addr of nor gpmc init code */
 	mov r2, #640	/* r2 <- copy size(% by 32 bytes:r3-r10 (8) regs used) */
@@ -67,6 +68,7 @@ next2:
 	stmia   r1!, {r3 - r10}     /* copy to   target address [r1] */
 	cmp r0, r2          /* until source end address [r2] */
 	bne next2
+	ldmfd sp!, {r0 - r10}
 	mov pc, lr          /* back to caller */
 
 /*****************************************************************************
@@ -78,7 +80,7 @@ next2:
  nor_gpmc_init:
 	mov r0, sp
 	ldr sp, SRAM_STACK_GPMC
-	stmfd sp!, {r0 - r7}
+	stmfd sp!, {r0 - r5}
 	stmfd sp!, {ip}
 
 	/****** GPMC out of reset ******/
@@ -196,7 +198,7 @@ next2:
 	bne gpmc_next_wait2
 
 	ldmfd sp!, {ip}
-	ldmfd sp!, {r0 - r7}
+	ldmfd sp!, {r0 - r5}
 	mov sp, r0
 	mov pc, lr      /* back to caller*/
 
@@ -217,7 +219,7 @@ gpio0_cfg_val:
 sram_pc_start:
 	.word TEXT_BASE 
 SRAM_STACK_GPMC:
-	.word (SRAM0_START + SRAM0_SIZE)
+	.word (SRAM0_START + 0x1000)
 gpmc_cfg1_addr:
     .word (GPMC_CONFIG_CS0_BASE + GPMC_CONFIG1)
 gpmc_cfg2_addr:
@@ -357,7 +359,8 @@ mark1:
 gpmc_init_start:
 	/* gpmc init */
 	bl  cpy_nor_gpmc_code /* copy nor gpmc init code to sram */
-	ldr r0, _gpmc_init_ret
+	mov r0, pc
+	add r0, r0, #12  /* 12 is for next three instructions */
 	mov lr, r0	 /* gpmc init code in sram should return to gpmc_init_ret */
 	ldr r0, sram_pc_start
 	mov pc, r0	/* transfer ctrl to nor_gpmc_init() in sram */
