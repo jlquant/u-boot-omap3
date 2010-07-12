@@ -869,44 +869,6 @@ void address_walking_test(unsigned long addr, unsigned long mask)
 }
 #endif
 
-/******************************************************
- * Routine: wait_for_command_complete
- * Description: Wait for posting to finish on watchdog
- ******************************************************/
-void wait_for_command_complete(unsigned int wd_base)
-{
-	/*
-	int pending = 1;
-	do {
-		pending = __raw_readl(wd_base + WWPS);
-	} while (pending);
-	*/
-}
-
-/****************************************
- * Routine: watchdog_init
- * Description: Shut down watch dogs
- *****************************************/
-void watchdog_init(void)
-{
-	/* There are 2 watch dogs WD0=Secure, WD1=MPU. WD0 is
-	 * either taken care of by ROM (HS/EMU) or not accessible (GP).
-	 * We need to take care of WD1-MPU or take a PRCM reset.
-	 */
-
-	/* TODO: VB__Skipping this section for now
-	sr32(CM_FCLKEN_WKUP, 5, 1, 1);
-	sr32(CM_ICLKEN_WKUP, 5, 1, 1);
-	wait_on_value(BIT5, 0x20, CM_IDLEST_WKUP, 5);
-	*/ /* some issue here */
-
-	/*
-	__raw_writel(WD_UNLOCK1, WD1_BASE + WSPR);
-	wait_for_command_complete(WD1_BASE);
-	__raw_writel(WD_UNLOCK2, WD1_BASE + WSPR);
-	*/
-}
-
 /*****************************************************************
  * Routine: peripheral_enable
  * Description: Enable the clks & power for perifs (TIMER1, UART0,...)
@@ -1043,8 +1005,7 @@ void prcm_init(void)
  **********************************************************/
 void s_init(void)
 {
-	l2_cache_enable();		/* TODO: Remove as A8 comes up with L2 enabled */
-	watchdog_init();		/* Just a stub right now */
+	l2_cache_enable();		/* Can be removed as A8 comes up with L2 enabled */
 	set_muxconf_regs();		/* Just a stub right now */
 	prcm_init();			/* Setup the PLLs and the clocks for the peripherals */
 	config_ti816x_sdram_ddr();	/* Do DDR settings */
@@ -1057,6 +1018,15 @@ void s_init(void)
 /* optionally do something like blinking LED */
 void board_hang (void)
 { while (0) {};}
+
+/* Reset the board */
+void reset_cpu (ulong addr)
+{
+	addr = __raw_readl(PRM_DEVICE_RSTCTRL);
+	addr &= ~BIT(1);
+	addr |= BIT(1);
+	__raw_writel(addr, PRM_DEVICE_RSTCTRL);
+}
 
 #ifdef CONFIG_NAND_TI816X
 /******************************************************************************

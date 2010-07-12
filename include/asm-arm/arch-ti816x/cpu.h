@@ -63,9 +63,14 @@
 #define HS_DEVICE			0x2
 #define GP_DEVICE			0x3
 
-/* This gives the status of the boot mode pins on the evm
- */
+/* This gives the status of the boot mode pins on the evm */
 #define SYSBOOT_MASK			(BIT(0) | BIT(1) | BIT(2) |BIT(3) |BIT(4))
+
+/* Reset control */
+#define PRM_DEVICE_RSTCTRL		(PRCM_BASE + 0x00A0)
+
+/* TI816X specific bits for PRM_DEVICE module */
+#define GLOBAL_RST_COLD			BIT(1)
 
 /* PLL related registers */
 #define MAINPLL_CTRL			(CTRL_BASE + 0x0400)

@@ -143,17 +143,6 @@ ulong get_tbclk(void)
 	return CONFIG_SYS_HZ;
 }
 
-/*
- * Reset the cpu
- * 	- TODO: Use watchdog timer?
- * 	- TODO: Otherwise move to reset.S or something.
- */
-void reset_cpu(ulong addr)
-{
-	while (1)
-	;
-}
-
 #ifdef CONFIG_CPU_CORTEXA8
 /* The functions below are taken from cpu/arm_cortexa8/omap3/board.c
  * TODO: Will move to an appropriate place later.
