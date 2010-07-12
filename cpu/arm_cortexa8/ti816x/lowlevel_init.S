@@ -49,6 +49,8 @@ _TEXT_BASE:
 #define GPIO0_CFG_VAL		0xFFEFFFFF
 #define GPIO0_CLKCTRL_VAL	0x102
 
+#define SRAM1_START			(0x40410000)
+
 /**************************************************************************
  * cpy_nor_gpmc_code: relocates nor gpmc init code into ocmc0 where its
  * safer to execute
@@ -217,7 +219,7 @@ gpio0_data_addr:
 gpio0_cfg_val:
 	.word GPIO0_CFG_VAL
 sram_pc_start:
-	.word TEXT_BASE 
+	.word (SRAM1_START) 
 SRAM_STACK_GPMC:
 	.word (SRAM0_START + 0x1000)
 gpmc_cfg1_addr:

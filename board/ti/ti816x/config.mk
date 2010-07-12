@@ -20,7 +20,8 @@
 
 sinclude $(OBJTREE)/board/$(BOARDDIR)/config.tmp
 
-TEXT_BASE = 0x40410000
+#TEXT_BASE = 0x40410000
+TEXT_BASE = 0x80300000
 # Upper 128KB (20000) for stack setup in start.S
 CROSS_COMPILE:= arm-none-linux-gnueabi-
 # Set libgcc patch to U-Boot implemenattion present in ./lib_arm directory. This

@@ -21,6 +21,10 @@
 #ifndef __CONFIG_TI816X_EVM_H
 #define __CONFIG_TI816X_EVM_H
 
+
+#define CONFIG_ENV_SIZE			0x2000
+
+
 /*
  * These features are unsupported
  */
@@ -48,7 +52,10 @@
 #ifdef CONFIG_NOR_BOOT
 # undef CONFIG_CMD_NAND
 # undef CONFIG_NAND_TI816X
-#if 0
+# ifdef CONFIG_SYS_MALLOC_LEN
+#  undef CONFIG_SYS_MALLOC_LEN
+# endif
+# define CONFIG_SYS_MALLOC_LEN		(0x100000)
 # define CONFIG_SYS_FLASH_CFI
 # define CONFIG_FLASH_CFI_DRIVER
 # define CONFIG_FLASH_CFI_MTD
@@ -59,12 +66,9 @@
 # define CONFIG_ENV_IS_IN_FLASH		1
 # define NOR_SECT_SIZE			(128 * 1024)
 # define CONFIG_SYS_ENV_SECT_SIZE	(NOR_SECT_SIZE)
-# define CONFIG_ENV_OFFSET		(5 * NOR_SECT_SIZE)
-# define CONFIG_ENV_ADDR		(CONFIG_ENV_OFFSET)
-#else
-# define CONFIG_NOFLASH
-# define CONFIG_ENV_IS_NOWHERE 1
-#endif
+# define CONFIG_ENV_SECT_SIZE	(NOR_SECT_SIZE)
+# define CONFIG_ENV_OFFSET		(2 * NOR_SECT_SIZE)
+# define CONFIG_ENV_ADDR		(CONFIG_SYS_FLASH_BASE + CONFIG_ENV_OFFSET)
 #endif
 
 /* Only one the following two options (DDR3/DDR2) should be enabled */
@@ -201,9 +205,6 @@ ip=dhcp root=/dev/ram rw initrd=0x82000000,16M init=/bin/ash"
 # endif
 #endif
 #endif
-
-#define CONFIG_ENV_SIZE			0x2000
-
 /* allow overwriting serial config and ethaddr */
 #define CONFIG_ENV_OVERWRITE
 
