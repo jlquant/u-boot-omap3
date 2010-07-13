@@ -112,7 +112,7 @@ ulong get_timer_masked(void)
 		/* move stamp fordward with absoulte diff ticks */
 		timestamp += (now - lastinc);
 	else	/* we have rollover of incrementer */
-		timestamp += ((TIMER_LOAD_VAL / (TIMER_CLOCK / CONFIG_SYS_HZ))
+		timestamp += ((TIMER_MAX_VAL / (TIMER_CLOCK / CONFIG_SYS_HZ))
 				- lastinc) + now;
 	lastinc = now;
 	/* ulong now = READ_TIMER;*/		/* current tick value */

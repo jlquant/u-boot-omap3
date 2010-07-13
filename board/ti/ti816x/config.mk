@@ -20,6 +20,9 @@
 
 sinclude $(OBJTREE)/board/$(BOARDDIR)/config.tmp
 
+# NOTE: If TEXT_BASE is modified then, in lowlevel_init
+# the check for already running from RAM has to be modified.
+# BNE / BEQ instr would change
 #TEXT_BASE = 0x40410000
 TEXT_BASE = 0x80300000
 # Upper 128KB (20000) for stack setup in start.S

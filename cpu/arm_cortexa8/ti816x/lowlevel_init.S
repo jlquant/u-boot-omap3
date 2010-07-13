@@ -309,7 +309,7 @@ mark1:
 	ldr r1, _TEXT_BASE   /* test if we run from flash or RAM */
 	cmp r0, r1          /* don't reloc during debug */
 #ifndef CONFIG_NOR_BOOT
-	beq gpmc_init_ret
+	bne gpmc_init_ret
 #else
 	bne gpmc_init_start
 #endif
