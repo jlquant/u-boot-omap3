@@ -55,7 +55,7 @@
 # ifdef CONFIG_SYS_MALLOC_LEN
 #  undef CONFIG_SYS_MALLOC_LEN
 # endif
-# define CONFIG_SYS_FLASH_USE_BUFFER_WRITE 1 
+# define CONFIG_SYS_FLASH_USE_BUFFER_WRITE 1
 # define CONFIG_SYS_MALLOC_LEN		(0x100000)
 # define CONFIG_SYS_FLASH_CFI
 # define CONFIG_FLASH_CFI_DRIVER
@@ -73,7 +73,7 @@
 #endif
 
 /* Only one the following two options (DDR3/DDR2) should be enabled */
-#undef CONFIG_TI816X_EVM_DDR3			/* Configure DDR3 in U-Boot */
+//#define CONFIG_TI816X_EVM_DDR3			/* Configure DDR3 in U-Boot */
 #define CONFIG_TI816X_EVM_DDR2			/* Configure DDR2 in U-Boot */
 #define CONFIG_TI816X_TWO_EMIF		1
 #define CONFIG_MISC_INIT_R
@@ -147,13 +147,81 @@ extern unsigned int boot_flash_type;
 # undef CONFIG_CMD_IMLS
 #endif
 
-#define CONFIG_BOOTDELAY		3		/* set to negative value for no autoboot */
 #define CONFIG_VERSION_VARIABLE
-#define CONFIG_BOOTARGS         	"console=ttyS2,115200n8 mem=256M earlyprintk \
-ip=dhcp root=/dev/ram rw initrd=0x82000000,16M init=/bin/ash"
-
-#define CONFIG_BOOTCOMMAND		"dhcp; tftp 81000000 uImage; bootm"
-#define	CONFIG_EXTRA_ENV_SETTINGS	"verify=yes\0"
+#define CONFIG_BOOTDELAY		3		/* set to negative value for no autoboot */
+#define CONFIG_SYS_AUTOLOAD		"no"
+#define	CONFIG_EXTRA_ENV_SETTINGS \
+	"verify=yes\0" \
+	"\0" \
+	"bootfile=uImage\0" \
+	"\0" \
+	"ramdisk_file=ramdisk.gz\0" \
+	"\0" \
+	"loadaddr=0x81000000\0" \
+	"\0" \
+	"loadaddr_ramdisk=0x82000000\0" \
+	"\0" \
+	"console=ttyS2,115200n8\0" \
+	"\0" \
+	"bootargs_misc=mem=256M earlyprintk\0" \
+	"\0" \
+	"ethaddr=00:00:00:00:00:00\0" \
+	"\0"\
+	"nfsserver=0.0.0.0\0" \
+	"\0" \
+	"serverip=0.0.0.0\0" \
+	"\0" \
+	"nfspath=/opt/psp/nfs_root\0" \
+	"\0" \
+	"addip=setenv bootargs ${bootargs} ip=${ipaddr}:${nfsserver}:${gatewayip}:${netmask}:${hostname}::off\0" \
+	"\0" \
+	"addnfs=setenv bootargs ${bootargs} root=/dev/nfs nfsroot=${nfsserver}:${nfspath},nolock rw\0" \
+	"\0" \
+	"ramdisk_root=/dev/ram rw\0" \
+	"\0" \
+	"jffs2_root=/dev/mtdblock3 rw\0" \
+	"\0" \
+	"rootfstype_nand=jffs2\0" \
+	"\0" \
+	"bootargs_ramdisk=setenv bootargs console=${console} ${boot_misc} " \
+		"root=${ramdisk_root} " \
+		"initrd=${loadaddr_ramdisk},32M " \
+		"ip=dhcp\0" \
+	"\0" \
+	"bootargs_nand_jffs2=setenv bootargs console=${console} ${bootargs_misc} noinitrd " \
+		"root=${nandroot_jffs2} " \
+		"rootfstype=${nandrootfstype} "\
+		"ip=dhcp\0" \
+	"\0" \
+	"bootargs_nfs=setenv bootargs console=${console} ${bootargs_misc} noinitrd " \
+		"root=/dev/nfs " \
+		"nfsroot=${nfsserver}:${nfspath},nolock rw " \
+		"ip=dhcp\0" \
+	"\0" \
+	"network_boot_ramdisk=echo Downloading kernel and ramdisk image from TFTP server and booting...; " \
+		"run bootargs_ramdisk; " \
+		"dhcp; " \
+		"tftp ${loadaddr} ${bootfile}; " \
+		"tftp ${loadaddr_ramdisk} ${ramdisk_file}; " \
+		"bootm ${loadaddr}\0" \
+	"\0" \
+	"network_boot_nfs=echo Downloading kernel image from TFTP server and using NFS filesystem...;" \
+		"run bootargs_nfs;" \
+		"dhcp; " \
+		"tftp ${loadaddr} ${bootfile}; " \
+		"bootm ${loadaddr}\0" \
+	"\0" \
+	"nand_boot_ramdisk=echo Booting from NAND using RAMDISK...; " \
+		"run bootargs_ramdisk; " \
+		"nand read ${loadaddr} 280000 170000; " \
+		"nand read ${loadddr_ramdisk} 6C0000 320000; "\
+		"bootm ${loadaddr}\0" \
+	"\0" \
+	"nand_boot_jffs2=echo Booting from NAND using jffs2 filesystem...; " \
+		"run bootargs_nand_jffs2; " \
+		"nand read ${loadaddr} 280000 170000; " \
+		"bootm ${loadaddr}\0" \
+	"\0" \
 
 /*
  * Hardware drivers
