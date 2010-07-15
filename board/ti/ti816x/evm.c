@@ -230,7 +230,15 @@ void ddr_delay(int d)
  *********************************************************************/
 static void ddr_init_settings(int emif)
 {
-	/*DLL Lockdiff*/
+	/*
+	 * DLL Lockdiff DLL_Lockdiff determines effectively is the
+	 * threshold internal to the DLL to indicate that the DLL has
+	 * lost lock.  When this happens the PHY currently issues an
+	 * internal reset.  The reset value for this is 0x4, which is
+	 * insufficient.  Set this to 15 (maximum possible - to
+	 * prevent this reset.  If the reset happens it would cause
+	 * the data to be corrupted.
+	 */
 	WR_MEM_32(DDRPHY_CONFIG_BASE + 0x028, 0xF);
 	WR_MEM_32(DDRPHY_CONFIG_BASE + 0x05C, 0xF);
 	WR_MEM_32(DDRPHY_CONFIG_BASE + 0x090, 0xF);
@@ -239,21 +247,27 @@ static void ddr_init_settings(int emif)
 	WR_MEM_32(DDRPHY_CONFIG_BASE + 0x280, 0xF);
 	WR_MEM_32(DDRPHY_CONFIG_BASE + 0x324, 0xF);
 
-	/* setup use rank delays */
+	/*
+	 * setup use_rank_delays to 1.  This is only necessary when
+	 * multiple ranks are in use.  Though the EVM does not have
+	 * multiple ranks, this is a good value to set.
+	 */
 	WR_MEM_32(DDRPHY_CONFIG_BASE + 0x134, 1);
 	WR_MEM_32(DDRPHY_CONFIG_BASE + 0x1d8, 1);
 	WR_MEM_32(DDRPHY_CONFIG_BASE + 0x27c, 1);
 	WR_MEM_32(DDRPHY_CONFIG_BASE + 0x320, 1);
 
+	/* see ddr_defs.h for invert clock setting and details */
 	WR_MEM_32(DDRPHY_CONFIG_BASE + 0x02C, INVERT_CLOCK); /* invert_clk_out cmd0 */
 	WR_MEM_32(DDRPHY_CONFIG_BASE + 0x060, INVERT_CLOCK); /* invert_clk_out cmd0 */
 	WR_MEM_32(DDRPHY_CONFIG_BASE + 0x094, INVERT_CLOCK); /* invert_clk_out cmd0 */
 
-	/* with inv clkout: 0x100. no inv clkout: 0x80 */
+	/* with inv clkout: 0x100. no inv clkout: 0x80.  See ddr_defs.h */
 	WR_MEM_32(DDRPHY_CONFIG_BASE + 0x01C, CMD_SLAVE_RATIO); /* cmd0 slave ratio */
 	WR_MEM_32(DDRPHY_CONFIG_BASE + 0x050, CMD_SLAVE_RATIO); /* cmd1 slave ratio */
 	WR_MEM_32(DDRPHY_CONFIG_BASE + 0x084, CMD_SLAVE_RATIO); /* cmd2 slave ratio */
 
+	/* for ddr3 this needs to be set to 1 */
 	WR_MEM_32(DDRPHY_CONFIG_BASE + 0x0F8,0x1); /* init mode */
 	WR_MEM_32(DDRPHY_CONFIG_BASE + 0x104,0x1);
 	WR_MEM_32(DDRPHY_CONFIG_BASE + 0x19C,0x1);
@@ -264,8 +278,10 @@ static void ddr_init_settings(int emif)
 	WR_MEM_32(DDRPHY_CONFIG_BASE + 0x2F0,0x1);
 
 	/****  setup the initial levelinihg ratios ****/
-	/* these are derived from board delays and may be different for different boards */
-
+	/* these are derived from board delays and may be different for different boards
+	 * see ddr_defs.h
+	 * we are setting the values here for both the ranks, though only one is in use
+	 */
 	WR_MEM_32(DDRPHY_CONFIG_BASE + 0x0F0, (WR_DQS_RATIO_3 << 10) | WR_DQS_RATIO_3); /*  data0 writelvl init ratio */
 	WR_MEM_32(DDRPHY_CONFIG_BASE + 0x0F4,0x00000);   /*   */
 	WR_MEM_32(DDRPHY_CONFIG_BASE + 0x194, (WR_DQS_RATIO_2 << 10) | WR_DQS_RATIO_2); /*  data1 writelvl init ratio */
