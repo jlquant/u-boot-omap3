@@ -29,7 +29,7 @@ typedef struct {
 	char *nand_string;
 } omap3_sysinfo;
 
-void prcm_init(void);
+void prcm_init(u32);
 void per_clocks_enable(void);
 
 void memif_init(void);

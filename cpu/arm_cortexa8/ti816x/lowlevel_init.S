@@ -49,7 +49,8 @@ _TEXT_BASE:
 #define GPIO0_CFG_VAL		0xFFEFFFFF
 #define GPIO0_CLKCTRL_VAL	0x102
 
-#define SRAM1_START			(0x40410000)
+#define SRAM1_START			(0x40400000)
+#define RAM_ADDR_MASK		(0xC0000000)
 
 /**************************************************************************
  * cpy_nor_gpmc_code: relocates nor gpmc init code into ocmc0 where its
@@ -219,7 +220,7 @@ gpio0_data_addr:
 gpio0_cfg_val:
 	.word GPIO0_CFG_VAL
 sram_pc_start:
-	.word (SRAM1_START) 
+	.word (SRAM0_START + 0x10000) 
 SRAM_STACK_GPMC:
 	.word (SRAM0_START + 0x1000)
 gpmc_cfg1_addr:
@@ -285,7 +286,8 @@ gpmc_a27_addr:
 	.word GPMC_A27
 sc1_rst_addr:
 	.word  SC1_RST
-
+ram_addr_mask:
+	.word RAM_ADDR_MASK
 /*****************************************************************************
  * lowlevel_init: - Platform low level init.
  * Corrupted Register : r0, r1, r2, r3, r4, r5, r6
@@ -306,14 +308,26 @@ mark1:
 	ldr r5, _mark1
 	sub r5, r5, r2 /* bytes between mark1 and lowlevel_init */
 	sub r0, r0, r5 /* r0 <- _start w.r.t current place of execution */
-	ldr r1, _TEXT_BASE   /* test if we run from flash or RAM */
-	cmp r0, r1          /* don't reloc during debug */
-#ifndef CONFIG_NOR_BOOT
-	bne gpmc_init_ret
+	mov r10, #0x0 /* r10 has in_ddr used by s_init() */
+
+#ifdef CONFIG_NOR_BOOT
+	cmp r0, #0x08000000 /* check for running from NOR */
+	beq ocmc_init_start /* if == then running from NOR */
+	ands r0, r0, #0xC0000000 /* MSB 2 bits <> 0 then we are in ocmc or DDR */
+	cmp r0, #0x40000000 /* if running from ocmc */
+	beq nor_init_start /* if == skip ocmc init and jump to nor init */
+	mov r10, #0x01 /* if <> we are running from DDR hence skip ddr init */
+				   /* by setting in_ddr to 1 */
+	b s_init_start /* and jump to s_init */
 #else
-	bne gpmc_init_start
+	ands r0, r0, #0xC0000000 /* MSB 2 bits <> 0 then we are in ocmc or DDR */
+	cmp r0, #0x80000000
+	bne s_init_start
+	mov r10, #0x01
+	b s_init_start
 #endif
 
+ocmc_init_start:
 	/**** enable ocmc 0 ****/
 	/* CLKSTCTRL */
 	ldr r5, cm_alwon_ocmc_0_clkstctrl_addr
@@ -358,70 +372,23 @@ mark1:
 	cmp r2, #0
 	bne ocmc1_wait1
 
-gpmc_init_start:
+nor_init_start:
 	/* gpmc init */
 	bl  cpy_nor_gpmc_code /* copy nor gpmc init code to sram */
 	mov r0, pc
 	add r0, r0, #12  /* 12 is for next three instructions */
-	mov lr, r0	 /* gpmc init code in sram should return to gpmc_init_ret */
+	mov lr, r0	 /* gpmc init code in sram should return to s_init_start */
 	ldr r0, sram_pc_start
 	mov pc, r0	/* transfer ctrl to nor_gpmc_init() in sram */
 
-gpmc_init_ret:
-	/* Fix bug with DDR clk */
-	/*
-	ldr r5, sysclk10_clksel_addr*/	/* Fix ROM code bug */
-	/*
-	ldr r2, sysclk10_clksel_val
-	str r2, [r5]
-	*/
-
-	/* Other way of fixing the bug */
-/*
-	ldr r5, ddr_pll_control_addr
-	ldr r2, ddr1
-	str r2, [r5]
-	ldr r5, ddr_pll_powerdown_reg
-	ldr r2, ddr2
-	str r2, [r5]
-	mov r2, #0xC8
-wait200:
-	subs r2,r2,#1
-	bgt wait200
-
-	ldr r5, ddr_div2_reg
-	ldr r2, [r5]
-	ldr r2, ddr3
-	str r2, [r5]
-
-	ldr r2, [r5]
-	ldr r2, ddr4
-	str r2, [r5]
-	mov r2, #0xa
-wait10:
-	subs r2,r2,#1
-	bgt wait10
-	ldr r5, ddr_pll_control_addr
-	ldr r2, ddr5
-	str r2, [r5]
-*/
-
+s_init_start:
+	mov r0, r10 /* passing in_ddr in r0 */
 	bl s_init
 	/* back to arch calling code */
 	mov pc, r6
 	/* the literal pools origin */
 	.ltorg
 
-ddr1:
-	.word 0x003b0188
-ddr2:
-	.word 0x00000000	/* FIXME: GEL currently turns on spare clocks too */
-ddr3:
-	.word 0x0000000f
-ddr4:
-	.word 0x0000010f
-ddr5:
-	.word 0x003b018c
 cm_alwon_ocmc_0_clkstctrl_addr:
 	.word CM_ALWON_OCMC_0_CLKSTCTRL
 cm_alwon_ocmc_0_clkctrl_addr:
@@ -434,8 +401,8 @@ _mark1:
 	.word mark1
 _lowlevel_init:
 	.word lowlevel_init
-_gpmc_init_ret:
-	.word gpmc_init_ret
+_s_init_start:
+	.word s_init_start
 
 SRAM_STACK:
 	.word (SRAM0_START + SRAM0_SIZE - SRAM_GPMC_STACK_SIZE)

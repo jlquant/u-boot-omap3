@@ -1001,7 +1001,7 @@ void set_muxconf_regs(void)
 /******************************************************************************
  * prcm_init() - inits clocks for PRCM as defined in clocks.h
  *****************************************************************************/
-void prcm_init(void)
+void prcm_init(u32 in_ddr)
 {
 	/* For future */
 	u32 clk_index = 0, sil_index = 0;
@@ -1012,7 +1012,8 @@ void prcm_init(void)
 
 	//if (is_cpu_family() == CPU_TI816X) {
 		main_pll_init_ti816x(clk_index, sil_index);
-		ddr_pll_init_ti816x(clk_index, sil_index);
+		if (!in_ddr)
+			ddr_pll_init_ti816x(clk_index, sil_index);
 	//}
 
 	/* With clk freqs setup to desired values, enable the required peripherals */
@@ -1024,12 +1025,13 @@ void prcm_init(void)
  * Description: Does early system init of muxing and clocks.
  * - Called at time when only stack is available.
  **********************************************************/
-void s_init(void)
+void s_init(u32 in_ddr)
 {
 	l2_cache_enable();		/* Can be removed as A8 comes up with L2 enabled */
 	set_muxconf_regs();		/* Just a stub right now */
-	prcm_init();			/* Setup the PLLs and the clocks for the peripherals */
-	config_ti816x_sdram_ddr();	/* Do DDR settings */
+	prcm_init(in_ddr);			/* Setup the PLLs and the clocks for the peripherals */
+	if (!in_ddr)
+		config_ti816x_sdram_ddr();	/* Do DDR settings */
 #ifdef CONFIG_TI816X_VOLT_SCALE
 	/* FIXME: Probably need to move this as first step in init */
 	//voltage_scale_init();
