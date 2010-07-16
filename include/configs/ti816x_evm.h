@@ -152,76 +152,53 @@ extern unsigned int boot_flash_type;
 #define CONFIG_SYS_AUTOLOAD		"no"
 #define	CONFIG_EXTRA_ENV_SETTINGS \
 	"verify=yes\0" \
-	"\0" \
 	"bootfile=uImage\0" \
-	"\0" \
 	"ramdisk_file=ramdisk.gz\0" \
-	"\0" \
 	"loadaddr=0x81000000\0" \
-	"\0" \
 	"loadaddr_ramdisk=0x82000000\0" \
-	"\0" \
 	"console=ttyS2,115200n8\0" \
-	"\0" \
 	"bootargs_misc=mem=256M earlyprintk\0" \
-	"\0" \
 	"ethaddr=00:00:00:00:00:00\0" \
-	"\0"\
 	"nfsserver=0.0.0.0\0" \
-	"\0" \
 	"serverip=0.0.0.0\0" \
-	"\0" \
 	"nfspath=/opt/psp/nfs_root\0" \
-	"\0" \
 	"addip=setenv bootargs ${bootargs} ip=${ipaddr}:${nfsserver}:${gatewayip}:${netmask}:${hostname}::off\0" \
-	"\0" \
 	"addnfs=setenv bootargs ${bootargs} root=/dev/nfs nfsroot=${nfsserver}:${nfspath},nolock rw\0" \
-	"\0" \
 	"ramdisk_root=/dev/ram rw\0" \
-	"\0" \
 	"jffs2_root=/dev/mtdblock3 rw\0" \
-	"\0" \
 	"rootfstype_nand=jffs2\0" \
-	"\0" \
 	"bootargs_ramdisk=setenv bootargs console=${console} ${boot_misc} " \
 		"root=${ramdisk_root} " \
 		"initrd=${loadaddr_ramdisk},32M " \
 		"ip=dhcp\0" \
-	"\0" \
 	"bootargs_nand_jffs2=setenv bootargs console=${console} ${bootargs_misc} noinitrd " \
 		"root=${nandroot_jffs2} " \
 		"rootfstype=${nandrootfstype} "\
 		"ip=dhcp\0" \
-	"\0" \
 	"bootargs_nfs=setenv bootargs console=${console} ${bootargs_misc} noinitrd " \
 		"root=/dev/nfs " \
 		"nfsroot=${nfsserver}:${nfspath},nolock rw " \
 		"ip=dhcp\0" \
-	"\0" \
 	"network_boot_ramdisk=echo Downloading kernel and ramdisk image from TFTP server and booting...; " \
 		"run bootargs_ramdisk; " \
 		"dhcp; " \
 		"tftp ${loadaddr} ${bootfile}; " \
 		"tftp ${loadaddr_ramdisk} ${ramdisk_file}; " \
 		"bootm ${loadaddr}\0" \
-	"\0" \
 	"network_boot_nfs=echo Downloading kernel image from TFTP server and using NFS filesystem...;" \
 		"run bootargs_nfs;" \
 		"dhcp; " \
 		"tftp ${loadaddr} ${bootfile}; " \
 		"bootm ${loadaddr}\0" \
-	"\0" \
 	"nand_boot_ramdisk=echo Booting from NAND using RAMDISK...; " \
 		"run bootargs_ramdisk; " \
 		"nand read ${loadaddr} 280000 170000; " \
 		"nand read ${loadddr_ramdisk} 6C0000 320000; "\
 		"bootm ${loadaddr}\0" \
-	"\0" \
 	"nand_boot_jffs2=echo Booting from NAND using jffs2 filesystem...; " \
 		"run bootargs_nand_jffs2; " \
 		"nand read ${loadaddr} 280000 170000; " \
 		"bootm ${loadaddr}\0" \
-	"\0" \
 
 /*
  * Hardware drivers
