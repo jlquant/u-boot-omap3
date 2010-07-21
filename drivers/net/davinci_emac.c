@@ -242,22 +242,60 @@ static int gen_get_link_speed(int phy_addr)
 static int gen_auto_negotiate(int phy_addr)
 {
 	u_int16_t	tmp;
+	u_int16_t       val;
+	unsigned int cntr = 0;
+
 
 	if (!davinci_eth_phy_read(phy_addr, PHY_BMCR, &tmp))
 		return(0);
 
+	val = tmp | PHY_BMCR_DPLX | PHY_BMCR_AUTON | PHY_BMCR_100_MBPS;
+	davinci_eth_phy_write(phy_addr, PHY_BMCR, val);
+	davinci_eth_phy_read(phy_addr, PHY_BMCR, &val);
+
+#ifdef DAVINCI_EMAC_GIG_ENABLE
+	davinci_eth_phy_read(phy_addr,PHY_1000BTCR, &val);
+	val |= PHY_1000BTCR_1000FD;
+	val &= ~PHY_1000BTCR_1000HD;
+	davinci_eth_phy_write(phy_addr,PHY_1000BTCR, val);
+	davinci_eth_phy_read(phy_addr,PHY_1000BTCR, &val);
+#endif
+	/* advertise 100 Full Duplex */
+	davinci_eth_phy_read(phy_addr,PHY_ANAR, &val);
+	val |= (PHY_ANLPAR_10 | PHY_ANLPAR_10FD | PHY_ANLPAR_TX
+		| PHY_ANLPAR_TXFD);
+	davinci_eth_phy_write(phy_addr,PHY_ANAR, val);
+	davinci_eth_phy_read(phy_addr,PHY_ANAR, &val);
+
+	davinci_eth_phy_read(phy_addr, PHY_BMCR, &tmp);
+
 	/* Restart Auto_negotiation  */
-	tmp |= PHY_BMCR_AUTON;
+	tmp |= PHY_BMCR_RST_NEG;
 	davinci_eth_phy_write(phy_addr, PHY_BMCR, tmp);
 
-	/*check AutoNegotiate complete */
-	udelay (10000);
-	if (!davinci_eth_phy_read(phy_addr, PHY_BMSR, &tmp))
-		return(0);
+	/*check AutoNegotiate complete - it can take upto 3 secs*/
+	do{
+		udelay(40000);
+		cntr++;
 
-	if (!(tmp & PHY_BMSR_AUTN_COMP))
-		return(0);
+		if (davinci_eth_phy_read(phy_addr, PHY_BMSR, &tmp)){
+			if(tmp & PHY_BMSR_AUTN_COMP)
+				break;
+		}
 
+	}while(cntr < 250);
+
+	if (!davinci_eth_phy_read(phy_addr, PHY_BMSR, &tmp)) {
+		debug_emac("gen_auto_negotiate - read status failed\n");
+		return(0);
+	}
+
+	if (!(tmp & PHY_BMSR_AUTN_COMP)) {
+		debug_emac("gen_auto_negotiate - autoneg failed\n");
+		return(0);
+	}
+
+	debug_emac("- gen_auto_negotiate\n");
 	return(gen_get_link_speed(phy_addr));
 }
 /* End of generic PHY functions */
@@ -300,6 +338,8 @@ static int davinci_eth_open(struct eth_device *dev, bd_t *bis)
 	volatile emac_desc	*rx_desc;
 	unsigned long		mac_hi;
 	unsigned long		mac_lo;
+	u_int16_t               lpa_val;
+	u_int32_t		mac_control = 0;
 
 	debug_emac("+ emac_open\n");
 
@@ -395,18 +435,6 @@ static int davinci_eth_open(struct eth_device *dev, bd_t *bis)
 	/* Enable ch 0 only */
 	writel(1, &adap_emac->RXUNICASTSET);
 
-	/* Enable MII interface and Full duplex mode */
-#ifdef CONFIG_SOC_DA8XX
-	writel((EMAC_MACCONTROL_MIIEN_ENABLE |
-		EMAC_MACCONTROL_FULLDUPLEX_ENABLE |
-		EMAC_MACCONTROL_RMIISPEED_100),
-	       &adap_emac->MACCONTROL);
-#else
-	writel((EMAC_MACCONTROL_MIIEN_ENABLE |
-		EMAC_MACCONTROL_FULLDUPLEX_ENABLE),
-	       &adap_emac->MACCONTROL);
-#endif
-
 	/* Init MDIO & get link state */
 	clkdiv = (EMAC_MDIO_BUS_FREQ / EMAC_MDIO_CLOCK_FREQ) - 1;
 	writel((clkdiv & 0xff) | MDIO_CONTROL_ENABLE | MDIO_CONTROL_FAULT,
@@ -415,10 +443,28 @@ static int davinci_eth_open(struct eth_device *dev, bd_t *bis)
 	/* We need to wait for MDIO to start */
 	udelay(1000);
 
-	if (!phy.get_link_speed(active_phy_addr))
+	if (!phy.auto_negotiate(active_phy_addr))
 		return(0);
+	mac_control |= EMAC_MACCONTROL_MIIEN_ENABLE;
+#ifdef DAVINCI_EMAC_GIG_ENABLE
+	davinci_eth_phy_read(active_phy_addr,PHY_1000BTSR,&lpa_val);
+	if (lpa_val & PHY_1000BTSR_1000FD) {
+		debug_emac("eth_open : gigabit negotiated\n");
+		mac_control |= EMAC_MACCONTROL_FULLDUPLEX_ENABLE;
+		mac_control |= EMAC_MACCONTROL_GIGABIT_ENABLE;
+	}
+#endif
+	davinci_eth_phy_read(active_phy_addr,PHY_ANLPAR,&lpa_val);
+	if (lpa_val & (PHY_ANLPAR_10FD | PHY_ANLPAR_TXFD) ) {
+		/* set EMAC for Full Duplex  */
+		mac_control |= EMAC_MACCONTROL_FULLDUPLEX_ENABLE;
+	}
 
-	emac_gigabit_enable();
+	/* Enable MII interface and Full duplex mode */
+#ifdef CONFIG_SOC_DA8XX
+	mac_control |= EMAC_MACCONTROL_RMIISPEED_100;
+#endif
+	writel(mac_control, &adap_emac->MACCONTROL);
 
 	/* Start receive process */
 	writel((BD_TO_HW((u_int32_t)emac_rx_desc)), &adap_emac->RX0HDP);
@@ -517,8 +563,6 @@ static int davinci_eth_send_packet (struct eth_device *dev,
 		return (ret_status);
 	}
 
-	emac_gigabit_enable();
-
 	/* Check packet size and if < EMAC_MIN_ETHERNET_PKT_SIZE, pad it up */
 	if (length < EMAC_MIN_ETHERNET_PKT_SIZE) {
 		length = EMAC_MIN_ETHERNET_PKT_SIZE;
@@ -541,8 +585,6 @@ static int davinci_eth_send_packet (struct eth_device *dev,
 			davinci_eth_ch_teardown (EMAC_CH_TX);
 			return (ret_status);
 		}
-
-		emac_gigabit_enable();
 
 		if (readl(&adap_emac->TXINTSTATRAW) & 0x01) {
 			ret_status = length;
@@ -714,5 +756,12 @@ int davinci_emac_initialize(void)
 	printf("Ethernet PHY: %s\n", phy.name);
 
 	miiphy_register(phy.name, davinci_mii_phy_read, davinci_mii_phy_write);
+#ifdef DAVINCI_EMAC_GIG_ENABLE
+	/* Enable PHY to clock out TX_CLK */
+	davinci_eth_phy_read(active_phy_addr, PHY_CONF_REG, &tmp);
+	tmp |= PHY_CONF_TXCLKEN;
+	davinci_eth_phy_write(active_phy_addr, PHY_CONF_REG, tmp);
+	davinci_eth_phy_read(active_phy_addr, PHY_CONF_REG, &tmp);
+#endif
 	return(1);
 }
