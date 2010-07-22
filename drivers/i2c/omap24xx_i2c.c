@@ -104,12 +104,10 @@ void i2c_init (int speed, int slaveadd)
 
 
 	bus_initialized[current_bus] = 1;
-
 	if (readw (I2C_CON) & I2C_CON_EN) {
 		writew (0, I2C_CON);
 		udelay (50000);
 	}
-
 	/* 12MHz I2C module clock */
 	writew (0, I2C_PSC);
 	writew(scll, I2C_SCLL);
@@ -141,13 +139,12 @@ static int i2c_read_byte (u8 devaddr, u8 regoffset, u8 * value)
 	/* set slave address */
 	writew (devaddr, I2C_SA);
 	/* no stop bit needed here */
-	writew (I2C_CON_EN | I2C_CON_MST | I2C_CON_STT | I2C_CON_TRX, I2C_CON);
-
+	writew (I2C_CON_EN | I2C_CON_MST | I2C_CON_TRX | I2C_CON_STT, I2C_CON);
 	status = wait_for_pin ();
 
 	if (status & I2C_STAT_XRDY) {
 		/* Important: have to use byte access */
-		writeb (regoffset, I2C_DATA);
+		writew (regoffset, I2C_DATA);
 		udelay (20000);
 		if (readw (I2C_STAT) & I2C_STAT_NACK) {
 			i2c_error = 1;
@@ -221,7 +218,7 @@ static int i2c_write_byte (u8 devaddr, u8 regoffset, u8 value)
 	status = wait_for_pin ();
 
 	if (status & I2C_STAT_XRDY) {
-#if defined(CONFIG_OMAP243X) || defined(CONFIG_OMAP34XX)
+#if defined(CONFIG_OMAP243X) || defined(CONFIG_OMAP34XX) || defined(CONFIG_TI816X)
 		/* send out 1 byte */
 		writeb (regoffset, I2C_DATA);
 		writew (I2C_STAT_XRDY, I2C_STAT);
@@ -274,7 +271,7 @@ static void flush_fifo(void)
 	while(1){
 		stat = readw(I2C_STAT);
 		if(stat == I2C_STAT_RRDY){
-#if defined(CONFIG_OMAP243X) || defined(CONFIG_OMAP34XX)
+#if defined(CONFIG_OMAP243X) || defined(CONFIG_OMAP34XX) || defined(CONFIG_TI816X)
 			readb(I2C_DATA);
 #else
 			readw(I2C_DATA);
@@ -398,10 +395,10 @@ static u16 wait_for_pin (void)
 	do {
 		udelay (1000);
 		status = readw (I2C_STAT);
-	} while (  !(status &
-		   (I2C_STAT_ROVR | I2C_STAT_XUDF | I2C_STAT_XRDY |
-		    I2C_STAT_RRDY | I2C_STAT_ARDY | I2C_STAT_NACK |
-		    I2C_STAT_AL)) && timeout--);
+       } while (  !(status &
+                   (I2C_STAT_ROVR | I2C_STAT_XUDF | I2C_STAT_XRDY |
+                    I2C_STAT_RRDY | I2C_STAT_ARDY | I2C_STAT_NACK |
+                    I2C_STAT_AL)) && timeout--);
 
 	if (timeout <= 0) {
 		printf ("timed out in wait_for_pin: I2C_STAT=%x\n",

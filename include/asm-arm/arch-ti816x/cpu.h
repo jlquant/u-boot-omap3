@@ -207,6 +207,10 @@ Fixed at 32kHz
 #define CM_ALWON_UART_1_CLKCTRL		(PRCM_BASE + 0x1554)
 #define CM_ALWON_UART_2_CLKCTRL		(PRCM_BASE + 0x1558)
 
+/* I2C */
+
+#define CM_ALWON_I2C_0_CLKCTRL		(PRCM_BASE + 0x1564)
+
 /* UART registers. FIXME: hardcoding for UART2 */
 #define UART_SYSCFG			(UART2_BASE + 0x54)
 #define UART_SYSSTS			(UART2_BASE + 0x58)

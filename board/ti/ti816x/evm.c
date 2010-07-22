@@ -726,6 +726,11 @@ static void ddr_pll_init_ti816x(u32 sil_index, u32 clk_index)
  ********************************************************/
 int misc_init_r (void)
 {
+#ifdef CONFIG_DRIVER_TI816X_I2C
+        i2c_init(CONFIG_SYS_I2C_SPEED, CONFIG_SYS_I2C_SLAVE);
+#endif
+
+
 	#ifdef CONFIG_TI816X_ASCIIART
 	int i = 0, j = 0;
 	char ti816x[23][79] = {
@@ -951,11 +956,17 @@ static void peripheral_enable(void)
 	__raw_writel(0x2, CM_ALWON_SPI_CLKCTRL);
 	while(__raw_readl(CM_ALWON_SPI_CLKCTRL) != 0x2);
 
+	/* I2C0 */
+	__raw_writel(0x2, CM_ALWON_I2C_0_CLKCTRL);
+	while(__raw_readl(CM_ALWON_I2C_0_CLKCTRL) != 0x2);
 
 	/* Ethernet */
 	__raw_writel(0x2, CM_ETHERNET_CLKSTCTRL);
 	__raw_writel(0x2, CM_ALWON_ETHERNET_0_CLKCTRL);
 	__raw_writel(0x2, CM_ALWON_ETHERNET_1_CLKCTRL);
+
+
+
 }
 
 /* MUX setting */
