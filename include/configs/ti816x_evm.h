@@ -147,6 +147,7 @@ extern unsigned int boot_flash_type;
 # undef CONFIG_CMD_IMLS
 #endif
 
+#define CONFIG_CMD_ASKENV
 #define CONFIG_VERSION_VARIABLE
 #define CONFIG_BOOTDELAY		3		/* set to negative value for no autoboot */
 #define CONFIG_SYS_AUTOLOAD		"no"
