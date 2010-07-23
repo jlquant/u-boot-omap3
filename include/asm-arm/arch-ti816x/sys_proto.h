@@ -66,5 +66,5 @@ void sdelay(unsigned long);
 void make_cs1_contiguous(void);
 void omap_nand_switch_ecc(int);
 void power_init_r(void);
-
+void invalidate_dcache(u32);
 #endif

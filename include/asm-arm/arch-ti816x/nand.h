@@ -120,7 +120,7 @@
 		 .length = 8 } } \
 }
 
-/* 
+/*
  * ELM Module Registers
  */
 
@@ -170,7 +170,7 @@ struct elm {
 	u8 res1[12];	/* 0x004 */
 	u32 sysconfig;  /* 0x010 */
 	u32 sysstatus;	/* 0x014 */
-	u32 irqstatus;	/* 0x018 */ 
+	u32 irqstatus;	/* 0x018 */
 	u32 irqenable;	/* 0x01c */
 	u32 location_config;	/* 0x020 */
 	u8 res2[92]; 			/* 0x024 */
@@ -185,8 +185,7 @@ int elm_check_error(u8 *syndrome, u32 nibbles, u32 *error_count,
 		u32 *error_locations);
 int elm_config(enum bch_level level);
 void elm_reset(void);
-void elm_init( void );
-
+void elm_init(void);
 #endif /* __ASSEMBLY__ */
 #endif /* __KERNEL_STRICT_NAMES */
 

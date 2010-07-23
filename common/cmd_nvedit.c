@@ -362,6 +362,7 @@ int _do_setenv (int flag, int argc, char *argv[])
 	 */
 
 #ifdef CONFIG_TI816X
+extern void davinci_eth_set_mac_addr (const u_int8_t *addr);
 	if (strcmp(argv[1], "ethaddr") == 0) {
 		u_int8_t mac_addr[6];
 

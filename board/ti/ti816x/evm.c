@@ -531,7 +531,7 @@ static void emif4p_init(u32 TIM1, u32 TIM2, u32 TIM3, u32 SDREF, u32 SDCFG, u32 
 
 }
 
-static void ddrsetup()
+static void ddrsetup(void)
 {
 	/* setup a small control period */
 	__raw_writel(0x0000613B, EMIF4_0_SDRAM_REF_CTRL);
@@ -726,11 +726,6 @@ static void ddr_pll_init_ti816x(u32 sil_index, u32 clk_index)
  ********************************************************/
 int misc_init_r (void)
 {
-#ifdef CONFIG_DRIVER_TI816X_I2C
-        i2c_init(CONFIG_SYS_I2C_SPEED, CONFIG_SYS_I2C_SLAVE);
-#endif
-
-
 	#ifdef CONFIG_TI816X_ASCIIART
 	int i = 0, j = 0;
 	char ti816x[23][79] = {
@@ -1066,6 +1061,8 @@ void reset_cpu (ulong addr)
 /******************************************************************************
  * Command to switch between NAND HW and SW ecc
  *****************************************************************************/
+
+extern void ti816x_nand_switch_ecc(nand_ecc_modes_t hardware, int32_t mode);
 static int do_switch_ecc(cmd_tbl_t * cmdtp, int flag, int argc, char *argv[])
 {
 	int type = 0;

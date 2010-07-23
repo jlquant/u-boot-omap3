@@ -104,8 +104,9 @@ void gpmc_init(void)
 	u32 f_sec = 0;
 #endif
 #endif
+#if 0
 	u32 config = 0;
-
+#endif
 	/* global settings */
 	writel(0x00000008, &gpmc_cfg->sysconfig);
 	writel(0x00000100, &gpmc_cfg->irqstatus);
