@@ -766,7 +766,7 @@ void __ti81xx_nand_switch_ecc(struct nand_chip *nand,
 			ti81xx_hwecc_init(nand);
 			printf("HW ECC Hamming Code selected\n");
 		}
-	} else if(mode == NAND_ECC_SOFT) {
+	} else if(hardware == NAND_ECC_SOFT) {
 		/* Use mtd default settings */
 		nand->ecc.layout = NULL;
 		printf("SW ECC selected\n");
