@@ -157,6 +157,9 @@
 
 #define CM_ALWON_I2C_0_CLKCTRL		(PRCM_BASE + 0x1564)
 
+/* HSMMC */
+#define CM_ALWON_HSMMC_CLKCTRL		(PRCM_BASE + 0x15B0)
+
 /* UART2 registers */
 #define UART_SYSCFG			(UART2_BASE + 0x54)
 #define UART_SYSSTS			(UART2_BASE + 0x58)
@@ -258,6 +261,15 @@
 #define TIM6_OUT			(CTRL_BASE + 0xb30)	/* a24 */
 #define SC0_DATA			(CTRL_BASE + 0xafc)	/* a25 */
 #define GPMC_A27			(CTRL_BASE + 0xba0)	/* a27 */
+
+/* MMC Pad register offsets */
+#define MMC_POW				(CTRL_BASE + 0xa70)
+#define MMC_CLK				(CTRL_BASE + 0xa74)
+#define MMC_CMD				(CTRL_BASE + 0xa78)
+#define MMC_DAT0			(CTRL_BASE + 0xa7c)
+#define MMC_DAT1_SDIRQ			(CTRL_BASE + 0xa80)
+#define MMC_DAT2_SDRW			(CTRL_BASE + 0xa84)
+#define MMC_DAT3			(CTRL_BASE + 0xa88)
 
 #define GPMC_A12 			TIM7_OUT
 #define GPMC_A13 			UART1_CTSN
