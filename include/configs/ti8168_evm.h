@@ -150,7 +150,8 @@
 #endif
 
 /* NAND support */
-#ifdef CONFIG_CMD_NAND
+#ifdef CONFIG_NAND
+#define CONFIG_CMD_NAND
 #define CONFIG_NAND_TI81XX
 #define GPMC_NAND_ECC_LP_x16_LAYOUT 	1
 #define NAND_BASE			(0x08000000)	/* FIXME not sure */
