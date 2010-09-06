@@ -41,12 +41,30 @@
 
 #define CONFIG_CMD_ASKENV
 #define CONFIG_VERSION_VARIABLE
+#define CONFIG_MMC		1
+#define CONFIG_NAND		1
+#define CONFIG_SPI		1
+#define CONFIG_I2C		1
+
+#ifdef CONFIG_SD_DUAL_BOOT
+#undef CONFIG_NAND
+#undef CONFIG_TI816X_ASCIIART
+#undef CONFIG_SPI
+#undef CONFIG_I2C
+#define CONFIG_NO_ETH
+#define CONFIG_BOOTDELAY	0
+#define CONFIG_SYS_CONSOLE_INFO_QUIET
+#define CONFIG_SYS_AUTOLOAD	"yes"
+#define CONFIG_BOOTCOMMAND	"mmc init;fatload mmc 1 0x80700000 u-boot.bin;go 0x80700000"
+#define CONFIG_ENV_IS_NOWHERE
+#else
 #define CONFIG_BOOTDELAY		3	/* set to negative value for no autoboot */
 #define CONFIG_SYS_AUTOLOAD		"no"
 #define CONFIG_EXTRA_ENV_SETTINGS \
 	"verify=yes\0" \
 	"bootfile=uImage\0" \
-	"ramdisk_file=ramdisk.gz\0" \
+	"ramdisk_file=ramdisk.gz\0"
+#endif
 
 /*
  * Miscellaneous configurable options
@@ -111,9 +129,6 @@
  */
 #define CONFIG_SERIAL1			1
 #define CONFIG_CONS_INDEX		1
-
-#define CONFIG_MMC		1
-#define CONFIG_NAND		1
 
 /* Due to restrictions in RBL while in SD Boot mode NAND/NOR support
  * cannot co-exist in the same u-boot image that is loaded by the RBL from
@@ -191,6 +206,7 @@ extern unsigned int boot_flash_type;
 # endif
 #endif /* NAND support */
 
+#ifdef CONFIG_SPI
 /* SPI support */
 #define CONFIG_OMAP3_SPI
 #define CONFIG_MTD_DEVICE
@@ -198,6 +214,7 @@ extern unsigned int boot_flash_type;
 #define CONFIG_SPI_FLASH_WINBOND
 #define CONFIG_CMD_SF
 #define CONFIG_SF_DEFAULT_SPEED	(75000000)
+#endif
 
 /* ENV in SPI */
 #if defined(CONFIG_SPI_BOOT)
@@ -240,6 +257,7 @@ extern unsigned int boot_flash_type;
 # define CONFIG_MTD_DEVICE
 #endif	/* NOR support */
 
+#ifdef CONFIG_I2C
 /* I2C support */
 #define CONFIG_CMD_I2C
 #define CONFIG_HARD_I2C			1
@@ -254,6 +272,7 @@ extern unsigned int boot_flash_type;
 #define CONFIG_SYS_I2C_EEPROM_ADDR		0x50
 #define CONFIG_SYS_EEPROM_PAGE_WRITE_BITS	6
 #define CONFIG_SYS_EEPROM_PAGE_WRITE_DELAY_MS	20
+#endif
 
 /* HSMMC Definitions */
 #ifdef CONFIG_MMC
