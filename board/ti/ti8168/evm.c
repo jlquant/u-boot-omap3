@@ -32,11 +32,9 @@
 #define __raw_writel(v, a)	(*(volatile unsigned int *)(a) = (v))
 #define __raw_readw(a)		(*(volatile unsigned short *)(a))
 #define __raw_writew(v, a)	(*(volatile unsigned short *)(a) = (v))
+#define __raw_readc(a)		(*(volatile char *)(a))
+#define __raw_writec(v, a)	(*(volatile char *)(a) = (v))
 
-#define WR_MEM_32(a, d) (*(volatile int*)(a) = (d))
-#define RD_MEM_32(a) (*(volatile int*)(a))
-#define WR_MEM_8(a, d) (*(volatile char*)(a) = (d))
-#define RD_MEM_8(a) (*(volatile char*)(a))
 /*
  * IEN  - Input Enable
  * IDIS - Input Disable
@@ -241,7 +239,7 @@ void ddr_delay(int d)
    * somewhat conservative setting
    */
   for(i=0; i<50*d; i++)
-    RD_MEM_32(CONTROL_STATUS);
+    __raw_readl(CONTROL_STATUS);
 }
 
 #ifdef CONFIG_TI816X_EVM_DDR3
@@ -259,103 +257,103 @@ static void ddr_init_settings(int emif)
 	 * prevent this reset.  If the reset happens it would cause
 	 * the data to be corrupted.
 	 */
-	WR_MEM_32(DDRPHY_CONFIG_BASE + 0x028, 0xF);
-	WR_MEM_32(DDRPHY_CONFIG_BASE + 0x05C, 0xF);
-	WR_MEM_32(DDRPHY_CONFIG_BASE + 0x090, 0xF);
-	WR_MEM_32(DDRPHY_CONFIG_BASE + 0x138, 0xF);
-	WR_MEM_32(DDRPHY_CONFIG_BASE + 0x1DC, 0xF);
-	WR_MEM_32(DDRPHY_CONFIG_BASE + 0x280, 0xF);
-	WR_MEM_32(DDRPHY_CONFIG_BASE + 0x324, 0xF);
+	__raw_writel(0xF, DDRPHY_CONFIG_BASE + 0x028);
+	__raw_writel(0xF, DDRPHY_CONFIG_BASE + 0x05C);
+	__raw_writel(0xF, DDRPHY_CONFIG_BASE + 0x090);
+	__raw_writel(0xF, DDRPHY_CONFIG_BASE + 0x138);
+	__raw_writel(0xF, DDRPHY_CONFIG_BASE + 0x1DC);
+	__raw_writel(0xF, DDRPHY_CONFIG_BASE + 0x280);
+	__raw_writel(0xF, DDRPHY_CONFIG_BASE + 0x324);
 
 	/*
 	 * setup use_rank_delays to 1.  This is only necessary when
 	 * multiple ranks are in use.  Though the EVM does not have
 	 * multiple ranks, this is a good value to set.
 	 */
-	WR_MEM_32(DDRPHY_CONFIG_BASE + 0x134, 1);
-	WR_MEM_32(DDRPHY_CONFIG_BASE + 0x1d8, 1);
-	WR_MEM_32(DDRPHY_CONFIG_BASE + 0x27c, 1);
-	WR_MEM_32(DDRPHY_CONFIG_BASE + 0x320, 1);
+	__raw_writel(1, DDRPHY_CONFIG_BASE + 0x134);
+	__raw_writel(1, DDRPHY_CONFIG_BASE + 0x1d8);
+	__raw_writel(1, DDRPHY_CONFIG_BASE + 0x27c);
+	__raw_writel(1, DDRPHY_CONFIG_BASE + 0x320);
 
 	/* see ddr_defs.h for invert clock setting and details */
-	WR_MEM_32(DDRPHY_CONFIG_BASE + 0x02C, INVERT_CLOCK); /* invert_clk_out cmd0 */
-	WR_MEM_32(DDRPHY_CONFIG_BASE + 0x060, INVERT_CLOCK); /* invert_clk_out cmd0 */
-	WR_MEM_32(DDRPHY_CONFIG_BASE + 0x094, INVERT_CLOCK); /* invert_clk_out cmd0 */
+	__raw_writel(INVERT_CLOCK, DDRPHY_CONFIG_BASE + 0x02C); /* invert_clk_out cmd0 */
+	__raw_writel(INVERT_CLOCK, DDRPHY_CONFIG_BASE + 0x060); /* invert_clk_out cmd0 */
+	__raw_writel(INVERT_CLOCK, DDRPHY_CONFIG_BASE + 0x094); /* invert_clk_out cmd0 */
 
 	/* with inv clkout: 0x100. no inv clkout: 0x80.  See ddr_defs.h */
-	WR_MEM_32(DDRPHY_CONFIG_BASE + 0x01C, CMD_SLAVE_RATIO); /* cmd0 slave ratio */
-	WR_MEM_32(DDRPHY_CONFIG_BASE + 0x050, CMD_SLAVE_RATIO); /* cmd1 slave ratio */
-	WR_MEM_32(DDRPHY_CONFIG_BASE + 0x084, CMD_SLAVE_RATIO); /* cmd2 slave ratio */
+	__raw_writel(CMD_SLAVE_RATIO, DDRPHY_CONFIG_BASE + 0x01C); /* cmd0 slave ratio */
+	__raw_writel(CMD_SLAVE_RATIO, DDRPHY_CONFIG_BASE + 0x050); /* cmd1 slave ratio */
+	__raw_writel(CMD_SLAVE_RATIO, DDRPHY_CONFIG_BASE + 0x084); /* cmd2 slave ratio */
 
 	/* for ddr3 this needs to be set to 1 */
-	WR_MEM_32(DDRPHY_CONFIG_BASE + 0x0F8,0x1); /* init mode */
-	WR_MEM_32(DDRPHY_CONFIG_BASE + 0x104,0x1);
-	WR_MEM_32(DDRPHY_CONFIG_BASE + 0x19C,0x1);
-	WR_MEM_32(DDRPHY_CONFIG_BASE + 0x1A8,0x1);
-	WR_MEM_32(DDRPHY_CONFIG_BASE + 0x240,0x1);
-	WR_MEM_32(DDRPHY_CONFIG_BASE + 0x24C,0x1);
-	WR_MEM_32(DDRPHY_CONFIG_BASE + 0x2E4,0x1);
-	WR_MEM_32(DDRPHY_CONFIG_BASE + 0x2F0,0x1);
+	__raw_writel(0x1, DDRPHY_CONFIG_BASE + 0x0F8); /* init mode */
+	__raw_writel(0x1, DDRPHY_CONFIG_BASE + 0x104);
+	__raw_writel(0x1, DDRPHY_CONFIG_BASE + 0x19C);
+	__raw_writel(0x1, DDRPHY_CONFIG_BASE + 0x1A8);
+	__raw_writel(0x1, DDRPHY_CONFIG_BASE + 0x240);
+	__raw_writel(0x1, DDRPHY_CONFIG_BASE + 0x24C);
+	__raw_writel(0x1, DDRPHY_CONFIG_BASE + 0x2E4);
+	__raw_writel(0x1, DDRPHY_CONFIG_BASE + 0x2F0);
 
 	/****  setup the initial levelinihg ratios ****/
 	/* these are derived from board delays and may be different for different boards
 	 * see ddr_defs.h
 	 * we are setting the values here for both the ranks, though only one is in use
 	 */
-	WR_MEM_32(DDRPHY_CONFIG_BASE + 0x0F0, (WR_DQS_RATIO_3 << 10) | WR_DQS_RATIO_3); /*  data0 writelvl init ratio */
-	WR_MEM_32(DDRPHY_CONFIG_BASE + 0x0F4,0x00000);   /*   */
-	WR_MEM_32(DDRPHY_CONFIG_BASE + 0x194, (WR_DQS_RATIO_2 << 10) | WR_DQS_RATIO_2); /*  data1 writelvl init ratio */
-	WR_MEM_32(DDRPHY_CONFIG_BASE + 0x198,0x00000);   /*   */
-	WR_MEM_32(DDRPHY_CONFIG_BASE + 0x238, (WR_DQS_RATIO_1 << 10) | WR_DQS_RATIO_1); /*  data2 writelvl init ratio */
-	WR_MEM_32(DDRPHY_CONFIG_BASE + 0x23c,0x00000);   /*   */
-	WR_MEM_32(DDRPHY_CONFIG_BASE + 0x2dc, (WR_DQS_RATIO_0 << 10) | WR_DQS_RATIO_0); /*  data3 writelvl init ratio */
-	WR_MEM_32(DDRPHY_CONFIG_BASE + 0x2e0,0x00000);   /*   */
+	__raw_writel((WR_DQS_RATIO_3 << 10) | WR_DQS_RATIO_3, DDRPHY_CONFIG_BASE + 0x0F0); /*  data0 writelvl init ratio */
+	__raw_writel(0x00000, DDRPHY_CONFIG_BASE + 0x0F4);   /*   */
+	__raw_writel((WR_DQS_RATIO_2 << 10) | WR_DQS_RATIO_2, DDRPHY_CONFIG_BASE + 0x194); /*  data1 writelvl init ratio */
+	__raw_writel(0x00000, DDRPHY_CONFIG_BASE + 0x198);   /*   */
+	__raw_writel((WR_DQS_RATIO_1 << 10) | WR_DQS_RATIO_1, DDRPHY_CONFIG_BASE + 0x238); /*  data2 writelvl init ratio */
+	__raw_writel(0x00000, DDRPHY_CONFIG_BASE + 0x23c);   /*   */
+	__raw_writel((WR_DQS_RATIO_0 << 10) | WR_DQS_RATIO_0, DDRPHY_CONFIG_BASE + 0x2dc); /*  data3 writelvl init ratio */
+	__raw_writel(0x00000, DDRPHY_CONFIG_BASE + 0x2e0);   /*   */
 
 
-	WR_MEM_32(DDRPHY_CONFIG_BASE + 0x0FC,(RD_GATE_RATIO_3 << 10) | RD_GATE_RATIO_3); /*  data0 gatelvl init ratio */
-	WR_MEM_32(DDRPHY_CONFIG_BASE + 0x100,0x0);
-	WR_MEM_32(DDRPHY_CONFIG_BASE + 0x1A0,(RD_GATE_RATIO_2 << 10) | RD_GATE_RATIO_2); /*  data1 gatelvl init ratio */
-	WR_MEM_32(DDRPHY_CONFIG_BASE + 0x1A4,0x0);
-	WR_MEM_32(DDRPHY_CONFIG_BASE + 0x244,(RD_GATE_RATIO_1 << 10) | RD_GATE_RATIO_1); /*  data2 gatelvl init ratio */
-	WR_MEM_32(DDRPHY_CONFIG_BASE + 0x248,0x0);
-	WR_MEM_32(DDRPHY_CONFIG_BASE + 0x2E8,(RD_GATE_RATIO_0 << 10) | RD_GATE_RATIO_0); /*  data3 gatelvl init ratio */
-	WR_MEM_32(DDRPHY_CONFIG_BASE + 0x2EC,0x0);
+	__raw_writel((RD_GATE_RATIO_3 << 10) | RD_GATE_RATIO_3, DDRPHY_CONFIG_BASE + 0x0FC); /*  data0 gatelvl init ratio */
+	__raw_writel(0x0, DDRPHY_CONFIG_BASE + 0x100);
+	__raw_writel((RD_GATE_RATIO_2 << 10) | RD_GATE_RATIO_2, DDRPHY_CONFIG_BASE + 0x1A0); /*  data1 gatelvl init ratio */
+	__raw_writel(0x0, DDRPHY_CONFIG_BASE + 0x1A4);
+	__raw_writel((RD_GATE_RATIO_1 << 10) | RD_GATE_RATIO_1, DDRPHY_CONFIG_BASE + 0x244); /*  data2 gatelvl init ratio */
+	__raw_writel(0x0, DDRPHY_CONFIG_BASE + 0x248);
+	__raw_writel((RD_GATE_RATIO_0 << 10) | RD_GATE_RATIO_0, DDRPHY_CONFIG_BASE + 0x2E8); /*  data3 gatelvl init ratio */
+	__raw_writel(0x0, DDRPHY_CONFIG_BASE + 0x2EC);
 
 	if(HACK_EYE_TRAINING){
-		WR_MEM_32(DDRPHY_CONFIG_BASE + 0x0D4, (RD_DQS_FORCE_3 << 9) | RD_DQS_FORCE_3);
-		WR_MEM_32(DDRPHY_CONFIG_BASE + 0x0D0, 0x00000001);
+		__raw_writel((RD_DQS_FORCE_3 << 9) | RD_DQS_FORCE_3, DDRPHY_CONFIG_BASE + 0x0D4);
+		__raw_writel(0x00000001, DDRPHY_CONFIG_BASE + 0x0D0);
 
-		WR_MEM_32(DDRPHY_CONFIG_BASE + 0x178, (RD_DQS_FORCE_2 << 9) | RD_DQS_FORCE_2);
-		WR_MEM_32(DDRPHY_CONFIG_BASE + 0x174, 0x00000001);
+		__raw_writel((RD_DQS_FORCE_2 << 9) | RD_DQS_FORCE_2, DDRPHY_CONFIG_BASE + 0x178);
+		__raw_writel(0x00000001, DDRPHY_CONFIG_BASE + 0x174);
 
-		WR_MEM_32(DDRPHY_CONFIG_BASE + 0x21C, (RD_DQS_FORCE_1 << 9) | RD_DQS_FORCE_1);
-		WR_MEM_32(DDRPHY_CONFIG_BASE + 0x218, 0x00000001);
+		__raw_writel((RD_DQS_FORCE_1 << 9) | RD_DQS_FORCE_1, DDRPHY_CONFIG_BASE + 0x21C);
+		__raw_writel(0x00000001, DDRPHY_CONFIG_BASE + 0x218);
 
 		/* rd dqs - lane 0 */
-		WR_MEM_32(DDRPHY_CONFIG_BASE + 0x2C0, (RD_DQS_FORCE_0 << 9) | RD_DQS_FORCE_0);
-		WR_MEM_32(DDRPHY_CONFIG_BASE + 0x2BC, 0x00000001);
+		__raw_writel((RD_DQS_FORCE_0 << 9) | RD_DQS_FORCE_0, DDRPHY_CONFIG_BASE + 0x2C0);
+		__raw_writel(0x00000001, DDRPHY_CONFIG_BASE + 0x2BC);
 	}
 	/* DDR3 */
 
-	WR_MEM_32(DDRPHY_CONFIG_BASE + 0x00C,0x5);     /* cmd0 io config - output impedance of pad */
-	WR_MEM_32(DDRPHY_CONFIG_BASE + 0x010,0x5);     /* cmd0 io clk config - output impedance of pad */
-	WR_MEM_32(DDRPHY_CONFIG_BASE + 0x040,0x5);     /* cmd1 io config - output impedance of pad */
-	WR_MEM_32(DDRPHY_CONFIG_BASE + 0x044,0x5);     /* cmd1 io clk config - output impedance of pad */
-	WR_MEM_32(DDRPHY_CONFIG_BASE + 0x074,0x5);     /* cmd2 io config - output impedance of pad */
-	WR_MEM_32(DDRPHY_CONFIG_BASE + 0x078,0x5);     /* cmd2 io clk config - output impedance of pad */
-	WR_MEM_32(DDRPHY_CONFIG_BASE + 0x0A8,0x4);     /* data0 io config - output impedance of pad */
-	WR_MEM_32(DDRPHY_CONFIG_BASE + 0x0AC,0x4);     /* data0 io clk config - output impedance of pad */
-	WR_MEM_32(DDRPHY_CONFIG_BASE + 0x14C,0x4);     /* data1 io config - output impedance of pa     */
-	WR_MEM_32(DDRPHY_CONFIG_BASE + 0x150,0x4);     /* data1 io clk config - output impedance of pad */
-	WR_MEM_32(DDRPHY_CONFIG_BASE + 0x1F0,0x4);     /* data2 io config - output impedance of pa */
-	WR_MEM_32(DDRPHY_CONFIG_BASE + 0x1F4,0x4);     /* data2 io clk config - output impedance of pad */
-	WR_MEM_32(DDRPHY_CONFIG_BASE + 0x294,0x4);     /* data3 io config - output impedance of pa */
-	WR_MEM_32(DDRPHY_CONFIG_BASE + 0x298,0x4);     /* data3 io clk config - output impedance of pad */
+	__raw_writel(0x5, DDRPHY_CONFIG_BASE + 0x00C);     /* cmd0 io config - output impedance of pad */
+	__raw_writel(0x5, DDRPHY_CONFIG_BASE + 0x010);     /* cmd0 io clk config - output impedance of pad */
+	__raw_writel(0x5, DDRPHY_CONFIG_BASE + 0x040);     /* cmd1 io config - output impedance of pad */
+	__raw_writel(0x5, DDRPHY_CONFIG_BASE + 0x044);     /* cmd1 io clk config - output impedance of pad */
+	__raw_writel(0x5, DDRPHY_CONFIG_BASE + 0x074);     /* cmd2 io config - output impedance of pad */
+	__raw_writel(0x5, DDRPHY_CONFIG_BASE + 0x078);     /* cmd2 io clk config - output impedance of pad */
+	__raw_writel(0x4, DDRPHY_CONFIG_BASE + 0x0A8);     /* data0 io config - output impedance of pad */
+	__raw_writel(0x4, DDRPHY_CONFIG_BASE + 0x0AC);     /* data0 io clk config - output impedance of pad */
+	__raw_writel(0x4, DDRPHY_CONFIG_BASE + 0x14C);     /* data1 io config - output impedance of pa     */
+	__raw_writel(0x4, DDRPHY_CONFIG_BASE + 0x150);     /* data1 io clk config - output impedance of pad */
+	__raw_writel(0x4, DDRPHY_CONFIG_BASE + 0x1F0);     /* data2 io config - output impedance of pa */
+	__raw_writel(0x4, DDRPHY_CONFIG_BASE + 0x1F4);     /* data2 io clk config - output impedance of pad */
+	__raw_writel(0x4, DDRPHY_CONFIG_BASE + 0x294);     /* data3 io config - output impedance of pa */
+	__raw_writel(0x4, DDRPHY_CONFIG_BASE + 0x298);     /* data3 io clk config - output impedance of pad */
 
-	WR_MEM_32(DDRPHY_CONFIG_BASE + 0x338,0x5);     /* fifo_we_out0  - output impedance of pad */
-	WR_MEM_32(DDRPHY_CONFIG_BASE + 0x340,0x5);     /* fifo_we_out1 - output impedance of pad */
-	WR_MEM_32(DDRPHY_CONFIG_BASE + 0x348,0x5);     /* fifo_we_in2 - output impedance of pad */
-	WR_MEM_32(DDRPHY_CONFIG_BASE + 0x350,0x5);     /* fifo_we_in3 - output impedance of pad */
+	__raw_writel(0x5, DDRPHY_CONFIG_BASE + 0x338);     /* fifo_we_out0  - output impedance of pad */
+	__raw_writel(0x5, DDRPHY_CONFIG_BASE + 0x340);     /* fifo_we_out1 - output impedance of pad */
+	__raw_writel(0x5, DDRPHY_CONFIG_BASE + 0x348);     /* fifo_we_in2 - output impedance of pad */
+	__raw_writel(0x5, DDRPHY_CONFIG_BASE + 0x350);     /* fifo_we_in3 - output impedance of pad */
 
 }
 
@@ -363,36 +361,36 @@ static void emif4p_init(u32 TIM1, u32 TIM2, u32 TIM3, u32 SDREF, u32 SDCFG, u32 
 {
 	if(USE_EMIF0){
 		/*Program EMIF0 CFG Registers*/
-		WR_MEM_32(EMIF4_0_SDRAM_TIM_1, TIM1);
-		WR_MEM_32(EMIF4_0_SDRAM_TIM_1_SHADOW, TIM1);
-		WR_MEM_32(EMIF4_0_SDRAM_TIM_2, TIM2);
-		WR_MEM_32(EMIF4_0_SDRAM_TIM_2_SHADOW, TIM2);
-		WR_MEM_32(EMIF4_0_SDRAM_TIM_3, TIM3);
-		WR_MEM_32(EMIF4_0_SDRAM_TIM_3_SHADOW, TIM3);
-		WR_MEM_32(EMIF4_0_SDRAM_CONFIG, SDCFG);
-		//WR_MEM_32(EMIF4_0_SDRAM_REF_CTRL, SDREF);
-		//WR_MEM_32(EMIF4_0_SDRAM_REF_CTRL_SHADOW, SDREF);
-		WR_MEM_32(EMIF4_0_DDR_PHY_CTRL_1, RL);
-		WR_MEM_32(EMIF4_0_DDR_PHY_CTRL_1_SHADOW, RL);
-		WR_MEM_32(EMIF4_0_SDRAM_REF_CTRL, 0x0000613B);   /* initially a large refresh period */
-		WR_MEM_32(EMIF4_0_SDRAM_REF_CTRL, 0x1000613B);   /* trigger initialization           */
+		__raw_writel(TIM1, EMIF4_0_SDRAM_TIM_1);
+		__raw_writel(TIM1, EMIF4_0_SDRAM_TIM_1_SHADOW);
+		__raw_writel(TIM2, EMIF4_0_SDRAM_TIM_2);
+		__raw_writel(TIM2, EMIF4_0_SDRAM_TIM_2_SHADOW);
+		__raw_writel(TIM3, EMIF4_0_SDRAM_TIM_3);
+		__raw_writel(TIM3, EMIF4_0_SDRAM_TIM_3_SHADOW);
+		__raw_writel(SDCFG, EMIF4_0_SDRAM_CONFIG);
+		//__raw_writel(SDREF, EMIF4_0_SDRAM_REF_CTRL);
+		//__raw_writel(SDREF, EMIF4_0_SDRAM_REF_CTRL_SHADOW);
+		__raw_writel(RL, EMIF4_0_DDR_PHY_CTRL_1);
+		__raw_writel(RL, EMIF4_0_DDR_PHY_CTRL_1_SHADOW);
+		__raw_writel(0x0000613B, EMIF4_0_SDRAM_REF_CTRL);   /* initially a large refresh period */
+		__raw_writel(0x1000613B, EMIF4_0_SDRAM_REF_CTRL);   /* trigger initialization           */
 	}
 
 	if(USE_EMIF1){
 	/*Program EMIF1 CFG Registers*/
-		WR_MEM_32(EMIF4_1_SDRAM_TIM_1, TIM1);
-		WR_MEM_32(EMIF4_1_SDRAM_TIM_1_SHADOW, TIM1);
-		WR_MEM_32(EMIF4_1_SDRAM_TIM_2, TIM2);
-		WR_MEM_32(EMIF4_1_SDRAM_TIM_2_SHADOW, TIM2);
-		WR_MEM_32(EMIF4_1_SDRAM_TIM_3, TIM3);
-		WR_MEM_32(EMIF4_1_SDRAM_TIM_3_SHADOW, TIM3);
-		WR_MEM_32(EMIF4_1_SDRAM_CONFIG, SDCFG);
-		//WR_MEM_32(EMIF4_1_SDRAM_REF_CTRL, SDREF);
-		//WR_MEM_32(EMIF4_1_SDRAM_REF_CTRL_SHADOW, SDREF);
-		WR_MEM_32(EMIF4_1_DDR_PHY_CTRL_1, RL);
-		WR_MEM_32(EMIF4_1_DDR_PHY_CTRL_1_SHADOW, RL);
-		WR_MEM_32(EMIF4_0_SDRAM_REF_CTRL, 0x0000613B);   /* initially a large refresh period */
-		WR_MEM_32(EMIF4_0_SDRAM_REF_CTRL, 0x1000613B);   /* trigger initialization           */
+		__raw_writel(TIM1, EMIF4_1_SDRAM_TIM_1);
+		__raw_writel(TIM1, EMIF4_1_SDRAM_TIM_1_SHADOW);
+		__raw_writel(TIM2, EMIF4_1_SDRAM_TIM_2);
+		__raw_writel(TIM2, EMIF4_1_SDRAM_TIM_2_SHADOW);
+		__raw_writel(TIM3, EMIF4_1_SDRAM_TIM_3);
+		__raw_writel(TIM3, EMIF4_1_SDRAM_TIM_3_SHADOW);
+		__raw_writel(SDCFG, EMIF4_1_SDRAM_CONFIG);
+		//__raw_writel(SDREF, EMIF4_1_SDRAM_REF_CTRL);
+		//__raw_writel(SDREF, EMIF4_1_SDRAM_REF_CTRL_SHADOW);
+		__raw_writel(RL, EMIF4_1_DDR_PHY_CTRL_1);
+		__raw_writel(RL, EMIF4_1_DDR_PHY_CTRL_1_SHADOW);
+		__raw_writel(0x0000613B, EMIF4_0_SDRAM_REF_CTRL);   /* initially a large refresh period */
+		__raw_writel(0x1000613B, EMIF4_0_SDRAM_REF_CTRL);   /* trigger initialization           */
 	}
 
 }
@@ -857,7 +855,7 @@ void data_walking_test(unsigned long addr, unsigned long mask)
 
 	for(i=0; i<32; i++){
 		if(mask & bit){
-			__raw_writel(bit,addr);
+			__raw_writel(bit, addr);
 			if(__raw_readl(addr) != bit){
 			/* If this happens DDR3 init has failed */
 			while (1);
@@ -877,7 +875,7 @@ void address_walking_test(unsigned long addr, unsigned long mask)
 	/* perform the writes */
 	for(i=0; i<32; i++){
 		if(mask & bit){
-			WR_MEM_8(addr + bit, write_value);
+			__raw_writec(write_value, addr + bit);
 		}
 
 		bit = bit << 1;
@@ -886,9 +884,10 @@ void address_walking_test(unsigned long addr, unsigned long mask)
 
 	/* check that it was all good */
 	write_value = 1;
+
 	for(i=0; i<32; i++){
 		if(mask & bit){
-			if(RD_MEM_8(addr + bit) != write_value){
+			if(__raw_readc(addr + bit) != write_value){
 			/* If this happens DDR3 init has failed */
 			while (1);
 			}
@@ -1004,7 +1003,7 @@ void prcm_init(u32 in_ddr)
 }
 
 /******************************************************************************
- * set_muxconf_regs(void) - Setting up the configuration Mux registers 
+ * set_muxconf_regs(void) - Setting up the configuration Mux registers
  *****************************************************************************/
 void set_muxconf_regs(void)
 {
