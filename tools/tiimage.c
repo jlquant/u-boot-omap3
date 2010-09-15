@@ -29,7 +29,13 @@
 /* TODO: Instead of device macros we should use -n option to get device info
  * and APIs associated with that TI device.
  */
-#define CONFIG_TI816X
+
+#ifndef __ASSEMBLY__
+#define __ASSEMBLY__
+#endif
+#define __ASM_STUB_PROCESSOR_H__
+#include <config.h>
+#undef __ASSEMBLY__
 
 #include "mkimage.h"
 #include <image.h>
@@ -37,6 +43,7 @@
 
 static struct ti_header tiimage_header;
 
+#if !defined(CONFIG_SD_BOOT)
 static uint32_t tiimage_swap32(uint32_t data)
 {
 	uint32_t result = 0;
@@ -83,6 +90,7 @@ static int ti816ximage_spi(void *hdr, int hdr_size,
 	fclose(out_fp);
 	return 0;
 }
+#endif
 
 static int tiimage_check_image_types(uint8_t type)
 {
@@ -132,12 +140,14 @@ static void ti816ximage_set_header(void *ptr, struct stat *sbuf, int ifd,
 	fclose(data_fp);
 
 	/* generate spi image */
+#if !defined(CONFIG_SD_BOOT)
 	spi_out_file = malloc(strlen(params->imagefile) + 6);
 	strcpy(spi_out_file, params->imagefile);
 	strcat(spi_out_file, ".spi");
 	ti816ximage_spi(hdr, sizeof(struct ti_header),
 		params->datafile, spi_out_file);
 	free(spi_out_file);
+#endif
 }
 
 int tiimage_check_params(struct mkimage_params *params)
