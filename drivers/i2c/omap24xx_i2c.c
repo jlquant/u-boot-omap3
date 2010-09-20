@@ -108,8 +108,8 @@ void i2c_init (int speed, int slaveadd)
 		writew (0, I2C_CON);
 		udelay (50000);
 	}
-	/* 12MHz I2C module clock */
-	writew (0, I2C_PSC);
+
+	writew(psc, I2C_PSC);
 	writew(scll, I2C_SCLL);
 	writew(sclh, I2C_SCLH);
 
@@ -155,14 +155,13 @@ static int i2c_read_byte (u8 devaddr, u8 regoffset, u8 * value)
 
 	if (!i2c_error) {
 		/* free bus, otherwise we can't use a combined transction */
-		writew (0, I2C_CON);
-		while (readw (I2C_STAT) || (readw (I2C_CON) & I2C_CON_MST)) {
+		writew (I2C_CON_EN, I2C_CON);
+		while (readw (I2C_STAT) & ((I2C_STAT_RRDY) | (I2C_STAT_ARDY))) {
 			udelay (10000);
 			/* Have to clear pending interrupt to clear I2C_STAT */
 			writew (0xFFFF, I2C_STAT);
 		}
 
-		wait_for_bb ();
 		/* set slave address */
 		writew (devaddr, I2C_SA);
 		/* read one byte from slave */
