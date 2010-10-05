@@ -123,7 +123,9 @@ static void ti816ximage_set_header(void *ptr, struct stat *sbuf, int ifd,
 	struct ti_header *hdr = (struct ti_header *)ptr;
 	FILE *data_fp = NULL;
 	uint32_t data_size = 0;
+#if !defined(CONFIG_SD_BOOT)
 	char *spi_out_file;
+#endif
 
 	/* Set default offset */
 	hdr->load_addr = params->ep;
