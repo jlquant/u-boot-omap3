@@ -129,15 +129,17 @@ int print_cpuinfo (void)
 	printf("\n");
 
 	/* ARM and DDR frequencies */
+
+#ifdef CONFIG_TI816X
 	/* f0 = ((N * K) / (FREQ * P * M)) * fr */
 
 	arm_freq = (((MAIN_N * FAPLL_K)/(MAIN_INTFREQ2 * MAIN_P * MAIN_MDIV2)) * OSC_FREQ)/SYSCLK_2_DIV;
 	ddr_freq = ((DDR_N * OSC_FREQ)/DDR_MDIV1);
 
-
 	printf("ARM clk: %dMHz\n", arm_freq);
 	printf("DDR clk: %dMHz\n", ddr_freq);
 	printf("\n");
+#endif
 
 	return 0;
 }
