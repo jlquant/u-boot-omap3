@@ -360,23 +360,8 @@ int _do_setenv (int flag, int argc, char *argv[])
 	 * entry in the enviornment is changed
 	 */
 
-#ifdef CONFIG_TI816X
-#ifndef CONFIG_NO_ETH
-extern void davinci_eth_set_mac_addr (const u_int8_t *addr);
-	if (strcmp(argv[1], "ethaddr") == 0) {
-		u_int8_t mac_addr[6];
-
-		eth_getenv_enetaddr("ethaddr", mac_addr);
-		davinci_eth_set_mac_addr(mac_addr);
-
-		return 0;
-
-	}
-#endif
-#else
 	if (strcmp(argv[1],"ethaddr") == 0)
 		return 0;
-#endif
 	if (strcmp(argv[1],"ipaddr") == 0) {
 		char *s = argv[2];	/* always use only one arg */
 		char *e;
