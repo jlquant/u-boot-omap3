@@ -177,10 +177,11 @@ int board_init(void)
 }
 
 #ifdef CONFIG_DRIVER_TI_EMAC
-extern void davinci_eth_set_mac_addr(const u_int8_t *addr);
+extern void davinci_eth_set_mac_addr(const u_int8_t *addr)
 int board_eth_init(bd_t *bis)
 {
 	/* TODO : read MAC address from EFUSE */
+        u_int8_t mac_addr[6];
         u_int8_t mac_addr[6];
         u_int32_t mac_hi,mac_lo;
 
