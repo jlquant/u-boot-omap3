@@ -133,7 +133,7 @@ int print_cpuinfo (void)
 #ifdef CONFIG_TI816X
 	/* f0 = ((N * K) / (FREQ * P * M)) * fr */
 
-	arm_freq = (((MAIN_N * FAPLL_K)/(MAIN_INTFREQ2 * MAIN_P * MAIN_MDIV2)) * OSC_FREQ)/SYSCLK_2_DIV;
+	arm_freq = (((MAIN_N * FAPLL_K * OSC_FREQ)/(MAIN_INTFREQ2 * MAIN_P * MAIN_MDIV2)))/SYSCLK_2_DIV;
 	ddr_freq = ((DDR_N * OSC_FREQ)/DDR_MDIV1);
 
 	printf("ARM clk: %dMHz\n", arm_freq);
