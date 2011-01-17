@@ -289,8 +289,12 @@ static int do_switch_ecc(cmd_tbl_t * cmdtp, int flag, int argc, char *argv[])
 		goto usage;
 	if (strncmp(argv[1], "hw", 2) == 0) {
 		int type = 1;
-                if (argc == 3)
-                        type = simple_strtoul(argv[2], NULL, 10);
+		if (argc == 3) {
+			if (strncmp(argv[2],"rom",sizeof("rom")) == 0) 
+				type = 2;
+			else if (strncmp(argv[2],"kernel",sizeof("kernel")) != 0)
+				goto usage;
+		}
 		omap_nand_switch_ecc(type);
 	}
 	else if (strncmp(argv[1], "sw", 2) == 0)
@@ -310,10 +314,8 @@ U_BOOT_CMD(
 	"Switch NAND ECC calculation algorithm b/w hardware and software",
         "[sw|hw <hw_type>] \n"
         "   [sw|hw]- Switch b/w hardware(hw) & software(sw) ecc algorithm\n"
-        "   hw_type- 1 (default) for kernel/FS layout\n"
-        "            2 for u-boot,xloader layout\n"
-
-	"[hw/sw] - Switch between NAND hardware (hw) or software (sw) ecc algorithm"
+        "   hw_type- kernel :(default) for kernel/FS layout\n"
+        "            rom    :for u-boot,x-loader layout\n"
 );
 
 #endif /* CONFIG_NAND_OMAP_GPMC */
