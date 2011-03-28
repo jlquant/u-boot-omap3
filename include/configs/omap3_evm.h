@@ -347,6 +347,11 @@ extern unsigned int boot_flash_sec;
 extern unsigned int boot_flash_type;
 #endif
 
+/*
+ * Define the board revision statically
+ */
+/* #define CONFIG_STATIC_BOARD_REV	OMAP3EVM_BOARD_GEN_2 */
+
 /*----------------------------------------------------------------------------
  * SMSC9115 Ethernet from SMSC9118 family
  *----------------------------------------------------------------------------

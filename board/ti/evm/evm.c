@@ -46,6 +46,11 @@ u8 get_omap3_evm_rev(void)
 
 static void omap3_evm_get_revision(void)
 {
+#if defined(CONFIG_CMD_NET)
+	/*
+	 * Board revision can be ascertained only by identifying
+	 * the Ethernet chipset.
+	 */
 	unsigned int smsc_id;
 
 	/* Ethernet PHY ID is stored at ID_REV register */
@@ -62,6 +67,19 @@ static void omap3_evm_get_revision(void)
 	default:
 		omap3_evm_version = OMAP3EVM_BOARD_GEN_2;
        }
+#else
+#if defined(CONFIG_STATIC_BOARD_REV)
+	/*
+	 * Look for static defintion of the board revision
+	 */
+	omap3_evm_version = CONFIG_STATIC_BOARD_REV;
+#else
+	/*
+	 * Fallback to the default above.
+	 */
+	omap3_evm_version = OMAP3EVM_BOARD_GEN_2;
+#endif
+#endif	/* CONFIG_CMD_NET */
 }
 
 /*
@@ -93,6 +111,7 @@ int misc_init_r(void)
 #endif
 
 	setup_net_chip();
+	omap3_evm_get_revision();
 #if defined(CONFIG_CMD_NET)
 	reset_net_chip();
 #endif
@@ -138,9 +157,6 @@ static void setup_net_chip(void)
 	/* Enable off mode for ALE in PADCONF_GPMC_NADV_ALE register */
 	writew(readw(&ctrl_base->gpmc_nadv_ale) | 0x0E00,
 		&ctrl_base->gpmc_nadv_ale);
-
-	/* determine omap3evm revision */
-	omap3_evm_get_revision();
 }
 
 /**
