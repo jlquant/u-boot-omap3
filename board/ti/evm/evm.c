@@ -37,6 +37,8 @@
 #include <asm/mach-types.h>
 #include "evm.h"
 
+DECLARE_GLOBAL_DATA_PTR;
+
 static u8 omap3_evm_version;
 
 u8 get_omap3_evm_rev(void)
@@ -88,8 +90,6 @@ static void omap3_evm_get_revision(void)
  */
 int board_init(void)
 {
-	DECLARE_GLOBAL_DATA_PTR;
-
 	gpmc_init(); /* in SRAM or SDRAM, finish GPMC */
 	/* board id for Linux */
 	gd->bd->bi_arch_number = MACH_TYPE_OMAP3EVM;
