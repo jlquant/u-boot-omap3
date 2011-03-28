@@ -92,8 +92,9 @@ int misc_init_r(void)
 	i2c_init(CONFIG_SYS_I2C_SPEED, CONFIG_SYS_I2C_SLAVE);
 #endif
 
-#if defined(CONFIG_CMD_NET)
 	setup_net_chip();
+#if defined(CONFIG_CMD_NET)
+	reset_net_chip();
 #endif
 
 	dieid_num_r();
@@ -119,8 +120,6 @@ void set_muxconf_regs(void)
  */
 static void setup_net_chip(void)
 {
-	struct gpio *gpio3_base = (struct gpio *)OMAP34XX_GPIO3_BASE;
-	struct gpio *gpio1_base = (struct gpio *)OMAP34XX_GPIO1_BASE;
 	struct ctrl *ctrl_base = (struct ctrl *)OMAP34XX_CTRL_BASE;
 
 	/* Configure GPMC registers */
@@ -142,6 +141,17 @@ static void setup_net_chip(void)
 
 	/* determine omap3evm revision */
 	omap3_evm_get_revision();
+}
+
+/**
+ * Reset the ethernet chip.
+ * The procedure to reset the chip differs across board revisions.
+ */
+#if defined(CONFIG_CMD_NET)
+static void reset_net_chip(void)
+{
+	struct gpio *gpio3_base = (struct gpio *)OMAP34XX_GPIO3_BASE;
+	struct gpio *gpio1_base = (struct gpio *)OMAP34XX_GPIO1_BASE;
 
 	if ( get_omap3_evm_rev() == OMAP3EVM_BOARD_GEN_1 ){
 		/* Make GPIO 64 as output pin */
@@ -164,8 +174,8 @@ static void setup_net_chip(void)
 		udelay(1);
 		writel(GPIO7, &gpio1_base->setdataout);
 	}
-
 }
+#endif /* CONFIG_CMD_NET */
 
 int board_eth_init(bd_t *bis)
 {
