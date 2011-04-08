@@ -42,6 +42,9 @@
 /* Boot immediately */
 #define CONFIG_BOOTDELAY		0
 
+/* Don't display messages on console */
+#define CONFIG_SILENT_CONSOLE
+
 /* -----------------------------------------------------------------------------
  * Exclude "extra" features
  * -----------------------------------------------------------------------------
@@ -70,6 +73,7 @@
  * - Don't verify the kernel image
  */
 #define CONFIG_EXTRA_ENV_SETTINGS	\
+	"silent=1\0"	\
 	"verify=no"
 
 /* Default boot arguments
