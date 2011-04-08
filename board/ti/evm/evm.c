@@ -116,8 +116,9 @@ int misc_init_r(void)
 	reset_net_chip();
 #endif
 
+#ifdef CONFIG_OMAP3_DIE_ID
 	dieid_num_r();
-
+#endif
 	return 0;
 }
 

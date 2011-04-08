@@ -87,6 +87,9 @@
  * Board specific
  * -----------------------------------------------------------------------------
  */
+/* Detect the DIE ID */
+#define CONFIG_OMAP3_DIE_ID
+
 /* Define the board revision statically */
 /* #define CONFIG_STATIC_BOARD_REV	OMAP3EVM_BOARD_GEN_2 */
 

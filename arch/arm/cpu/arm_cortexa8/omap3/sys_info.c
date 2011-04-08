@@ -184,6 +184,7 @@ u8 is_cpu_family(u16 family)
 /*****************************************************************
  * dieid_num_r(void) - read and set die ID
  *****************************************************************/
+#ifdef CONFIG_OMAP3_DIE_ID
 void dieid_num_r(void)
 {
 	struct ctrl_id *id_base = (struct ctrl_id *)OMAP34XX_ID_L4_IO_BASE;
@@ -206,6 +207,7 @@ void dieid_num_r(void)
 
 	printf("Die ID #%s\n", uid_s);
 }
+#endif /* CONFIG_OMAP3_DIE_ID */
 
 /******************************************
  * get_cpu_type(void) - extract cpu info
