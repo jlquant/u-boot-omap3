@@ -54,6 +54,13 @@
 #undef CONFIG_BOOTM_NETBSD
 #undef CONFIG_BOOTM_RTEMS
 
+/*
+ * Exclude support for unused compression algorithms
+ * (defined in config_default.h)
+ */
+#undef CONFIG_GZIP
+#undef CONFIG_ZLIB
+
 /* -----------------------------------------------------------------------------
  * Default environment
  * -----------------------------------------------------------------------------
