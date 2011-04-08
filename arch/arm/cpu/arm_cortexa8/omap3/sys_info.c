@@ -33,12 +33,15 @@
 
 extern omap3_sysinfo sysinfo;
 static struct ctrl *ctrl_base = (struct ctrl *)OMAP34XX_CTRL_BASE;
+
+#ifdef CONFIG_DISPLAY_CPUINFO
 static char *rev_s[CPU_3XX_MAX_REV] = {
 				"1.0",
 				"2.0",
 				"2.1",
 				"3.0",
 				"3.1"};
+#endif
 
 static u16 cpu_family;
 static u16 cpu_id;
