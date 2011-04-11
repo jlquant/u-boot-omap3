@@ -315,6 +315,7 @@ static void mpu_init_34xx(u32 sil_index, u32 clk_index)
 	sr32(&prcm_base->clken_pll_mpu, 4, 4, ptr->fsel);
 }
 
+#ifdef CONFIG_OMAP_IVA
 static void iva_init_34xx(u32 sil_index, u32 clk_index)
 {
 	struct prcm *prcm_base = (struct prcm *)PRCM_BASE;
@@ -345,6 +346,7 @@ static void iva_init_34xx(u32 sil_index, u32 clk_index)
 
 	wait_on_value(ST_IVA2_CLK, 1, &prcm_base->idlest_pll_iva2, LDELAY);
 }
+#endif /* CONFIG_OMAP_IVA */
 
 /*
  * OMAP3630 specific functions
@@ -508,6 +510,7 @@ static void mpu_init_36xx(u32 sil_index, u32 clk_index)
 	sr32(&prcm_base->clksel1_pll_mpu, 0, 7, ptr->n);
 }
 
+#ifdef CONFIG_OMAP_IVA
 static void iva_init_36xx(u32 sil_index, u32 clk_index)
 {
 	struct prcm *prcm_base = (struct prcm *)PRCM_BASE;
@@ -535,6 +538,7 @@ static void iva_init_36xx(u32 sil_index, u32 clk_index)
 
 	wait_on_value(ST_IVA2_CLK, 1, &prcm_base->idlest_pll_iva2, LDELAY);
 }
+#endif /* CONFIG_OMAP_IVA */
 
 /******************************************************************************
  * prcm_init() - inits clocks for PRCM as defined in clocks.h
@@ -582,7 +586,9 @@ void prcm_init(void)
 
 		dpll3_init_36xx(0, clk_index);
 		dpll4_init_36xx(0, clk_index);
+#ifdef CONFIG_OMAP_IVA
 		iva_init_36xx(0, clk_index);
+#endif
 		mpu_init_36xx(0, clk_index);
 
 		/* Lock MPU DPLL to set frequency */
@@ -609,8 +615,10 @@ void prcm_init(void)
 
 		dpll3_init_34xx(sil_index, clk_index);
 		dpll4_init_34xx(sil_index, clk_index);
+#ifdef CONFIG_OMAP_IVA
 		if (!is_cpu_family(CPU_AM35XX))
 			iva_init_34xx(sil_index, clk_index);
+#endif
 		mpu_init_34xx(sil_index, clk_index);
 
 		/* Lock MPU DPLL to set frequency */
