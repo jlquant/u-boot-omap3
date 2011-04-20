@@ -27,7 +27,9 @@
  * MMC
  */
 #define CONFIG_MMC
-#define CONFIG_OMAP3_MMC
+#define CONFIG_GENERIC_MMC
+#define CONFIG_OMAP_HSMMC
+
 #define CONFIG_DOS_PARTITION
 
 /* -----------------------------------------------------------------------------
@@ -92,7 +94,7 @@
 
 /* Default boot command */
 #define CONFIG_BOOTCOMMAND			\
-	"mmc init; "				\
+	"mmc rescan 0; "			\
 	"fatload mmc 0 0x80000000 uImage; "	\
 	"bootm 0x80000000;"
 
