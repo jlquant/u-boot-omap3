@@ -89,10 +89,12 @@
  * - Don't show messages on the console
  * - Set default console
  * - Set memory size
+ * - Set loops per jiffy
  * - Location of root filesystem
  */
 #define CONFIG_BOOTARGS			\
 	"quiet "			\
+	"lpj=2334720 "			\
 	"console=ttyO0,115200n8 "	\
 	"mem=256M "			\
 	"noinitrd "			\
