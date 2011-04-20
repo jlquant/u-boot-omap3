@@ -66,6 +66,13 @@
 #undef CONFIG_GZIP
 #undef CONFIG_ZLIB
 
+/*
+ * Explicitly exlude some portions of the code
+ * This macros is not defined anywhere, but can be used a cue to look for
+ * code being excluded.
+ */
+#undef CONFIG_QUICK_INCLUDE
+
 /* -----------------------------------------------------------------------------
  * Default environment
  * -----------------------------------------------------------------------------
