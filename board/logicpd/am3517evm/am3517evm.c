@@ -74,8 +74,9 @@ int misc_init_r(void)
 	i2c_init(CONFIG_SYS_I2C_SPEED, CONFIG_SYS_I2C_SLAVE);
 #endif
 
+#ifdef CONFIG_OMAP3_DIE_ID
 	dieid_num_r();
-
+#endif
 
 #if defined(CONFIG_DRIVER_TI_EMAC)
 
