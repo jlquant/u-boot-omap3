@@ -95,6 +95,17 @@ unsigned char mmc_board_init(void)
 
 	writel(readl(&t2_base->devconf0) | MMCSDIO1ADPCLKISEL,
 		&t2_base->devconf0);
+
+	writel(readl(&t2_base->devconf1) | MMCSDIO2ADPCLKISEL,
+		&t2_base->devconf1);
+
+	writel(readl(&prcm_base->fclken1_core) |
+		EN_MMC1 | EN_MMC2 | EN_MMC3,
+		&prcm_base->fclken1_core);
+
+	writel(readl(&prcm_base->iclken1_core) |
+		EN_MMC1 | EN_MMC2 | EN_MMC3,
+		&prcm_base->iclken1_core);
 #endif
 	return 1;
 }
@@ -523,17 +534,6 @@ unsigned char configure_mmc(mmc_card_data *mmc_card_cur)
 	ret_val = mmc_read_cardsize(mmc_card_cur, &mmc_resp.Card_CSD);
 	if (ret_val != 1)
 		return ret_val;
-
-	writel(readl(&t2_base->devconf1) | MMCSDIO2ADPCLKISEL,
-		&t2_base->devconf1);
-
-	writel(readl(&prcm_base->fclken1_core) |
-		EN_MMC1 | EN_MMC2 | EN_MMC3,
-		&prcm_base->fclken1_core);
-
-	writel(readl(&prcm_base->iclken1_core) |
-		EN_MMC1 | EN_MMC2 | EN_MMC3,
-		&prcm_base->iclken1_core);
 
 	return 1;
 }
