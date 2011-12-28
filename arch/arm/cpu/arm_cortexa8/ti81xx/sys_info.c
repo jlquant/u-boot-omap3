@@ -31,7 +31,7 @@
 #include <asm/arch/cpu.h>
 #include <asm/arch/clock.h>
 
-#define OPP_CONFIG		100
+#define OPP_CONFIG		120
 
 extern omap3_sysinfo sysinfo;
 
