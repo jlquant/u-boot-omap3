@@ -34,29 +34,34 @@
 #define DDR_PLL_796	/* Values supported 400,531,675,796 */
 
 /* Main PLL */
-#define MAIN_N			64
+#define MAIN_N			56
 #define MAIN_P			0x1
-#define MAIN_INTFREQ1		0x8
-#define MAIN_FRACFREQ1		0x800000
-#define MAIN_MDIV1		0x2
+#define MAIN_INTFREQ1		0xE
+#define MAIN_FRACFREQ1		0xE00000
+#define MAIN_MDIV1		0x1
+
 #ifdef ARM_PLL_987
-#define MAIN_INTFREQ2		0xE
-#define MAIN_FRACFREQ2		0x0
+#define MAIN_INTFREQ2		0xC
+#define MAIN_FRACFREQ2		0x400000
 #endif
 #ifdef ARM_PLL_1200
-#define MAIN_INTFREQ2		0xB
-#define MAIN_FRACFREQ2		0x851EB8
+#define MAIN_INTFREQ2		0xA
+#define MAIN_FRACFREQ2		0x147AE1
 #endif
 #define MAIN_MDIV2		0x1
-#define MAIN_INTFREQ3		0x8
-#define MAIN_FRACFREQ3		0xAAAAB0
-#define MAIN_MDIV3		0x3
-#define MAIN_INTFREQ4		0x9
-#define MAIN_FRACFREQ4		0x55554F
-#define MAIN_MDIV4		0x3
-#define MAIN_INTFREQ5		0x9
-#define MAIN_FRACFREQ5		0x374BC6
-#define MAIN_MDIV5		0xC
+
+#define MAIN_INTFREQ3		0xB
+#define MAIN_FRACFREQ3		0x600007
+#define MAIN_MDIV3		0x2
+
+#define MAIN_INTFREQ4		0xC
+#define MAIN_FRACFREQ4		0x3FFFF8
+#define MAIN_MDIV4		0x2
+
+#define MAIN_INTFREQ5		0xC
+#define MAIN_FRACFREQ5		0x189374
+#define MAIN_MDIV5		0x8
+
 #define MAIN_MDIV6		0x48
 #define MAIN_MDIV7		0x4
 
