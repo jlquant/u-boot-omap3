@@ -113,6 +113,7 @@ int is_ddr3(void)
 }
 
 #ifdef CONFIG_SETUP_PLL
+static u32 pll_dco_freq_sel(u32 clk_in, u32 n, u32 m);
 static void pll_config(u32, u32, u32, u32, u32);
 #if 0
 static void pcie_pll_config(void);
@@ -604,11 +605,33 @@ static void iva_pll_config()
 }
 
 /*
+ * select the HS1 or HS2 for DCO Freq
+ * return : CLKCTRL
+ */
+static u32 pll_dco_freq_sel(u32 clk_in, u32 n, u32 m)
+{
+	u32 dco_clk = 0;
+
+	dco_clk = (clk_in / (n+1)) * m ;
+	if (dco_clk >= DCO_HS2_MIN && dco_clk < DCO_HS2_MAX)
+		return SELFREQDCO_HS2;
+	else if (dco_clk >= DCO_HS1_MIN && dco_clk < DCO_HS1_MAX)
+		return SELFREQDCO_HS1;
+	else
+		return -1;
+
+}
+
+/*
  * configure individual ADPLLJ
  */
 static void pll_config(u32 base, u32 n, u32 m, u32 m2, u32 clkctrl_val)
 {
 	u32 m2nval, mn2val, read_clkctrl = 0;
+
+	/* select DCO freq range for ADPLL_J */
+	if (MODENA_PLL_BASE != base)
+		clkctrl_val |= pll_dco_freq_sel(OSC_0_FREQ, n, m);
 
 	m2nval = (m2 << 16) | n;
 	mn2val = m;

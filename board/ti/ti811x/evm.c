@@ -87,22 +87,18 @@ static void data_macro_config(u32 macro_num, u32 emif, u32 rd_dqs_cs0,
 }
 #endif
 
+#ifdef CONFIG_SETUP_PLL
+static u32 pll_dco_freq_sel(u32 clk_in, u32 n, u32 m);
 static void pll_config(u32, u32, u32, u32, u32);
-#if 0
-static void pcie_pll_config(void);
-#endif
 static void audio_pll_config(void);
 static void sata_pll_config(void);
 static void modena_pll_config(void);
 static void l3_pll_config(void);
 static void ddr_pll_config(void);
 static void iss_pll_config(void);
-#if 0
-static void iva_pll_config(void);
-#endif
 static void dsp_pll_config(void);
 static void usb_pll_config(void);
-
+#endif
 static void unlock_pll_control_mmr(void);
 #ifdef CONFIG_DRIVER_TI_CPSW
 static void cpsw_pad_config(void);
@@ -326,6 +322,8 @@ static void config_ti811x_ddr(void)
 	__raw_writel(DDR3_EMIF_REF_CTRL, EMIF4_0_SDRAM_REF_CTRL_SHADOW);
 }
 #endif
+
+#ifdef CONFIG_SETUP_PLL
 static void audio_pll_config()
 {
 	pll_config(AUDIO_PLL_BASE,
@@ -462,12 +460,35 @@ static void iva_pll_config()
 			IVA_M2, IVA_CLKCTRL);
 }
 #endif
+
+/*
+ * select the HS1 or HS2 for DCO Freq
+ * return : CLKCTRL
+ */
+static u32 pll_dco_freq_sel(u32 clk_in, u32 n, u32 m)
+{
+	u32 dco_clk = 0;
+
+	dco_clk = (clk_in / (n+1)) * m ;
+	if (dco_clk >= DCO_HS2_MIN && dco_clk < DCO_HS2_MAX)
+		return SELFREQDCO_HS2;
+	else if (dco_clk >= DCO_HS1_MIN && dco_clk < DCO_HS1_MAX)
+		return SELFREQDCO_HS1;
+	else
+		return -1;
+
+}
+
 /*
  * configure individual ADPLLJ
  */
 static void pll_config(u32 base, u32 n, u32 m, u32 m2, u32 clkctrl_val)
 {
 	u32 m2nval, mn2val, read_clkctrl = 0;
+
+	/* select DCO freq range for ADPLL_J */
+	if (MODENA_PLL_BASE != base)
+		clkctrl_val |= pll_dco_freq_sel(OSC_0_FREQ, n, m);
 
 	m2nval = (m2 << 16) | n;
 	mn2val = m;
@@ -511,6 +532,7 @@ static void pll_config(u32 base, u32 n, u32 m, u32 m2, u32 clkctrl_val)
 		;
 
 }
+#endif
 
 /*
  * Enable the clks & power for perifs (TIMER1, UART0,...)
@@ -625,29 +647,20 @@ void prcm_init(u32 in_ddr)
 	/* Enable the control module */
 	__raw_writel(0x2, CM_ALWON_CONTROL_CLKCTRL);
 
+#ifdef CONFIG_SETUP_PLL
 	/* Setup the various plls */
 	audio_pll_config();
-#if 0
-	sata_pll_config();
-	pcie_pll_config();
-#endif
 	modena_pll_config();
-#if 0
-	l3_pll_config();
-#endif
 	ddr_pll_config();
 	dsp_pll_config();
-#if 0
-	iva_pll_config();
-#endif
 	iss_pll_config();
 
 	usb_pll_config();
-
 	/*  With clk freqs setup to desired values,
 	 *  enable the required peripherals
 	 */
 	per_clocks_enable();
+#endif
 }
 
 #ifdef CONFIG_DRIVER_TI_CPSW
