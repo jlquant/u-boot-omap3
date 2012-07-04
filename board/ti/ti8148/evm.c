@@ -300,13 +300,29 @@ static void config_ti814x_ddr(void)
 				PHY_CMD0_DLL_LOCK_DIFF_DEFINE);
 
 		for (emif = 0; emif <= DDR_PHY1; emif++) {
-			for (macro = 0; macro <= DATA_MACRO_3; macro++) {
-				data_macro_config(macro, emif,
-					DDR3_PHY_RD_DQS_CS0_DEFINE,
-					DDR3_PHY_WR_DQS_CS0_DEFINE,
-					DDR3_PHY_RD_DQS_GATE_CS0_DEFINE,
-					DDR3_PHY_WR_DATA_CS0_DEFINE);
-			}
+			data_macro_config(DATA_MACRO_0, emif,
+				DDR3_PHY_RD_DQS_CS0_BYTE0,
+				DDR3_PHY_WR_DQS_CS0_BYTE0,
+				DDR3_PHY_RD_DQS_GATE_CS0_BYTE0,
+				DDR3_PHY_WR_DATA_CS0_BYTE0);
+
+			data_macro_config(DATA_MACRO_1, emif,
+				DDR3_PHY_RD_DQS_CS0_BYTE1,
+				DDR3_PHY_WR_DQS_CS0_BYTE1,
+				DDR3_PHY_RD_DQS_GATE_CS0_BYTE1,
+				DDR3_PHY_WR_DATA_CS0_BYTE1);
+
+			data_macro_config(DATA_MACRO_2, emif,
+				DDR3_PHY_RD_DQS_CS0_BYTE2,
+				DDR3_PHY_WR_DQS_CS0_BYTE2,
+				DDR3_PHY_RD_DQS_GATE_CS0_BYTE2,
+				DDR3_PHY_WR_DATA_CS0_BYTE2);
+
+			data_macro_config(DATA_MACRO_3, emif,
+				DDR3_PHY_RD_DQS_CS0_BYTE3,
+				DDR3_PHY_WR_DQS_CS0_BYTE3,
+				DDR3_PHY_RD_DQS_GATE_CS0_BYTE3,
+				DDR3_PHY_WR_DATA_CS0_BYTE3);
 		}
 	} else {
 		cmd_macro_config(DDR_PHY0, PHY_INVERT_CLKOUT_DEFINE,
