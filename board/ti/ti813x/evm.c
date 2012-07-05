@@ -233,7 +233,6 @@ int misc_init_r(void)
 #ifdef CONFIG_TI813X_CONFIG_DDR
 static void config_ti813x_ddr(void)
 {
-	int macro, emif = 0;
 
 	/* Enable the Power Domain Transition of L3 Fast Domain Peripheral */
 	__raw_writel(0x2, CM_DEFAULT_FW_CLKCTRL);
@@ -255,13 +254,29 @@ static void config_ti813x_ddr(void)
 			DDR3_PHY_CTRL_SLAVE_RATIO_CS0_DEFINE,
 			PHY_CMD0_DLL_LOCK_DIFF_DEFINE);
 
-	for (macro = 0; macro <= DATA_MACRO_3; macro++) {
-		data_macro_config(macro, DDR_PHY0,
-			DDR3_PHY_RD_DQS_CS0_DEFINE,
-			DDR3_PHY_WR_DQS_CS0_DEFINE,
-			DDR3_PHY_RD_DQS_GATE_CS0_DEFINE,
-			DDR3_PHY_WR_DATA_CS0_DEFINE);
-	}
+	data_macro_config(DATA_MACRO_0, DDR_PHY0,
+		DDR3_PHY_RD_DQS_CS0_BYTE0,
+		DDR3_PHY_WR_DQS_CS0_BYTE0,
+		DDR3_PHY_RD_DQS_GATE_CS0_BYTE0,
+		DDR3_PHY_WR_DATA_CS0_BYTE0);
+
+	data_macro_config(DATA_MACRO_1, DDR_PHY0,
+		DDR3_PHY_RD_DQS_CS0_BYTE1,
+		DDR3_PHY_WR_DQS_CS0_BYTE1,
+		DDR3_PHY_RD_DQS_GATE_CS0_BYTE1,
+		DDR3_PHY_WR_DATA_CS0_BYTE1);
+
+	data_macro_config(DATA_MACRO_2, DDR_PHY0,
+		DDR3_PHY_RD_DQS_CS0_BYTE2,
+		DDR3_PHY_WR_DQS_CS0_BYTE2,
+		DDR3_PHY_RD_DQS_GATE_CS0_BYTE2,
+		DDR3_PHY_WR_DATA_CS0_BYTE2);
+
+	data_macro_config(DATA_MACRO_3, DDR_PHY0,
+		DDR3_PHY_RD_DQS_CS0_BYTE3,
+		DDR3_PHY_WR_DQS_CS0_BYTE3,
+		DDR3_PHY_RD_DQS_GATE_CS0_BYTE3,
+		DDR3_PHY_WR_DATA_CS0_BYTE3);
 
 	/* DDR IO CTRL config */
 	__raw_writel(DDR0_IO_CTRL_DEFINE, DDR0_IO_CTRL);
