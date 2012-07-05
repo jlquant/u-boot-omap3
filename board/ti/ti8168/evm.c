@@ -553,13 +553,13 @@ static void ddr3_sw_levelling(int emif)
 {
 	__raw_writel(0x6, (DDRPHY_CONFIG_BASE + 0x358));
 
-	__raw_writel(DQS_GATE_BYTE_LANE0, (DDRPHY_CONFIG_BASE + 0x108));
+	__raw_writel(RD_DQS_GATE_BYTE_LANE0, (DDRPHY_CONFIG_BASE + 0x108));
 	__raw_writel(0x00000000, (DDRPHY_CONFIG_BASE + 0x10C));
-	__raw_writel(DQS_GATE_BYTE_LANE1, (DDRPHY_CONFIG_BASE + 0x1AC));
+	__raw_writel(RD_DQS_GATE_BYTE_LANE1, (DDRPHY_CONFIG_BASE + 0x1AC));
 	__raw_writel(0x00000000, (DDRPHY_CONFIG_BASE + 0x1B0));
-	__raw_writel(DQS_GATE_BYTE_LANE2, (DDRPHY_CONFIG_BASE + 0x250));
+	__raw_writel(RD_DQS_GATE_BYTE_LANE2, (DDRPHY_CONFIG_BASE + 0x250));
 	__raw_writel(0x00000000, (DDRPHY_CONFIG_BASE + 0x254));
-	__raw_writel(DQS_GATE_BYTE_LANE3, (DDRPHY_CONFIG_BASE + 0x2F4));
+	__raw_writel(RD_DQS_GATE_BYTE_LANE3, (DDRPHY_CONFIG_BASE + 0x2F4));
 	__raw_writel(0x00000000, (DDRPHY_CONFIG_BASE + 0x2F8));
 
 	__raw_writel(WR_DQS_RATIO_BYTE_LANE0, (DDRPHY_CONFIG_BASE + 0x0DC));
@@ -580,13 +580,13 @@ static void ddr3_sw_levelling(int emif)
 	__raw_writel(WR_DATA_RATIO_BYTE_LANE3, (DDRPHY_CONFIG_BASE + 0x30C));
 	__raw_writel(0x0, (DDRPHY_CONFIG_BASE + 0x310));
 
-	__raw_writel(RD_DQS_RATIO, (DDRPHY_CONFIG_BASE + 0x0C8));
+	__raw_writel(RD_DQS_RATIO_BYTE_LANE0, (DDRPHY_CONFIG_BASE + 0x0C8));
 	__raw_writel(0x0, (DDRPHY_CONFIG_BASE + 0x0CC));
-	__raw_writel(RD_DQS_RATIO, (DDRPHY_CONFIG_BASE + 0x16C));
+	__raw_writel(RD_DQS_RATIO_BYTE_LANE1, (DDRPHY_CONFIG_BASE + 0x16C));
 	__raw_writel(0x0, (DDRPHY_CONFIG_BASE + 0x170));
-	__raw_writel(RD_DQS_RATIO, (DDRPHY_CONFIG_BASE + 0x210));
+	__raw_writel(RD_DQS_RATIO_BYTE_LANE2, (DDRPHY_CONFIG_BASE + 0x210));
 	__raw_writel(0x0, (DDRPHY_CONFIG_BASE + 0x214));
-	__raw_writel(RD_DQS_RATIO, (DDRPHY_CONFIG_BASE + 0x2B4));
+	__raw_writel(RD_DQS_RATIO_BYTE_LANE3, (DDRPHY_CONFIG_BASE + 0x2B4));
 	__raw_writel(0x0, (DDRPHY_CONFIG_BASE + 0x2B8));
 
 

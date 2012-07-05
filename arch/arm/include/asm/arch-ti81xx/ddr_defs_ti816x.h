@@ -183,9 +183,20 @@
 
 #if defined(CONFIG_TI816X_DDR3_SW_LEVELING)
 /* These values are obtained from the CCS app */
-#define RD_DQS_GATE	((emif == 0) ? 0x12A : 0x12A)
-#define RD_DQS		((emif == 0) ? 0x3B : 0x3B)
-#define WR_DQS		((emif == 0) ? 0xA6 : 0xA6)
+#define RD_DQS_GATE_LANE3	((emif == 0) ? 0x12A : 0x12A)
+#define RD_DQS_GATE_LANE2	((emif == 0) ? 0x12A : 0x12A)
+#define RD_DQS_GATE_LANE1	((emif == 0) ? 0x12A : 0x12A)
+#define RD_DQS_GATE_LANE0	((emif == 0) ? 0x12A : 0x12A)
+
+#define RD_DQS_LANE3		((emif == 0) ? 0x3B : 0x3B)
+#define RD_DQS_LANE2		((emif == 0) ? 0x3B : 0x3B)
+#define RD_DQS_LANE1		((emif == 0) ? 0x3B : 0x3B)
+#define RD_DQS_LANE0		((emif == 0) ? 0x3B : 0x3B)
+
+#define WR_DQS_LANE3		((emif == 0) ? 0xA6 : 0xA6)
+#define WR_DQS_LANE2		((emif == 0) ? 0xA6 : 0xA6)
+#define WR_DQS_LANE1		((emif == 0) ? 0xA6 : 0xA6)
+#define WR_DQS_LANE0		((emif == 0) ? 0xA6 : 0xA6)
 #endif
 
 #endif	/* CONFIG_TI816X_DDR3_400 */
@@ -201,9 +212,20 @@
 
 #if defined(CONFIG_TI816X_DDR3_SW_LEVELING)
 /* These values are obtained from the CCS app */
-#define RD_DQS_GATE	((emif == 0) ? 0x13D : 0x13D)
-#define RD_DQS		((emif == 0) ? 0x39 : 0x39)
-#define WR_DQS		((emif == 0) ? 0xB4 : 0xB4)
+#define RD_DQS_GATE_LANE3	((emif == 0) ? 0x13D : 0x13D)
+#define RD_DQS_GATE_LANE2	((emif == 0) ? 0x13D : 0x13D)
+#define RD_DQS_GATE_LANE1	((emif == 0) ? 0x13D : 0x13D)
+#define RD_DQS_GATE_LANE0	((emif == 0) ? 0x13D : 0x13D)
+
+#define RD_DQS_LANE3		((emif == 0) ? 0x39 : 0x39)
+#define RD_DQS_LANE2		((emif == 0) ? 0x39 : 0x39)
+#define RD_DQS_LANE1		((emif == 0) ? 0x39 : 0x39)
+#define RD_DQS_LANE0		((emif == 0) ? 0x39 : 0x39)
+
+#define WR_DQS_LANE3		((emif == 0) ? 0xB4 : 0xB4)
+#define WR_DQS_LANE2		((emif == 0) ? 0xB4 : 0xB4)
+#define WR_DQS_LANE1		((emif == 0) ? 0xB4 : 0xB4)
+#define WR_DQS_LANE0		((emif == 0) ? 0xB4 : 0xB4)
 #endif
 
 #endif /* CONFIG_TI816X_DDR_531 */
@@ -219,10 +241,20 @@
 
 #if defined(CONFIG_TI816X_DDR3_SW_LEVELING)
 /* These values are obtained from the CCS app */
-#define RD_DQS_GATE	((emif == 0) ? 0x196 : 0x196)
-#define RD_DQS		((emif == 0) ? 0x39 : 0x39)
-#define WR_DQS		((emif == 0) ? 0x91 : 0x91)
+#define RD_DQS_GATE_LANE3	((emif == 0) ? 0x196 : 0x196)
+#define RD_DQS_GATE_LANE2	((emif == 0) ? 0x196 : 0x196)
+#define RD_DQS_GATE_LANE1	((emif == 0) ? 0x196 : 0x196)
+#define RD_DQS_GATE_LANE0	((emif == 0) ? 0x196 : 0x196)
 
+#define RD_DQS_LANE3		((emif == 0) ? 0x39 : 0x39)
+#define RD_DQS_LANE2		((emif == 0) ? 0x39 : 0x39)
+#define RD_DQS_LANE1		((emif == 0) ? 0x39 : 0x39)
+#define RD_DQS_LANE0		((emif == 0) ? 0x39 : 0x39)
+
+#define WR_DQS_LANE3		((emif == 0) ? 0x91 : 0x91)
+#define WR_DQS_LANE2		((emif == 0) ? 0x91 : 0x91)
+#define WR_DQS_LANE1		((emif == 0) ? 0x91 : 0x91)
+#define WR_DQS_LANE0		((emif == 0) ? 0x91 : 0x91)
 #endif
 
 #endif /* CONFIG_TI816X_DDR3_675 */
@@ -238,9 +270,20 @@
 
 #if defined(CONFIG_TI816X_DDR3_SW_LEVELING)
 /* These values are obtained from the CCS app */
-#define RD_DQS_GATE	((emif == 0) ? 0x1B3 : 0x1B3)
-#define RD_DQS		((emif == 0) ? 0x35 : 0x35)
-#define WR_DQS		((emif == 0) ? 0x93 : 0x93)
+#define RD_DQS_GATE_LANE3	((emif == 0) ? 0x1B3 : 0x1B3)
+#define RD_DQS_GATE_LANE2	((emif == 0) ? 0x1B3 : 0x1B3)
+#define RD_DQS_GATE_LANE1	((emif == 0) ? 0x1B3 : 0x1B3)
+#define RD_DQS_GATE_LANE0	((emif == 0) ? 0x1B3 : 0x1B3)
+
+#define RD_DQS_LANE3		((emif == 0) ? 0x35 : 0x35)
+#define RD_DQS_LANE2		((emif == 0) ? 0x35 : 0x35)
+#define RD_DQS_LANE1		((emif == 0) ? 0x35 : 0x35)
+#define RD_DQS_LANE0		((emif == 0) ? 0x35 : 0x35)
+
+#define WR_DQS_LANE3		((emif == 0) ? 0x93 : 0x93)
+#define WR_DQS_LANE2		((emif == 0) ? 0x93 : 0x93)
+#define WR_DQS_LANE1		((emif == 0) ? 0x93 : 0x93)
+#define WR_DQS_LANE0		((emif == 0) ? 0x93 : 0x93)
 
 #endif
 
@@ -248,23 +291,25 @@
 
 
 #if defined(CONFIG_TI816X_DDR3_SW_LEVELING)
-#define WR_DQS_RATIO_BYTE_LANE3	((WR_DQS << 10) | WR_DQS)
-#define WR_DQS_RATIO_BYTE_LANE2	((WR_DQS << 10) | WR_DQS)
-#define WR_DQS_RATIO_BYTE_LANE1	((WR_DQS << 10) | WR_DQS)
-#define WR_DQS_RATIO_BYTE_LANE0	((WR_DQS << 10) | WR_DQS)
+#define WR_DQS_RATIO_BYTE_LANE3		((WR_DQS_LANE3 << 10) | WR_DQS_LANE3)
+#define WR_DQS_RATIO_BYTE_LANE2		((WR_DQS_LANE2 << 10) | WR_DQS_LANE2)
+#define WR_DQS_RATIO_BYTE_LANE1		((WR_DQS_LANE1 << 10) | WR_DQS_LANE1)
+#define WR_DQS_RATIO_BYTE_LANE0		((WR_DQS_LANE0 << 10) | WR_DQS_LANE0)
 
-#define WR_DATA_RATIO_BYTE_LANE3	(((WR_DQS + 0x40) << 10) | (WR_DQS + 0x40))
-#define WR_DATA_RATIO_BYTE_LANE2	(((WR_DQS + 0x40) << 10) | (WR_DQS + 0x40))
-#define WR_DATA_RATIO_BYTE_LANE1	(((WR_DQS + 0x40) << 10) | (WR_DQS + 0x40))
-#define WR_DATA_RATIO_BYTE_LANE0	(((WR_DQS + 0x40) << 10) | (WR_DQS + 0x40))
+#define WR_DATA_RATIO_BYTE_LANE3	(((WR_DQS_LANE3 + 0x40) << 10) | (WR_DQS_LANE3 + 0x40))
+#define WR_DATA_RATIO_BYTE_LANE2	(((WR_DQS_LANE2 + 0x40) << 10) | (WR_DQS_LANE2 + 0x40))
+#define WR_DATA_RATIO_BYTE_LANE1	(((WR_DQS_LANE1 + 0x40) << 10) | (WR_DQS_LANE1 + 0x40))
+#define WR_DATA_RATIO_BYTE_LANE0	(((WR_DQS_LANE0 + 0x40) << 10) | (WR_DQS_LANE0 + 0x40))
 
-#define RD_DQS_RATIO			((RD_DQS << 10) | RD_DQS)
+#define RD_DQS_RATIO_BYTE_LANE3		((RD_DQS_LANE3 << 10) | RD_DQS_LANE3)
+#define RD_DQS_RATIO_BYTE_LANE2		((RD_DQS_LANE2 << 10) | RD_DQS_LANE2)
+#define RD_DQS_RATIO_BYTE_LANE1		((RD_DQS_LANE1 << 10) | RD_DQS_LANE1)
+#define RD_DQS_RATIO_BYTE_LANE0		((RD_DQS_LANE0 << 10) | RD_DQS_LANE0)
 
-#define DQS_GATE_BYTE_LANE0		((RD_DQS_GATE << 10) | RD_DQS_GATE)
-#define DQS_GATE_BYTE_LANE1		((RD_DQS_GATE << 10) | RD_DQS_GATE)
-#define DQS_GATE_BYTE_LANE2		((RD_DQS_GATE << 10) | RD_DQS_GATE)
-#define DQS_GATE_BYTE_LANE3		((RD_DQS_GATE << 10) | RD_DQS_GATE)
-
+#define RD_DQS_GATE_BYTE_LANE0		((RD_DQS_GATE_LANE3 << 10) | RD_DQS_GATE_LANE3)
+#define RD_DQS_GATE_BYTE_LANE1		((RD_DQS_GATE_LANE2 << 10) | RD_DQS_GATE_LANE2)
+#define RD_DQS_GATE_BYTE_LANE2		((RD_DQS_GATE_LANE1 << 10) | RD_DQS_GATE_LANE1)
+#define RD_DQS_GATE_BYTE_LANE3		((RD_DQS_GATE_LANE0 << 10) | RD_DQS_GATE_LANE0)
 #endif	/* CONFIG_TI816X_DDR3_SW_LEVELING */
 
 #endif	/* CONFIG_TI816X_EVM_DDR3 */
