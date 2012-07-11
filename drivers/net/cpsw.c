@@ -199,6 +199,8 @@ struct cpsw_priv {
 	struct eth_device		*dev;
 	struct cpsw_platform_data	data;
 	int				host_port;
+	u32				mdio_link;
+	u32				phy_mask;
 
 	struct cpsw_regs		*regs;
 	void				*dma_regs;
@@ -587,13 +589,27 @@ static void cpsw_slave_update_link(struct cpsw_slave *slave,
 
 	__raw_writel(mac_control, &slave->sliver->mac_control);
 	slave->mac_control = mac_control;
+	priv->mdio_link |= __raw_readl(&mdio_regs->link) & (1 << phy_id);
 }
 
 static int cpsw_update_link(struct cpsw_priv *priv)
 {
 	int link = 0;
+	priv->mdio_link = 0;
 	for_each_slave(priv, cpsw_slave_update_link, priv, &link);
 	return link;
+}
+
+static int cpsw_check_link(struct cpsw_priv *priv)
+{
+	u32 link = 0;
+
+	link = __raw_readl(&mdio_regs->link) & priv->phy_mask;
+	if ((link) && (link == priv->mdio_link))
+		return 1;
+
+	cpsw_update_link(priv);
+	return 0;
 }
 
 static inline u32 cpsw_get_slave_port(struct cpsw_priv *priv, u32 slave_num)
@@ -626,6 +642,7 @@ static void cpsw_slave_init(struct cpsw_slave *slave, struct cpsw_priv *priv)
 	cpsw_ale_add_mcast(priv, NetBcastAddr, 1 << slave_port);
 
 	priv->data.phy_init(priv->dev->name, slave->data->phy_id);
+	priv->phy_mask |= 1 << slave->data->phy_id;
 }
 
 static struct cpdma_desc *cpdma_desc_alloc(struct cpsw_priv *priv)
@@ -823,7 +840,7 @@ static int cpsw_send(struct eth_device *dev, volatile void *packet, int length)
 	void *buffer;
 	int len;
 
-	if (!cpsw_update_link(priv))
+	if (!cpsw_check_link(priv))
 		return -EIO;
 
 	/* first reap completed packets */
