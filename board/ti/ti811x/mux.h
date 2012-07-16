@@ -36,7 +36,7 @@
 		/* 74 - mmc1_pow, 75 - mmc1_sdwp */
 /* -76 */	BIT(0), BIT(6), BIT(6), BIT(0),
 		/* 80 - mmc1_sdcd */
-/* -80 */	BIT(0), BIT(0), BIT(0), BIT(1),
+/* -80 */	BIT(0), BIT(0), BIT(0), BIT(7),
 /* -84 */	BIT(0), BIT(0), BIT(0), BIT(0),
 /* -88 */	BIT(0), BIT(0), BIT(0), BIT(0),
 /* -92 */	BIT(0), BIT(0), BIT(0), BIT(0),
