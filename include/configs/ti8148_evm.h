@@ -106,7 +106,7 @@
 
 # include <config_cmd_default.h>
 # define CONFIG_SKIP_LOWLEVEL_INIT	/* 1st stage would have done the basic init */
-# define CONFIG_ENV_SIZE			0x2000
+# define CONFIG_ENV_SIZE			0x20000
 # define CONFIG_SYS_MALLOC_LEN		(CONFIG_ENV_SIZE + (32 * 1024))
 # define CONFIG_ENV_OVERWRITE
 # define CONFIG_SYS_LONGHELP
@@ -299,9 +299,11 @@ extern unsigned int boot_flash_type;
 
 /* ENV in SPI */
 #if defined(CONFIG_SPI_ENV)
+# undef CONFIG_ENV_SIZE
 # undef CONFIG_ENV_IS_NOWHERE
 # define CONFIG_ENV_IS_IN_SPI_FLASH	1
 # ifdef CONFIG_ENV_IS_IN_SPI_FLASH
+# define CONFIG_ENV_SIZE		0x2000 /*use a small env */
 #  define CONFIG_SYS_FLASH_BASE		(0)
 #  define SPI_FLASH_ERASE_SIZE		(4 * 1024) /* sector size of SPI flash */
 #  define CONFIG_SYS_ENV_SECT_SIZE	(2 * SPI_FLASH_ERASE_SIZE) /* env size */

@@ -95,7 +95,7 @@
 #else /*2nd stage configs*/
 
 # include <config_cmd_default.h>
-# define CONFIG_ENV_SIZE		0x2000
+# define CONFIG_ENV_SIZE		0x20000
 # define CONFIG_SYS_MALLOC_LEN		(CONFIG_ENV_SIZE + (32 * 1024))
 /* size in bytes reserved for initial data */
 # define CONFIG_ENV_OVERWRITE
@@ -297,8 +297,10 @@ extern unsigned int boot_flash_type;
 /* ENV in SPI */
 #if defined(CONFIG_SPI_ENV)
 # undef CONFIG_ENV_IS_NOWHERE
+# undef CONFIG_ENV_SIZE
 # define CONFIG_ENV_IS_IN_SPI_FLASH	1
 # ifdef CONFIG_ENV_IS_IN_SPI_FLASH
+# define CONFIG_ENV_SIZE		0x2000 /*use a small env */
 #  define CONFIG_SYS_FLASH_BASE		(0)
 /* sector size of SPI flash */
 #  define SPI_FLASH_ERASE_SIZE		(4 * 1024)
