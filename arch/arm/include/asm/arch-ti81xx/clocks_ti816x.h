@@ -62,7 +62,7 @@
 #define MAIN_FRACFREQ5		0x189374
 #define MAIN_MDIV5		0x8
 
-#define MAIN_MDIV6		0x48
+#define MAIN_MDIV6		0x3F
 #define MAIN_MDIV7		0x4
 
 /* DDR PLL */
@@ -158,17 +158,17 @@
 /* Audio PLL */
 #define AUDIO_N			64
 #define AUDIO_P			0x19
-#define AUDIO_INTFREQ2		0xE
-#define AUDIO_FRACFREQ2		0x0
+#define AUDIO_INTFREQ2		0xC
+#define AUDIO_FRACFREQ2		0x189374
 #define AUDIO_MDIV2		0x4
 #define AUDIO_INTFREQ3		0x9
-#define AUDIO_FRACFREQ3		0x0
-#define AUDIO_MDIV3		0x5
-#define AUDIO_INTFREQ4		0x9
-#define AUDIO_FRACFREQ4		0xCBC148
+#define AUDIO_FRACFREQ3		0xDFD130
+#define AUDIO_MDIV3		0x4
+#define AUDIO_INTFREQ4		0x8
+#define AUDIO_FRACFREQ4		0x92491F
 #define AUDIO_MDIV4		0x14
-#define AUDIO_INTFREQ5		0xD
-#define AUDIO_FRACFREQ5		0x800000
+#define AUDIO_INTFREQ5		0xB
+#define AUDIO_FRACFREQ5		0x0
 #define AUDIO_MDIV5		0x14
 
 #endif	/* endif _CLOCKS_TI816X_H_ */
