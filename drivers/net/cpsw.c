@@ -192,7 +192,7 @@ struct cpdma_chan {
 #define desc_read_ptr(desc, fld)	((void *)__raw_readl(&(desc)->fld))
 
 #define chan_write(chan, fld, val)	__raw_writel((u32)(val), (chan)->fld)
-#define chan_read(chan, fld)		__raw_readl((chan)->fld)
+#define chan_read(chan, fld)		((void*)__raw_readl((chan)->fld))
 #define chan_read_ptr(chan, fld)	((void *)__raw_readl((chan)->fld))
 
 struct cpsw_priv {
