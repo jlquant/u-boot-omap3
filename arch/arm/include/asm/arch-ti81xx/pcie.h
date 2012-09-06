@@ -17,6 +17,8 @@
 #ifndef _TI81XX_PCIE_COMMON_
 #define _TI81XX_PCIE_COMMON_
 
+#include <asm/io.h>
+
 #ifdef TI81XX_PCIE_DBG
 #define DEBUGF(fmt, ...) \
 	printf(fmt, ##__VA_ARGS__)
@@ -104,10 +106,6 @@
 #define TI81XX_PCIE_BASE                0x51000000
 #define TI81XX_CONTROL_BASE             0x48140000
 
-
-#define __raw_readl(a)          (*(volatile unsigned int *)(a))
-#define __raw_writel(a, v)      (*(volatile unsigned int *)(a) = (v))
-
 #define read_pcie_appl_reg(offset)      \
 	read_reg(TI81XX_PCIE_BASE + offset)
 
@@ -186,7 +184,7 @@ static inline unsigned int read_reg(unsigned int a)
 
 static inline void write_reg(unsigned int a, unsigned int v)
 {
-	__raw_writel(a, v);
+	__raw_writel(v, a);
 }
 
 static inline void delay_loop(volatile int count)

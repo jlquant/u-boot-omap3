@@ -185,6 +185,7 @@ int misc_init_r(void)
 {
 #ifdef CONFIG_TI813X_MIN_CONFIG
 #ifdef CONFIG_TI81XX_PCIE_BOOT
+	extern int pcie_init(void);
 	printf("\nSetting up for pcie boot...\n");
 	pcie_init();
 	return 0;

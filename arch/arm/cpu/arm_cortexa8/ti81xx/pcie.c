@@ -160,7 +160,7 @@ static inline void write_reg_bits(unsigned int a, unsigned int v,
 	unsigned int val;
 	val = read_reg(a);
 	val = (val & ~mask) | ((v << ffs(mask)) & mask);
-	__raw_writel(a, val);
+	__raw_writel(val, a);
 }
 
 #ifdef TI81XX_NO_PIN_GPMC
@@ -294,30 +294,30 @@ void install_exceptions(void)
 	/* Install the exception vectors and hook them */
 	asm ("mcr p15, 0, %0, c7, c5, 0" : : "r" (0));
 
-	__raw_writel(0x4031d030, 0x40300000);
-	__raw_writel(0x40300000, 0xE3A00312);
-	__raw_writel(0x40300004, 0xE3800706);
-	__raw_writel(0x40300008, 0xE38000A0);
-	__raw_writel(0x4030000C, 0xE3A01002);
-	__raw_writel(0x40300010, 0xE5801000);
+	__raw_writel(0x40300000, 0x4031d030);
+	__raw_writel(0xE3A00312, 0x40300000);
+	__raw_writel(0xE3800706, 0x40300004);
+	__raw_writel(0xE38000A0, 0x40300008);
+	__raw_writel(0xE3A01002, 0x4030000C);
+	__raw_writel(0xE5801000, 0x40300010);
 }
 
 void wdt_set_reload(unsigned int base, unsigned int reload)
 {
 	if (base)
-		__raw_writel(base + 0x2C, reload);
+		__raw_writel(reload, base + 0x2C);
 }
 
 void wdt_load_start(unsigned int base, unsigned int load)
 {
 	if (base) {
-		__raw_writel(base + 0x30, load);
-		__raw_writel(base + 0x48, 0xbbbb);
+		__raw_writel(load, base + 0x30);
+		__raw_writel(0xbbbb, base + 0x48);
 
 		while (__raw_readl(base + 0x34) != 0x0)
 			;
 
-		__raw_writel(base + 0x48, 0x4444);
+		__raw_writel(0x4444, base + 0x48);
 
 		while (__raw_readl(base + 0x34) != 0x0)
 			;
@@ -327,12 +327,12 @@ void wdt_load_start(unsigned int base, unsigned int load)
 void wdt_stop(unsigned int base)
 {
 	if (base) {
-		__raw_writel(base + 0x48, 0xaaaa);
+		__raw_writel(0xaaaa, base + 0x48);
 
 		while (__raw_readl(base + 0x34) != 0x0)
 			;
 
-		__raw_writel(base + 0x48, 0x5555);
+		__raw_writel(0x5555, base + 0x48);
 
 		while (__raw_readl(base + 0x34) != 0x0)
 			;
@@ -345,7 +345,7 @@ void pcie_enable_link(void)
 	wdt_load_start(wdt_base, trig++);
 
 	/* Enable LTSSM */
-	__raw_writel(0x51000004, __raw_readl(0x51000004) | 0xb01);
+	__raw_writel(__raw_readl(0x51000004) | 0xb01, 0x51000004);
 	DEBUGF("LTTSM enabled\n");
 
 	while (1) {
@@ -383,7 +383,7 @@ void wait_for_host(void)
 		__asm__("dmb");
 	}
 
-	__raw_writel(bootflag, 0x0);
+	__raw_writel(0, bootflag);
 	printf("\t---> boot command received, proceed to auto boot...\n");
 }
 
@@ -399,7 +399,7 @@ int pcie_init(void)
 	wdt_set_reload(wdt_base, wdt_reload);
 
 	bootflag = (unsigned int) get_bootflag_addr();
-	__raw_writel(bootflag, 0x0);
+	__raw_writel(0, bootflag);
 
 	pcie_hw_setup();
 	pcie_pll_setup();

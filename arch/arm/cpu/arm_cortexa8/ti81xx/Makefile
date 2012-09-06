@@ -25,7 +25,8 @@ COBJS	+= mem.o
 COBJS	+= timer.o
 COBJS	+= syslib.o
 COBJS	+= sys_info.o
-COBJS	+= pcie.o
+
+COBJS-$(CONFIG_TI81XX_PCIE_BOOT)	+= pcie.o
 
 COBJS-$(CONFIG_NAND_TI81XX)	+= elm.o
 

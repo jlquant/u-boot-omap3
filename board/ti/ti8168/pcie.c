@@ -18,6 +18,8 @@
 #include <exports.h>
 #include <asm/arch/pcie.h>
 
+#ifdef CONFIG_TI81XX_PCIE_BOOT
+
 /*
  * OCMC location to communicate boot process
  */
@@ -232,3 +234,5 @@ void get_pcie_wdt_base_reload(unsigned int *base, unsigned int *reload)
 	*reload = 0Xffff8000;
 	/* time duration -- 1sec with 32 kHZ clock */
 }
+
+#endif /* CONFIG_TI81XX_PCIE_BOOT */
