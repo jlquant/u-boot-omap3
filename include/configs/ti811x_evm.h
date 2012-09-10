@@ -73,6 +73,8 @@
 #else /*2nd stage configs*/
 
 # include <config_cmd_default.h>
+#define CONFIG_SERIAL_TAG		1
+#define CONFIG_REVISION_TAG		1
 # define CONFIG_ENV_SIZE		0x20000
 # define CONFIG_SYS_MALLOC_LEN		(CONFIG_ENV_SIZE + (32 * 1024))
 /* size in bytes reserved for initial data */

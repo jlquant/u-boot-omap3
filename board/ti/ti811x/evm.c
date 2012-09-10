@@ -180,6 +180,33 @@ int dram_init(void)
 	return 0;
 }
 
+#ifdef CONFIG_SERIAL_TAG
+/*  *********************************************************
+ *  * get_board_serial() - setup to pass kernel board serial
+ *  * returns: board serial number
+ *  **********************************************************
+ */
+void get_board_serial(struct tag_serialnr *serialnr)
+{
+	/* ToDo: read eeprom and return*/
+	serialnr->high = 0x0;
+	serialnr->low = 0x0;
+
+}
+#endif
+
+#ifdef CONFIG_REVISION_TAG
+/**********************************************************
+ * * get_board_rev() - setup to pass kernel board revision
+ * * returns: revision
+ * ********************************************************
+ */
+u32 get_board_rev(void)
+{
+	/* ToDo: read eeprom */
+	return 0x0;
+}
+#endif
 
 int misc_init_r(void)
 {

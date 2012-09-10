@@ -105,6 +105,8 @@
 #else
 
 # include <config_cmd_default.h>
+#define CONFIG_SERIAL_TAG		1
+#define CONFIG_REVISION_TAG		1
 # define CONFIG_SKIP_LOWLEVEL_INIT	/* 1st stage would have done the basic init */
 # define CONFIG_ENV_SIZE			0x20000
 # define CONFIG_SYS_MALLOC_LEN		(CONFIG_ENV_SIZE + (32 * 1024))

@@ -74,15 +74,6 @@ u32 get_cpu_type(void)
 	return partnum;
 }
 
-/*************************************************************************
- * get_board_rev() - setup to pass kernel board revision information
- * returns:(bit[0-3] sub version, higher bit[7-4] is higher version)
- *************************************************************************/
-u32 get_board_rev(void)
-{
-	return 0x0;
-}
-
 /*************************************************************
  *  get_device_type(): tell if GP/HS/EMU/TST
  *************************************************************/
