@@ -232,6 +232,7 @@
 #define ADPLLJ_TENABLEDIV		0xC
 #define ADPLLJ_M2NDIV			0x10
 #define ADPLLJ_MN2DIV			0x14
+#define ADPLLJ_FRACDIV			0x18
 #define ADPLLJ_STATUS			0x24
 
 /* ADPLLJ register values */

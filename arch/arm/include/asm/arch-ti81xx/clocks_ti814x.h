@@ -32,6 +32,7 @@
 
 #define SELFREQDCO_HS2	0x00000801
 #define SELFREQDCO_HS1	0x00001001
+#define ADPLLJ_CLKCRTL_CLKDCO    0x201a0000
 
 /* Put the pll config values over here */
 #define AUDIO_N		19

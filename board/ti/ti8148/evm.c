@@ -113,7 +113,8 @@ int is_ddr3(void)
 }
 
 #ifdef CONFIG_SETUP_PLL
-static u32 pll_dco_freq_sel(u32 clk_in, u32 n, u32 m);
+static u32 pll_dco_freq_sel(u32 clkout_dco);
+static u32 pll_sigma_delta_val(u32 clkout_dco);
 static void pll_config(u32, u32, u32, u32, u32);
 #if 0
 static void pcie_pll_config(void);
@@ -651,18 +652,31 @@ static void iva_pll_config()
  * select the HS1 or HS2 for DCO Freq
  * return : CLKCTRL
  */
-static u32 pll_dco_freq_sel(u32 clk_in, u32 n, u32 m)
+static u32 pll_dco_freq_sel(u32 clkout_dco)
 {
-	u32 dco_clk = 0;
-
-	dco_clk = (clk_in / (n+1)) * m ;
-	if (dco_clk >= DCO_HS2_MIN && dco_clk < DCO_HS2_MAX)
+	if (clkout_dco >= DCO_HS2_MIN && clkout_dco < DCO_HS2_MAX)
 		return SELFREQDCO_HS2;
-	else if (dco_clk >= DCO_HS1_MIN && dco_clk < DCO_HS1_MAX)
+	else if (clkout_dco >= DCO_HS1_MIN && clkout_dco < DCO_HS1_MAX)
 		return SELFREQDCO_HS1;
 	else
 		return -1;
 
+}
+/*
+ * select the sigma delta config
+ * return: sigma delta val
+ */
+static u32 pll_sigma_delta_val(u32 clkout_dco)
+{
+	u32 sig_val = 0;
+	float frac_div;
+
+	frac_div = (float) clkout_dco / 250;
+	frac_div = frac_div + 0.90;
+	sig_val = (int)frac_div;
+	sig_val = sig_val << 24;
+
+	return sig_val;
 }
 
 /*
@@ -670,22 +684,29 @@ static u32 pll_dco_freq_sel(u32 clk_in, u32 n, u32 m)
  */
 static void pll_config(u32 base, u32 n, u32 m, u32 m2, u32 clkctrl_val)
 {
-	u32 m2nval, mn2val, read_clkctrl = 0;
-
-	/* select DCO freq range for ADPLL_J */
-	if (MODENA_PLL_BASE != base)
-		clkctrl_val |= pll_dco_freq_sel(OSC_0_FREQ, n, m);
+	u32 m2nval, mn2val, read_clkctrl = 0, clkout_dco = 0;
+	u32 sig_val = 0, hs_mod = 0;
 
 	m2nval = (m2 << 16) | n;
 	mn2val = m;
+
+	/* calculate clkout_dco */
+	clkout_dco = ((OSC_0_FREQ / (n+1)) * m);
+
+	/* sigma delta & Hs mode selection skip for ADPLLS*/
+	if (MODENA_PLL_BASE != base) {
+		sig_val = pll_sigma_delta_val(clkout_dco);
+		hs_mod = pll_dco_freq_sel(clkout_dco);
+	}
 
 	/* by-pass pll */
 	read_clkctrl = __raw_readl(base + ADPLLJ_CLKCTRL);
 	__raw_writel((read_clkctrl | 0x00800000), (base + ADPLLJ_CLKCTRL));
 	while ((__raw_readl(base + ADPLLJ_STATUS) & 0x101) != 0x101);
+
+	/* Clear TINITZ */
 	read_clkctrl = __raw_readl(base + ADPLLJ_CLKCTRL);
 	__raw_writel((read_clkctrl & 0xfffffffe), (base + ADPLLJ_CLKCTRL));
-
 
 	/*
 	 * ref_clk = 20/(n + 1);
@@ -693,8 +714,15 @@ static void pll_config(u32 base, u32 n, u32 m, u32 m2, u32 clkctrl_val)
 	 * clk_out = clkout_dco/m2;
 	*/
 
+	read_clkctrl = __raw_readl(base + ADPLLJ_CLKCTRL) & 0xffffe3ff;
 	__raw_writel(m2nval, (base + ADPLLJ_M2NDIV));
 	__raw_writel(mn2val, (base + ADPLLJ_MN2DIV));
+
+	/* Skip for modena(ADPLLS) */
+	if (MODENA_PLL_BASE != base) {
+		__raw_writel(sig_val, (base + ADPLLJ_FRACDIV));
+		__raw_writel((read_clkctrl | hs_mod), (base + ADPLLJ_CLKCTRL));
+	}
 
 	/* Load M2, N2 dividers of ADPLL */
 	__raw_writel(0x1, (base + ADPLLJ_TENABLEDIV));
@@ -704,14 +732,16 @@ static void pll_config(u32 base, u32 n, u32 m, u32 m2, u32 clkctrl_val)
 	__raw_writel(0x1, (base + ADPLLJ_TENABLE));
 	__raw_writel(0x0, (base + ADPLLJ_TENABLE));
 
-	read_clkctrl = __raw_readl(base + ADPLLJ_CLKCTRL);
+	/* configure CLKDCOLDOEN,CLKOUTLDOEN,CLKOUT Enable BITS */
+	read_clkctrl = __raw_readl(base + ADPLLJ_CLKCTRL) & 0xdfe5ffff;
+	if (MODENA_PLL_BASE != base)
+		__raw_writel((read_clkctrl | ADPLLJ_CLKCRTL_CLKDCO),
+						base + ADPLLJ_CLKCTRL);
 
-	if (MODENA_PLL_BASE == base)
-		__raw_writel((read_clkctrl & 0xff7fffff) | clkctrl_val,
-			base + ADPLLJ_CLKCTRL);
-	else
-		__raw_writel((read_clkctrl & 0xff7fe3ff) | clkctrl_val,
-			base + ADPLLJ_CLKCTRL);
+	/* Enable TINTZ and disable IDLE(PLL in Active & Locked Mode */
+	read_clkctrl = __raw_readl(base + ADPLLJ_CLKCTRL) & 0xff7fffff;
+	__raw_writel((read_clkctrl | 0x1), base + ADPLLJ_CLKCTRL);
+
 	/* Wait for phase and freq lock */
 	while ((__raw_readl(base + ADPLLJ_STATUS) & 0x600) != 0x600);
 
