@@ -585,8 +585,13 @@
 #define GPMC_A21		(CTRL_BASE + 0x09B4)
 #define GPMC_A22		(CTRL_BASE + 0x09B8)
 #define GPMC_A23		(CTRL_BASE + 0x09BC)
+#ifdef CONFIG_TI811X
+#define GPMC_A24                (CTRL_BASE + 0x09C0)
+#define GPMC_A25                (CTRL_BASE + 0x09C4)
+#else
 #define GPMC_A24		(CTRL_BASE + 0x09EC)
 #define GPMC_A25		(CTRL_BASE + 0x09E8)
+#endif
 #define GPMC_A27		(CTRL_BASE + 0x09CC)
 #define GPMC_CS0_REG		(CTRL_BASE + 0x09E4)
 #define GPMC_OEN		(CTRL_BASE + 0x0A00)
