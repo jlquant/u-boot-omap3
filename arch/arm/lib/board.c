@@ -344,6 +344,10 @@ void start_armboot (void)
 	}
 #endif /* CONFIG_LCD */
 
+	/* Enable caches */
+	puts ("DCACHE:  ");
+	enable_caches();
+
 #if defined(CONFIG_CMD_NAND)
 	puts ("NAND:  ");
 	nand_init();		/* go init the NAND */

@@ -604,6 +604,7 @@ ulong	vfd_setmem (ulong);
 ulong	video_setmem (ulong);
 
 /* arch/$(ARCH)/lib/cache.c */
+void	enable_caches(void);
 void	flush_cache   (unsigned long, unsigned long);
 void	flush_dcache_range(unsigned long start, unsigned long stop);
 void	invalidate_dcache_range(unsigned long start, unsigned long stop);

@@ -25,7 +25,7 @@
 
 #include <common.h>
 
-void  flush_cache (unsigned long dummy1, unsigned long dummy2)
+void __flush_cache (unsigned long dummy1, unsigned long dummy2)
 {
 #ifdef CONFIG_OMAP2420
 	void arm1136_cache_flush(void);
@@ -34,3 +34,16 @@ void  flush_cache (unsigned long dummy1, unsigned long dummy2)
 #endif
 	return;
 }
+void flush_cache (unsigned long dummy1, unsigned long dummy2)
+	 __attribute__((weak, alias("__flush_cache")));
+
+/*
+ * Default implementation of enable_caches()
+ * Real implementation should be in platform code
+ */
+void __enable_caches(void)
+{
+	puts("Off\n");
+}
+void enable_caches(void)
+	__attribute__((weak, alias("__enable_caches")));
