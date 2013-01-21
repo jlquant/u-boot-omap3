@@ -1459,3 +1459,11 @@ int board_mmc_init(bd_t *bis)
         return 0;
 }
 #endif
+#ifndef CONFIG_SYS_DCACHE_OFF
+void enable_caches(void)
+{
+	/* Enable D-cache. I-cache is enabled in start.S */
+	dcache_enable();
+	puts("On\n");
+}
+#endif

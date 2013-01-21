@@ -27,6 +27,9 @@
 /* In the 1st stage we have just 110K, so cut down wherever possible */
 #ifdef CONFIG_TI814X_MIN_CONFIG
 
+/* enable d-cache only on 2nd stage */
+#define CONFIG_SYS_DCACHE_OFF
+
 # define CONFIG_CMD_MEMORY	/* for mtest */
 # undef CONFIG_GZIP
 # undef CONFIG_ZLIB
