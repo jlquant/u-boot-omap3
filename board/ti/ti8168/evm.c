@@ -37,21 +37,17 @@
 #define WR_MEM_8(a, d) (*(volatile char*)(a) = (d))
 #define RD_MEM_8(a) (*(volatile char*)(a))
 /*
- * IEN  - Input Enable
- * IDIS - Input Disable
  * PTD  - Pull type Down
  * PTU  - Pull type Up
  * DIS  - Pull type selection is inactive
  * EN   - Pull type selection is active
  * M0   - Mode 0
  */
-#define	IEN	(1 << 8)
 
-#define	IDIS	(0 << 8)
 #define	PTU	(1 << 4)
 #define	PTD	(0 << 4)
-#define	EN	(1 << 3)
-#define	DIS	(0 << 3)
+#define	EN	(0 << 3)
+#define	DIS	(1 << 3)
 
 #define	M0	0
 #define	M1	1
