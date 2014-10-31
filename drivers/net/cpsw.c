@@ -620,6 +620,11 @@ static inline u32 cpsw_get_slave_port(struct cpsw_priv *priv, u32 slave_num)
 		return slave_num;
 }
 
+static void cpsw_slave_reset(struct cpsw_slave *slave, struct cpsw_priv *priv)
+{
+	soft_reset(&slave->sliver->soft_reset);
+}
+
 static void cpsw_slave_init(struct cpsw_slave *slave, struct cpsw_priv *priv)
 {
 	u32	slave_port;
@@ -830,6 +835,9 @@ static void cpsw_halt(struct eth_device *dev)
 
 	/* clear dma state */
 	soft_reset(priv->dma_regs + CPDMA_SOFTRESET);
+
+	/* reset the slave ports as well */
+	for_each_slave(priv, cpsw_slave_reset, priv);
 
 	priv->data.control(0);
 }
